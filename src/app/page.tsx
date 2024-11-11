@@ -10,7 +10,7 @@ export default async function HomePage() {
           <h1>Welcome {session.user.name}</h1>
           <div>
             If you want to sign out,{'\n'}
-            <Link href="/api/auth/signout">
+            <Link href="/auth/signout">
               Sign out
             </Link>
           </div>

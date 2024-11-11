@@ -150,7 +150,7 @@ const data = {
 }
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  session: Session | null
+  session: Session | null,
 }
 
 export function AppSidebar({ session, ...props }: AppSidebarProps) {
@@ -164,7 +164,7 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser session={session} />
+        <NavUser session={session}/>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

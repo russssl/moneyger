@@ -1,19 +1,8 @@
 "use client"
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from "lucide-react"
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from "lucide-react"
+import { useTheme, } from "next-themes"
 import type { Session } from "next-auth"
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { signOut } from 'next-auth/react';
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -30,13 +20,33 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+function CurrentThemeIcon() {
+  const {theme} = useTheme()
+  return (
+    <div className="flex items-center gap-2">
+      {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+    </div>
+  )
+}
+
+function useSetTheme() {
+  const { theme, setTheme } = useTheme()
+  return (event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (theme === "dark") {
+      setTheme("light")
+    } else {
+      setTheme("dark")
+    }
+  }
+}
 export function NavUser({
   session,
 }: {
-  session: Session | null
+  session: Session | null,
 }) {
   const { isMobile } = useSidebar()
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -51,7 +61,7 @@ export function NavUser({
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{session?.user.name}</span>
+                <span className="truncate font-semibold">{session?.user.name ?? 'Loading...'}</span>
                 {/* <span className="truncate text-xs">{user.email}</span> */}
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -70,7 +80,7 @@ export function NavUser({
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{session?.user.name ?? 'Loading'}</span>
+                  <span className="truncate font-semibold">{session?.user.name ?? 'Loading...'}</span>
                   {/* <span className="truncate text-xs">{user.email}</span> */}
                 </div>
               </div>
@@ -96,12 +106,17 @@ export function NavUser({
                 <Bell />
                 Notifications
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={useSetTheme()}>
+                <CurrentThemeIcon />
+                Theme
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut({redirectTo: '/api/auth/signin', redirect: true})}>
               <LogOut />
               Log out
             </DropdownMenuItem>
+            {/* <ThemeToggle /> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
