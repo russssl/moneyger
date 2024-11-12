@@ -20,7 +20,7 @@ export default async function HomePage() {
           <h1>Sign in</h1>
           <p>
             You are not signed in.{' '}
-            <Link href="/api/auth/signin">
+            <Link href="/signin">
               Sign in
             </Link>
           </p>

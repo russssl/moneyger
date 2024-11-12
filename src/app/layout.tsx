@@ -5,7 +5,6 @@ import { auth } from '@/server/auth';
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-import { permanentRedirect } from "next/navigation";
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
@@ -18,9 +17,6 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
-  if (!session) {
-    permanentRedirect("/api/auth/signin");
-  }
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body>
@@ -29,10 +25,14 @@ export default async function RootLayout({
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange>
-          <SidebarProvider>
-            <AppSidebar session={session}/>
-            {children}
-          </SidebarProvider>
+          {session ? (
+            <SidebarProvider>
+              <AppSidebar session={session}/>
+              <>{children}</>
+            </SidebarProvider>
+          ) : (
+            <>{children}</>
+            )}
         </ThemeProvider>
       </body>
     </html>
