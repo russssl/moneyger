@@ -1,0 +1,31 @@
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import SignInProviders from '@/components/sign-in-providers';
+import { auth } from '@/server/auth';
+import { redirect } from 'next/navigation';
+export default async function Page() {
+  const session = await auth();
+  if (session) {
+    redirect('/');
+  }
+  return (
+    <div className="flex items-center justify-center min-h-screen w-full">
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+          <CardDescription>Enter your email and password to access your account.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SignInProviders />
+        </CardContent>
+        <CardFooter className="text-sm text-center text-gray-500 flex flex-col space-y-2">
+          <div>
+            By signing in, you agree to our Terms of Service and Privacy Policy.
+          </div>
+          <div>
+            Don’t have an account? <a href="#" className="text-blue-500 ml-2">Sign up</a>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
