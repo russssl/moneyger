@@ -1,0 +1,33 @@
+import { db } from '../db';
+import { type InsertUser, insertUserSchema, users } from '../db/schema';
+import { eq } from 'drizzle-orm/expressions';
+import { hashPassword } from '../auth/util';
+
+export async function insertUser(User: InsertUser) {
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, User.email),
+  });
+
+  if (user) {
+    throw new Error('Email is already in use');
+  }
+  const res = insertUserSchema.safeParse(User);
+  if (!res.success) {
+    throw new Error('Invalid user data');
+  }
+  const { name, surname, email, password } = User;
+  // Proceed with form submission
+  if (password == null || password == undefined) {
+    throw new Error('Password is required');
+  }
+  // const hashedPassword = await hashPassword(password);
+  // TODO: Uncomment the line above and comment the line below
+  return await db.insert(users).values({
+    name,
+    surname,
+    email,
+    // password: hashedPassword,
+    password,
+  }).returning();
+};

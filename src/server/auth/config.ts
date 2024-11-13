@@ -17,6 +17,10 @@ import { verifyPassword } from './util';
 export class NoPasswordError extends CredentialsSignin {
   code = 'no-password';
 }
+
+export class SignInError extends CredentialsSignin {
+  code = 'invalid-credentials';
+}
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -54,19 +58,17 @@ export const authConfig = {
         if (!user) {
           return null;
         }
-        console.log('user exists', user)
         if (user.password === null) {
           throw new NoPasswordError();
         }
-        console.log('has password')
-        if (await verifyPassword(credentials.password as string, user.password)) {
+        console.log(credentials.password);
+        console.log(user.password);
+        if (credentials.password === user.password) {
+          console.log('passwords match');
           return user;
         } else {
-          throw new CredentialsSignin({
-            message: 'Invalid password',
-          });
+          throw new SignInError();
         }
-        return null;
       },
     }),
   ],
@@ -77,16 +79,25 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: ({session, token}) => {
+      if (token?.email && token?.name && token?.sub) {
+        session.user.id = token.sub;
+        session.user.email = token.email;
+        session.user.name = token.name;
+      }
+      return session;
+    },
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
   },
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
+    maxAge: 15 * 24 * 60 * 60, // 15 days
   },
   pages: {
     signIn: '/signin',

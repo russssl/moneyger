@@ -1,11 +1,10 @@
-import { AppSidebar } from '@/components/app-sidebar';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import '@/styles/globals.css';
-import { auth } from '@/server/auth';
 
 import { GeistSans } from 'geist/font/sans';
 import { type Metadata } from 'next';
 import { ThemeProvider } from '@/components/theme-provider'
+import SessionWrapper from './SessionWrapper';
+import { SessionProvider } from 'next-auth/react';
 
 export const metadata: Metadata = {
   title: 'Manager',
@@ -16,7 +15,6 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await auth();
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body>
@@ -25,14 +23,9 @@ export default async function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          {session ? (
-            <SidebarProvider>
-              <AppSidebar session={session}/>
-              <>{children}</>
-            </SidebarProvider>
-          ) : (
-            <>{children}</>
-          )}
+          <SessionProvider>
+            <SessionWrapper>{children}</SessionWrapper>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

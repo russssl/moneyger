@@ -1,2 +1,4 @@
 - [] A lot of things
 - [] register form password input requirements visibility improvement
+- [] handle auth errors correctly
+- [] unify naming (signup, register, login, signin)

@@ -7,6 +7,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { LoadingSpinner } from './ui/loading';
+import { redirect } from 'next/navigation';
 type ClientSafeProvider = {
   id: string;
   name: string;
@@ -15,6 +16,17 @@ type ClientSafeProvider = {
   callbackUrl: string;
 };
 
+function getErrorMessage(error: string) {
+  console.log(error);
+  switch (error) {
+  case 'invalid-credentials':
+    return 'Invalid email or password';
+  case 'no-password':
+    return 'No password set';
+  default:
+    return 'An error occurred';
+  }
+}
 export default function SignInProviders() {
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
@@ -34,11 +46,14 @@ export default function SignInProviders() {
       password,
     });
     if (result?.error) {
-      if (result.code == 'no-password') {
-        setError('No password set');
-      }
+      // if (result.code == 'no-password') {
+      //   setError('No password set');
+      // } else if({
+      //   setError('Invalid email or password');
+      // }
+      setError(getErrorMessage(result.error));
     } else {
-      console.log('Success');
+      redirect('/');
     }
   }
   useEffect(() => {
@@ -97,7 +112,7 @@ export default function SignInProviders() {
               />
             </div>
             {error && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className='mt-3'>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
