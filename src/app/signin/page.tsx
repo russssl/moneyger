@@ -4,7 +4,7 @@ import { auth } from '@/server/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link'
 import { type Metadata } from 'next';
-
+import ThemeToggle from '@/components/theme-toggle';
 export const metadata: Metadata = {
   title: 'Sign In',
   description: 'Sign in to your account',
@@ -18,7 +18,11 @@ export default async function Page() {
     <div className="flex items-center justify-center min-h-screen w-full">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+          <CardTitle className="text-2xl font-bold flex justify-between">
+            <div></div>
+            Sign in to your account
+            <ThemeToggle />
+          </CardTitle>
           <CardDescription>Enter your email and password to access your account.</CardDescription>
         </CardHeader>
         <CardContent>
