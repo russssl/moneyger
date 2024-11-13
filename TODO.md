@@ -1,0 +1,2 @@
+- [] A lot of things
+- [] register form password input requirements visibility improvement

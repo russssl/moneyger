@@ -1,14 +1,8 @@
 import { relations, sql } from 'drizzle-orm';
-import {
-  index,
-  integer,
-  pgTableCreator,
-  primaryKey,
-  text,
-  timestamp,
-  varchar,
-} from 'drizzle-orm/pg-core';
+import { index, integer, pgTableCreator, primaryKey, text, timestamp, varchar } from 'drizzle-orm/pg-core';
 import { type AdapterAccount } from 'next-auth/adapters';
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -24,6 +18,7 @@ export const users = createTable('user', {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar('name', { length: 255 }),
+  surname: varchar('surname', { length: 255 }),
   email: varchar('email', { length: 255 }).notNull(),
   emailVerified: timestamp('email_verified', {
     mode: 'date',
@@ -31,6 +26,19 @@ export const users = createTable('user', {
   }).default(sql`CURRENT_TIMESTAMP`),
   password: text('password'),
   image: varchar('image', { length: 255 }),
+});
+
+export const selectUserSchema = createSelectSchema(users);
+export const insertUserSchema = createInsertSchema(users, {
+  password: z.string().min(8, 'Password must be at least 8 characters long').max(255).refine((value) => /[A-Z]/.test(value), {
+    message: 'Password must contain at least one uppercase letter',
+  }).refine((value) => /[a-z]/.test(value), {
+    message: 'Password must contain at least one lowercase letter',
+  }).refine((value) => /\d/.test(value), {
+    message: 'Password must contain at least one digit',
+  }) .refine((value) => /[!@#$%^&*(),.?":{}|<>]/.test(value), {
+    message: 'Password must contain at least one special character',
+  }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
