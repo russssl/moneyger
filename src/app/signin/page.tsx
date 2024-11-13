@@ -2,6 +2,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import SignInProviders from '@/components/sign-in-providers';
 import { auth } from '@/server/auth';
 import { redirect } from 'next/navigation';
+import Link from 'next/link'
+import { type Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign In',
+  description: 'Sign in to your account',
+};
 export default async function Page() {
   const session = await auth();
   if (session) {
@@ -22,7 +29,10 @@ export default async function Page() {
             By signing in, you agree to our Terms of Service and Privacy Policy.
           </div>
           <div>
-            Don’t have an account? <a href="#" className="text-blue-500 ml-2">Sign up</a>
+            Don’t have an account? 
+            <Link href="/signup" className="text-blue-500 ml-2">
+              Sign up
+            </Link>
           </div>
         </CardFooter>
       </Card>
