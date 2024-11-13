@@ -6,7 +6,7 @@ export const hashPassword = async (password: string) => {
 
 export const verifyPassword = async (
   password: string,
-  hashedPassword: string
+  hashedPassword: string | null
 ): Promise<boolean> => {
   if (typeof password !== 'string' || typeof hashedPassword !== 'string') {
     return false;  // Return `false` if inputs are not valid strings

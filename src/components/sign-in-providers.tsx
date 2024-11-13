@@ -6,6 +6,7 @@ import { Input } from './ui/input';
 
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
+import { LoadingSpinner } from './ui/loading';
 type ClientSafeProvider = {
   id: string;
   name: string;
@@ -27,17 +28,17 @@ export default function SignInProviders() {
       setError('Please provide both email and password.');
       return;
     }
-
-    const res = await signIn('credentials', {
+    const result = await signIn('credentials', {
       redirect: false,
       email,
       password,
-      redirectTo: '/',
-    })
-    if (res?.ok) {
-      setError('')
+    });
+    if (result?.error) {
+      if (result.code == 'no-password') {
+        setError('No password set');
+      }
     } else {
-      setError('Invalid credentials')
+      console.log('Success');
     }
   }
   useEffect(() => {
@@ -56,18 +57,24 @@ export default function SignInProviders() {
     void fetchProviders();
   }, []);
   
-  if (!providers) {
+  if (!providers || !credentialsProvider) {
     return (
-      <div>
-        Loading...
+      <div className='flex justify-center font-bold text-pretty align-middle'>
+        <div className='me-2'>
+          Loading
+        </div>
+        <div>
+          <LoadingSpinner />
+        </div>
       </div>
     ) 
   }
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-          {credentialsProvider && (
-            <div>
+    <>
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {credentialsProvider && (
+          <div>
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -76,7 +83,7 @@ export default function SignInProviders() {
                 placeholder="Username"
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                />
+              />
             </div>
             <div className="space-y-2 mt-2">
               <Label htmlFor="password">Password</Label>
@@ -87,24 +94,41 @@ export default function SignInProviders() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                />
+              />
             </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <Button key={credentialsProvider.name} onClick={() => handleSubmit} className='w-full mt-5'>
               Sign in
             </Button>
+            <div className='text-center mt-3'>
+              <a href="/password-reset" className="text-blue-500">
+              Forgot password?
+              </a>
+            </div>
           </div>
-          )}
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {Object.values(providers).map((provider: ClientSafeProvider) => (
-            <Button key={provider.name} onClick={() => signIn(provider.id)} className='w-full'>
+        )}
+      </form>
+        
+      {Object.keys(providers).length > 0 && (
+        <div>
+          <div className='flex justify-center items-center mt-3'>
+            <div className='border-t border-gray-300 flex-grow mr-3'></div>
+            <span className='text-gray-500'>or</span>
+            <div className='border-t border-gray-300 flex-grow ml-3'></div>
+          </div>
+          <div className='mt-5'>
+            {Object.values(providers).map((provider: ClientSafeProvider) => (
+              <Button key={provider.name} onClick={() => signIn(provider.id)} className='w-full mb-3'>
               Sign in with {provider.name}
-            </Button>
-          ))}
-        </form>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
