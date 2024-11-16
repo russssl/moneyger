@@ -21,13 +21,11 @@ export async function insertUser(User: InsertUser) {
   if (password == null || password == undefined) {
     throw new Error('Password is required');
   }
-  // const hashedPassword = await hashPassword(password);
-  // TODO: Uncomment the line above and comment the line below
+  const hashedPassword = await hashPassword(password);
   return await db.insert(users).values({
     name,
     surname,
     email,
-    // password: hashedPassword,
-    password,
+    password: hashedPassword,
   }).returning();
 };

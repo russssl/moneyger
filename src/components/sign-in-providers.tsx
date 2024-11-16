@@ -8,6 +8,7 @@ import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { LoadingSpinner } from './ui/loading';
 import { redirect } from 'next/navigation';
+import LoadingButton from './loading-button';
 type ClientSafeProvider = {
   id: string;
   name: string;
@@ -33,27 +34,30 @@ export default function SignInProviders() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email || !password) {
-      setError('Please provide both email and password.');
-      return;
-    }
-    const result = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
-    });
-    if (result?.error) {
-      // if (result.code == 'no-password') {
-      //   setError('No password set');
-      // } else if({
-      //   setError('Invalid email or password');
-      // }
-      setError(getErrorMessage(result.error));
-    } else {
-      redirect('/');
+    try {
+      setLoading(true);
+      e.preventDefault()
+      if (!email || !password) {
+        setError('Please provide both email and password.');
+        return;
+      }
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+      if (result?.error) {
+        console.log(result.error);
+        setError(getErrorMessage(result.error));
+      } else {
+        redirect('/');
+      }
+    } catch (error) {
+      setError('An error occurred');
+    } finally {
+      setLoading(false);
     }
   }
   useEffect(() => {
@@ -116,9 +120,9 @@ export default function SignInProviders() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button key={credentialsProvider.name} onClick={() => handleSubmit} className='w-full mt-5'>
+            <LoadingButton loading={loading} className='w-full mt-5'>
               Sign in
-            </Button>
+            </LoadingButton>
             <div className='text-center mt-3'>
               <a href="/password-reset" className="text-blue-500">
               Forgot password?

@@ -59,15 +59,17 @@ export const authConfig = {
           return null;
         }
         if (user.password === null) {
-          throw new NoPasswordError();
+          throw new SignInError({
+            code: 'no-password',
+          });
         }
-        console.log(credentials.password);
-        console.log(user.password);
-        if (credentials.password === user.password) {
+        if (await verifyPassword(credentials.password as string, user.password)) {
           console.log('passwords match');
           return user;
         } else {
-          throw new SignInError();
+          throw new SignInError({
+            code: 'invalid-credentials',
+          });
         }
       },
     }),
