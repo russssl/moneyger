@@ -2,3 +2,6 @@
 - [] register form password input requirements visibility improvement
 - [] handle auth errors correctly
 - [] unify naming (signup, register, login, signin)
+- [] add redirect after registration !
+- [x] fix redirect after login !
+- [] hydration error after login (connected to spinner)

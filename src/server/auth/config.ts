@@ -31,6 +31,7 @@ declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      surname?: string | null;
     } & DefaultSession['user'];
   }
 }
@@ -86,6 +87,7 @@ export const authConfig = {
         session.user.id = token.sub;
         session.user.email = token.email;
         session.user.name = token.name;
+        session.user.surname = token.surname;
       }
       return session;
     },
@@ -93,6 +95,7 @@ export const authConfig = {
       if (user) {
         token.email = user.email;
         token.name = user.name;
+        token.surname = user.surname;
       }
       return token;
     },

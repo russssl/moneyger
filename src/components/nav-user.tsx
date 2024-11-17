@@ -19,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { LoadingSpinner } from './ui/loading'
 
 function CurrentThemeIcon() {
   const {theme} = useTheme()
@@ -58,11 +59,17 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-full border-dashed border-3">
+                  {session?.user?.name?.[0] ?? ''}{session?.user?.surname?.[0] ?? ''}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{session?.user.name ?? 'Loading...'}</span>
-                {/* <span className="truncate text-xs">{user.email}</span> */}
+                <span className="truncate font-semibold">{
+                  session ? 
+                    <>
+                      {session.user.name} {session.user?.surname ?? ''}
+                    </> 
+                    : <LoadingSpinner/> }</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -76,12 +83,16 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {session?.user?.name?.[0] ?? ''}{session?.user?.surname?.[0] ?? ''}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{session?.user.name ?? 'Loading...'}</span>
-                  {/* <span className="truncate text-xs">{user.email}</span> */}
+                  <span className="truncate font-semibold">
+                    {session ? 
+                      session.user.name + ' ' + session.user.surname
+                      : <LoadingSpinner></LoadingSpinner>}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>

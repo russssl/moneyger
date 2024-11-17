@@ -7,8 +7,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { LoadingSpinner } from './ui/loading';
-import { redirect } from 'next/navigation';
 import LoadingButton from './loading-button';
+
+import { redirect } from 'next/navigation';
+
 type ClientSafeProvider = {
   id: string;
   name: string;
@@ -44,15 +46,14 @@ export default function SignInProviders() {
         return;
       }
       const result = await signIn('credentials', {
-        redirect: false,
+        redirect: true, 
+        redirectTo: '/',
         email,
         password,
       });
+
       if (result?.error) {
-        console.log(result.error);
         setError(getErrorMessage(result.error));
-      } else {
-        redirect('/');
       }
     } catch (error) {
       setError('An error occurred');
