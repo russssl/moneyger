@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useState } from 'react';
 import { save } from './userService';
 import { signIn } from 'next-auth/react';
+import LoadingButton from '@/components/loading-button';
 
 function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {
   return (
@@ -86,7 +87,8 @@ export default function SignUpForm() {
       await signIn('credentials', {
         email: newUser[0].email,
         password: newUser[0].password,
-        redirect: false
+        redirect: true,
+        redirectTo: '/',
       });
     } catch (error: unknown) {
       setError((error as Error).message);
@@ -146,9 +148,9 @@ export default function SignUpForm() {
               <Input id="confirmPassword" type="password" onChange={(e) => setConfirmPassword(e.target.value)}/>
               <FieldErrorAlert fieldErrors={fieldErrors} name="confirmPassword" />
             </div>
-            <Button type="submit" className="w-full" >
+            <LoadingButton loading={isSubmitting} className="w-full">
               Register
-            </Button>
+            </LoadingButton>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
