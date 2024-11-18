@@ -46,7 +46,7 @@ export default function PasswordResetForm() {
             </div>
             <CardFooter className="flex justify-center">
               <p className="text-sm text-muted-foreground mt-4">
-                <Link href="/signin" className="text-blue-500">
+                <Link href="/login" className="text-blue-500">
                   Back to login
                 </Link>
               </p>

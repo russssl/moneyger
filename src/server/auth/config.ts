@@ -105,6 +105,6 @@ export const authConfig = {
     maxAge: 15 * 24 * 60 * 60, // 15 days
   },
   pages: {
-    signIn: '/signin',
+    signIn: '/login',
   },
 } satisfies NextAuthConfig;

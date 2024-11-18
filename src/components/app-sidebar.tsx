@@ -16,7 +16,6 @@ import type { Session } from 'next-auth'
 import { NavMain } from '@/components/nav-main'
 import { NavProjects } from '@/components/nav-projects'
 import { NavUser } from '@/components/nav-user'
-import { TeamSwitcher } from '@/components/team-switcher'
 import AppLogo from '@/components/app-logo'
 import {
   Sidebar,
@@ -158,7 +157,6 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
         <AppLogo />
       </SidebarHeader>
       <SidebarContent>

@@ -32,7 +32,7 @@ export const selectUserSchema = createSelectSchema(users);
 export const insertUserSchema = createInsertSchema(users, {
   name: z.string().min(1, 'Name is Required').max(255),
   surname: z.string().min(1, 'Surname is Required').max(255),
-  email: z.string().email('Invalid email').max(255),
+  email: z.string().email('Email is Required').max(255),
   password: z.string().min(8, 'Password must be at least 8 characters long').max(255).refine((value) => /[A-Z]/.test(value), {
     message: 'Password must contain at least one uppercase letter',
   }).refine((value) => /[a-z]/.test(value), {

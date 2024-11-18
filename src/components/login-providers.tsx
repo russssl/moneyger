@@ -8,7 +8,6 @@ import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { LoadingSpinner } from './ui/loading';
 import LoadingButton from './loading-button';
-
 import { redirect } from 'next/navigation';
 
 type ClientSafeProvider = {
@@ -19,7 +18,7 @@ type ClientSafeProvider = {
   callbackUrl: string;
 };
 
-function getErrorMessage(error: string) {
+function getErrorMessage(error: string | undefined) {
   console.log(error);
   switch (error) {
   case 'invalid-credentials':
@@ -30,7 +29,7 @@ function getErrorMessage(error: string) {
     return 'An error occurred';
   }
 }
-export default function SignInProviders() {
+export default function LoginProviders() {
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
   const [email, setEmail] = useState('')
@@ -46,17 +45,15 @@ export default function SignInProviders() {
         return;
       }
       const result = await signIn('credentials', {
-        redirect: true, 
-        redirectTo: '/',
+        redirect: false,
         email,
         password,
       });
-
       if (result?.error) {
-        setError(getErrorMessage(result.error));
+        setError(getErrorMessage(result.code));
       }
-    } catch (error) {
-      setError('An error occurred');
+    } catch (error: unknown) {
+      setError((error as Error)?.message ?? 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -122,7 +119,7 @@ export default function SignInProviders() {
               </Alert>
             )}
             <LoadingButton loading={loading} className='w-full mt-5'>
-              Sign in
+              Login
             </LoadingButton>
             <div className='text-center mt-3'>
               <a href="/password-reset" className="text-blue-500">
@@ -143,7 +140,7 @@ export default function SignInProviders() {
           <div className='mt-5'>
             {Object.values(providers).map((provider: ClientSafeProvider) => (
               <Button key={provider.name} onClick={() => signIn(provider.id)} className='w-full mb-3'>
-              Sign in with {provider.name}
+              Login with {provider.name}
               </Button>
             ))}
           </div>

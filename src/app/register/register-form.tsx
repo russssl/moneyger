@@ -1,7 +1,6 @@
 'use client';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -11,7 +10,7 @@ import { useState } from 'react';
 import { save } from './userService';
 import { signIn } from 'next-auth/react';
 import LoadingButton from '@/components/loading-button';
-
+import { extractMessages } from '@/hooks/utils';
 function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {
   return (
     <>
@@ -25,7 +24,7 @@ function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, st
   );
 }
 
-export default function SignUpForm() {
+export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [name, setName] = useState('')
   const [surname, setSurname] = useState('')
@@ -57,7 +56,13 @@ export default function SignUpForm() {
       email,
       password
     });
-
+    // const passwordRequirements = () => {
+    //   'use server';
+    //   return extractMessages(insertUserSchema);
+    // }
+    const passwordRequirements = extractMessages(insertUserSchema);
+    console.log(passwordRequirements)
+    throw new Error('Password is required');
     if (!res.success) {
       const errors = res.error.flatten().fieldErrors;
       setFieldErrors({
@@ -156,8 +161,8 @@ export default function SignUpForm() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
           Already have an account?
-            <Link href="/signin" className="text-blue-500 ml-2">
-              Sign in
+            <Link href="/login" className="text-blue-500 ml-2">
+              Login
             </Link>
           </p>
         </CardFooter>
