@@ -8,7 +8,7 @@ import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { LoadingSpinner } from './ui/loading';
 import LoadingButton from './loading-button';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 type ClientSafeProvider = {
   id: string;
@@ -36,6 +36,7 @@ export default function LoginProviders() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       setLoading(true);
@@ -44,13 +45,23 @@ export default function LoginProviders() {
         setError('Please provide both email and password.');
         return;
       }
-      const result = await signIn('credentials', {
+      const res = await signIn('credentials', {
         redirect: false,
         email,
         password,
       });
-      if (result?.error) {
-        setError(getErrorMessage(result.code));
+      if (!res) {
+        setError('An error occurred');
+        return;
+      }
+
+      if (res.error) {
+        setError(getErrorMessage(res.error));
+        return;
+      }
+
+      if (res.ok) {
+        router.push('/');        
       }
     } catch (error: unknown) {
       setError((error as Error)?.message ?? 'An unknown error occurred');

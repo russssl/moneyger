@@ -1,7 +1,8 @@
 - [] A lot of things
-- [] register form password input requirements visibility improvement
-- [x] handle auth errors correctly
-- [x] unify naming (signup, register, login, signin)
-- [x] add redirect after registration !
-- [x] fix redirect after login !
-- [x] hydration error after login (connected to spinner)
+- [] background with https://github.com/ibelick/background-snippets
+- [] add a some drag and drop
+- [] add camera usage
+- [] find a library for reshufling the cards (swapy or https://github.com/sadmann7/sortable)
+- [] image lazy loading
+- [] modals with 'https://github.com/redpangilinan/credenza'
+- [] localisation
