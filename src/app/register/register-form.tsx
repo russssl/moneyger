@@ -109,10 +109,9 @@ export default function RegisterForm() {
         return;
       }
 
-      // this shit does not work since password here is hashed
       const res = await signIn('credentials', {
         email: newUser.email,
-        password: newUser.password,
+        password: password,
         redirect: false,
       });
 
