@@ -104,14 +104,15 @@ export default function RegisterForm() {
     setIsSubmitting(true)
     try {
       const newUser = await save({name, surname, email, password});
-      if (newUser?.[0] == null) {
+      if (newUser == null) {
         setError('An error occurred. Please try again.');
         return;
       }
 
+      // this shit does not work since password here is hashed
       const res = await signIn('credentials', {
-        email: newUser[0].email,
-        password: newUser[0].password,
+        email: newUser.email,
+        password: newUser.password,
         redirect: false,
       });
 

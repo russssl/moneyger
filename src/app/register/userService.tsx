@@ -1,8 +1,8 @@
 'use server';
 import { insertUser} from '@/server/queries/users';
-import { type SelectUser, type InsertUser } from '@/server/db/schema';
+import { type SelectUser, type InsertUser } from '@/server/db/user';
 
-export async function save(user: InsertUser): Promise<Array<SelectUser | null>> {
+export async function save(user: InsertUser): Promise<SelectUser | undefined | null> {
   'use server';
   const createdUser = await insertUser({
     name: user.name,
@@ -10,5 +10,5 @@ export async function save(user: InsertUser): Promise<Array<SelectUser | null>> 
     email: user.email,
     password: user.password
   })
-  return createdUser;
+  return Array.isArray(createdUser) ? createdUser[0] : null;
 }

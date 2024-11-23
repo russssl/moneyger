@@ -1,5 +1,5 @@
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { CredentialsSignin, type DefaultSession, type NextAuthConfig } from 'next-auth';
+import { CredentialsSignin, type DefaultSession, type NextAuthConfig, type User } from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
@@ -10,7 +10,7 @@ import {
   sessions,
   users,
   verificationTokens,
-} from '@/server/db/schema';
+} from '@/server/db/user';
 import { verifyPassword } from './util';
 // import { verifyPassword } from "./util";
 
@@ -33,6 +33,12 @@ declare module 'next-auth' {
       id: string;
       surname?: string | null;
     } & DefaultSession['user'];
+  }
+}
+
+declare module 'next-auth' {
+  interface User {
+    surname?: string | null;
   }
 }
 
@@ -87,7 +93,7 @@ export const authConfig = {
         session.user.id = token.sub;
         session.user.email = token.email;
         session.user.name = token.name;
-        session.user.surname = token.surname;
+        session.user.surname = token.surname as string | null | undefined;
       }
       return session;
     },
@@ -95,7 +101,7 @@ export const authConfig = {
       if (user) {
         token.email = user.email;
         token.name = user.name;
-        token.surname = user.surname;
+        token.surname = user.surname ;
       }
       return token;
     },

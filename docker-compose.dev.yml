@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+      POSTGRES_USER: admin
+      POSTGRES_HOST: localhost
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  memcached:
+    image: memcached:1.6
+    ports:
+      - 11211:11211
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+volumes:
+  pgdata:

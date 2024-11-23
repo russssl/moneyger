@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { type InsertUser, insertUserSchema, users } from '../db/schema';
+import { type InsertUser, insertUserSchema, users } from '../db/user';
 import { eq } from 'drizzle-orm/expressions';
 import { hashPassword } from '../auth/util';
 
@@ -14,7 +14,7 @@ export async function insertUser(User: InsertUser) {
   }
   const res = insertUserSchema.safeParse(User);
   if (!res.success) {
-    throw new Error('Invalid user data');
+    throw new Error(res.error.errors.map((error) => error.message).join(', '));
   }
   const { name, surname, email, password } = User;
   // Proceed with form submission
