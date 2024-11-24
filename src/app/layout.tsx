@@ -5,7 +5,6 @@ import { type Metadata } from 'next';
 import { ThemeProvider } from '@/components/theme-provider'
 import SessionWrapper from './SessionWrapper';
 import { SessionProvider } from 'next-auth/react';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'Manager',
