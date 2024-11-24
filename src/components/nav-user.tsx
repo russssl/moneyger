@@ -1,5 +1,5 @@
 'use client'
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from 'lucide-react'
+import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from 'lucide-react'
 import { useTheme, } from 'next-themes'
 import type { Session } from 'next-auth'
 import { Avatar, AvatarFallback} from '@/components/ui/avatar'
@@ -20,6 +20,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { LoadingSpinner } from './ui/loading'
+import SettingsModal from './user/SettingsModal'
 
 function CurrentThemeIcon() {
   const {theme} = useTheme()
@@ -105,10 +106,7 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
+              <SettingsModal />
               <DropdownMenuItem>
                 <CreditCard />
                 Billing

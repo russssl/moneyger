@@ -104,7 +104,9 @@ export default function LoginProviders() {
         {credentialsProvider && (
           <div>
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">
+                Username <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="username"
                 type="email"
@@ -114,7 +116,9 @@ export default function LoginProviders() {
               />
             </div>
             <div className="space-y-2 mt-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">
+                Password <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="password"
                 type="password"

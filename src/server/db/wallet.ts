@@ -11,7 +11,7 @@ export const wallets = pgTable('wallet', {
   description: text('description'),
   balance: integer('balance'),
   currency: varchar('currency', { length: 255 }),
-  userId: varchar('user_id', { length: 255 }).notNull().references(() => users.id),
+  userId: varchar('user_id', { length: 255 }).notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 });
 
 export const walletsRelations = relations(wallets, ({ one }) => ({
