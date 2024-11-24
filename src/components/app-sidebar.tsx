@@ -3,7 +3,6 @@ import * as React from 'react'
 import { SquareTerminal } from 'lucide-react'
 import type { Session } from 'next-auth'
 import { NavMain } from '@/components/nav-main'
-import { NavProjects } from '@/components/nav-projects'
 import { NavUser } from '@/components/nav-user'
 import AppLogo from '@/components/app-logo'
 import {

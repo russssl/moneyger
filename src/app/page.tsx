@@ -1,4 +1,3 @@
-import {UniversalCard} from '@/components/card';
 import { auth } from '@/server/auth';
 import { getWallets } from '@/server/queries/wallets';
 import { redirect } from 'next/navigation';
