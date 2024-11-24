@@ -7,7 +7,7 @@ import { type Metadata } from 'next';
 import ThemeToggle from '@/components/theme-toggle';
 export const metadata: Metadata = {
   title: 'Login',
-  description: 'Login to your account',
+  description: `Login to your account`,
 };
 export default async function Page() {
   const session = await auth();
