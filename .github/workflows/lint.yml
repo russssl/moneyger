@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - "*"
+      - main
 
 jobs:
   lint:
@@ -20,6 +20,9 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: Install dependencies
         run: pnpm install
