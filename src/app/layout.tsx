@@ -1,10 +1,12 @@
 import '@/styles/globals.css';
 
 import { GeistSans } from 'geist/font/sans';
-import { type Metadata } from 'next';
-import { ThemeProvider } from '@/components/theme-provider'
-import SessionWrapper from './SessionWrapper';
+import { type Metadata } from "next";
+
+import { TRPCReactProvider } from '@/trpc/react';
 import { SessionProvider } from 'next-auth/react';
+import SessionWrapper from './SessionWrapper';
+import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
   title: 'Manager',
@@ -12,21 +14,24 @@ export const metadata: Metadata = {
   icons: [{ rel: 'icon', url: '/favicon.ico' }],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <body>
-        <ThemeProvider 
+      <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           vaul-drawer-wrapper="" 
           disableTransitionOnChange>
+            
+        <TRPCReactProvider>
           <SessionProvider>
             <SessionWrapper>{children}</SessionWrapper>
           </SessionProvider>
+        </TRPCReactProvider>
         </ThemeProvider>
       </body>
     </html>
