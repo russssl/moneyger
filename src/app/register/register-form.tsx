@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 
 import { checkStrength, getStrengthColor, getStrengthText } from './registerHelpers';
 
-import { save } from './userService';
+// import { save } from './userService';
 import LoadingButton from '@/components/loading-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {

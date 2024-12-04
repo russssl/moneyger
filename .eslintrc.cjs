@@ -16,7 +16,7 @@ const config = {
   'rules': {
     'indent': ['error', 2],
     'linebreak-style': ['error', 'unix'],
-    'quotes': ['error', 'single'],
+    'quotes': ['error', 'double'],
     'no-empty': ['error', { 'allowEmptyCatch': true }],
 
     '@typescript-eslint/array-type': 'off',

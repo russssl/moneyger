@@ -19,7 +19,6 @@ import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectI
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import LoadingButton from '../loading-button';
-import { updateSettings } from '@/server/queries/settings';
 
 export default function SettingsModal() {
   const { data: session } = useSession();
@@ -28,17 +27,6 @@ export default function SettingsModal() {
   if (!session) {
     return null;
   }
-
-  const save = async () => {
-    try {
-      await updateSettings(session?.user.id, { userId: session?.user.id, currency });
-      // Optionally, show a success message or handle the response
-    } catch (error) {
-      console.error('Failed to update settings:', error);
-      // Optionally, show an error message
-    }
-  };
-
   return (
     <>
       <Credenza>
@@ -84,7 +72,7 @@ export default function SettingsModal() {
             <CredenzaClose asChild>
               <div className='flex'>
                 <Button className='me-3'>Close</Button>
-                <LoadingButton loading={false} variant="success" onClick={save}>Save</LoadingButton>
+                <LoadingButton loading={false} variant="success">Save</LoadingButton>
               </div>
             </CredenzaClose>
           </CredenzaFooter>

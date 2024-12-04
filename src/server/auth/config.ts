@@ -1,19 +1,18 @@
+import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { CredentialsSignin, type DefaultSession, type NextAuthConfig } from 'next-auth';
-import DiscordProvider from 'next-auth/providers/discord';
-import GoogleProvider from 'next-auth/providers/google';
+
+import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { eq } from 'drizzle-orm/expressions';
-import { db } from '@/server/db';
+import { verifyPassword } from './util';
+
+import { db } from "@/server/db";
 import {
   accounts,
   sessions,
   users,
   verificationTokens,
-} from '@/server/db/user';
-import { verifyPassword } from './util';
-import { userSettings } from '../db/userSettings';
-// import { verifyPassword } from "./util";
+} from "@/server/db/user";
+import { eq } from "drizzle-orm";
 
 export class NoPasswordError extends CredentialsSignin {
   code = 'no-password';
@@ -47,10 +46,6 @@ declare module 'next-auth' {
 
 export const authConfig = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
     DiscordProvider,
     CredentialsProvider({
       name: 'Credentials',
@@ -75,18 +70,18 @@ export const authConfig = {
             code: 'no-password',
           });
         }
-        const userSettingsData = await db.query.userSettings.findFirst({
-          where: eq(userSettings.userId, user.id),
-        });
+        // const userSettingsData = await db.query.userSettings.findFirst({
+        //   where: eq(userSettings.userId, user.id),
+        // });
 
-        if (!userSettings) {
-          throw new Error('User settings not found');
-        }
+        // if (!userSettings) {
+        //   throw new Error('User settings not found');
+        // }
 
         if (await verifyPassword(credentials.password as string, user.password)) {
           return {
             ...user,
-            currency: userSettingsData?.currency ?? undefined,
+            // currency: userSettingsData?.currency ?? undefined,
           };
         } else {
           throw new SignInError({
@@ -115,7 +110,6 @@ export const authConfig = {
     },
     jwt: async ({ token, user }) => {
       if (user) {
-        console.log(user);
         token.email = user.email;
         token.name = user.name;
         token.surname = user.surname;
