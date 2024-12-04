@@ -8,8 +8,9 @@ export default async function HomePage() {
     redirect('/login');
   }
   const wallets = await getWallets();
-  console.log(wallets);
   return (
-    <></>
+    <>
+    {JSON.stringify(session)}
+    </>
   );
 }

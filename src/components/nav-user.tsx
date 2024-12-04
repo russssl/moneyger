@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { LoadingSpinner } from './ui/loading'
-import SettingsModal from './user/SettingsModal'
+import SettingsModal from './user/settings-modal'
 
 function CurrentThemeIcon() {
   const {theme} = useTheme()

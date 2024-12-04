@@ -1,4 +1,5 @@
 'use client';
+
 import {
   Credenza,
   CredenzaBody,
@@ -9,15 +10,35 @@ import {
   CredenzaHeader,
   CredenzaTitle,
   CredenzaTrigger,
-} from '@/components/Modal'
-
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
+} from '@/components/modal';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectItem, SelectLabel } from '../ui/select';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import LoadingButton from '../loading-button';
+import { updateSettings } from '@/server/queries/settings';
 
 export default function SettingsModal() {
+  const { data: session } = useSession();
+  const [currency, setCurrency] = useState(session?.user.currency);
+
+  if (!session) {
+    return null;
+  }
+
+  const save = async () => {
+    try {
+      await updateSettings(session?.user.id, { userId: session?.user.id, currency });
+      // Optionally, show a success message or handle the response
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      // Optionally, show an error message
+    }
+  };
+
   return (
     <>
       <Credenza>
@@ -42,9 +63,9 @@ export default function SettingsModal() {
             <div>
               <div className='flex flex-col space-y-2'>
                 <Label>Currency</Label>
-                <Select>
+                <Select onValueChange={setCurrency} value={currency}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a currency" />
+                    <SelectValue placeholder="Select a currency" defaultValue={currency} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -61,7 +82,10 @@ export default function SettingsModal() {
           </CredenzaBody>
           <CredenzaFooter>
             <CredenzaClose asChild>
-              <Button>Close</Button>
+              <div className='flex'>
+                <Button className='me-3'>Close</Button>
+                <LoadingButton loading={false} variant="success" onClick={save}>Save</LoadingButton>
+              </div>
             </CredenzaClose>
           </CredenzaFooter>
         </CredenzaContent>

@@ -12,6 +12,7 @@ import {
   verificationTokens,
 } from '@/server/db/user';
 import { verifyPassword } from './util';
+import { userSettings } from '../db/userSettings';
 // import { verifyPassword } from "./util";
 
 export class NoPasswordError extends CredentialsSignin {
@@ -32,6 +33,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       surname?: string | null;
+      currency?: string;
     } & DefaultSession['user'];
   }
 }
@@ -39,6 +41,7 @@ declare module 'next-auth' {
 declare module 'next-auth' {
   interface User {
     surname?: string | null;
+    currency?: string;
   }
 }
 
@@ -62,17 +65,29 @@ export const authConfig = {
         const user = await db.query.users.findFirst({
           where: eq(users.email, credentials.email as string),
         });
+
         if (!user) {
           return null;
         }
+  
         if (user.password === null) {
           throw new SignInError({
             code: 'no-password',
           });
         }
+        const userSettingsData = await db.query.userSettings.findFirst({
+          where: eq(userSettings.userId, user.id),
+        });
+
+        if (!userSettings) {
+          throw new Error('User settings not found');
+        }
+
         if (await verifyPassword(credentials.password as string, user.password)) {
-          console.log('passwords match');
-          return user;
+          return {
+            ...user,
+            currency: userSettingsData?.currency ?? undefined,
+          };
         } else {
           throw new SignInError({
             code: 'invalid-credentials',
@@ -94,14 +109,17 @@ export const authConfig = {
         session.user.email = token.email;
         session.user.name = token.name;
         session.user.surname = token.surname as string | null | undefined;
+        session.user.currency = token.currency as string | undefined;
       }
       return session;
     },
     jwt: async ({ token, user }) => {
       if (user) {
+        console.log(user);
         token.email = user.email;
         token.name = user.name;
-        token.surname = user.surname ;
+        token.surname = user.surname;
+        token.currency = user.currency;
       }
       return token;
     },
