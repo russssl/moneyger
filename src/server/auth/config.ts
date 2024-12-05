@@ -1,9 +1,9 @@
 import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
 import DiscordProvider from "next-auth/providers/discord";
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { verifyPassword } from './util';
+import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyPassword } from "./util";
 
 import { db } from "@/server/db";
 import {
@@ -15,11 +15,11 @@ import {
 import { eq } from "drizzle-orm";
 
 export class NoPasswordError extends CredentialsSignin {
-  code = 'no-password';
+  code = "no-password";
 }
 
 export class SignInError extends CredentialsSignin {
-  code = 'invalid-credentials';
+  code = "invalid-credentials";
 }
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -27,17 +27,17 @@ export class SignInError extends CredentialsSignin {
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
       surname?: string | null;
       currency?: string;
-    } & DefaultSession['user'];
+    } & DefaultSession["user"];
   }
 }
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface User {
     surname?: string | null;
     currency?: string;
@@ -48,10 +48,10 @@ export const authConfig = {
   providers: [
     DiscordProvider,
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         if (!credentials.email || !credentials.password) {
@@ -67,7 +67,7 @@ export const authConfig = {
   
         if (user.password === null) {
           throw new SignInError({
-            code: 'no-password',
+            code: "no-password",
           });
         }
 
@@ -86,7 +86,7 @@ export const authConfig = {
           };
         } else {
           throw new SignInError({
-            code: 'invalid-credentials',
+            code: "invalid-credentials",
           });
         }
       },
@@ -120,10 +120,10 @@ export const authConfig = {
     },
   },
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 15 * 24 * 60 * 60, // 15 days
   },
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
 } satisfies NextAuthConfig;

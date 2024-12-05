@@ -1,33 +1,33 @@
-'use client'
-import * as React from 'react'
-import { SquareTerminal } from 'lucide-react'
-import type { Session } from 'next-auth'
-import { NavMain } from '@/components/nav-main'
-import { NavUser } from '@/components/nav-user'
-import AppLogo from '@/components/app-logo'
+"use client"
+import * as React from "react"
+import { SquareTerminal } from "lucide-react"
+import type { Session } from "next-auth"
+import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
+import AppLogo from "@/components/app-logo"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from '@/components/ui/sidebar'
+} from "@/components/ui/sidebar"
 
 const data = {
   navMain: [
     {
-      title: 'Wallets',
-      url: '#',
+      title: "Wallets",
+      url: "#",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: 'Cards',
-          url: '#',
+          title: "Cards",
+          url: "#",
         },
         {
-          title: 'Accounts',
-          url: '#',
+          title: "Accounts",
+          url: "#",
         },
       ],
     },

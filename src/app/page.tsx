@@ -1,4 +1,3 @@
-import ExpenseStatsCard from "@/components/app/expense";
 import WalletsAndCards from "@/components/app/wallets-and-cards";
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";

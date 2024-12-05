@@ -1,14 +1,14 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { getProviders, signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { Input } from './ui/input';
+"use client";
+import { useEffect, useState } from "react";
+import { getProviders, signIn } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "./ui/input";
 
-import { Label } from './ui/label';
-import { Alert, AlertDescription } from './ui/alert';
-import { LoadingSpinner } from './ui/loading';
-import LoadingButton from './loading-button';
-import { useRouter } from 'next/navigation';
+import { Label } from "./ui/label";
+import { Alert, AlertDescription } from "./ui/alert";
+import { LoadingSpinner } from "./ui/loading";
+import LoadingButton from "./loading-button";
+import { useRouter } from "next/navigation";
 
 type ClientSafeProvider = {
   id: string;
@@ -21,20 +21,20 @@ type ClientSafeProvider = {
 function getErrorMessage(error: string | undefined) {
   console.log(error);
   switch (error) {
-  case 'invalid-credentials':
-    return 'Invalid email or password';
-  case 'no-password':
-    return 'No password set';
+  case "invalid-credentials":
+    return "Invalid email or password";
+  case "no-password":
+    return "No password set";
   default:
-    return 'An error occurred';
+    return "An error occurred";
   }
 }
 export default function LoginProviders() {
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,16 +42,16 @@ export default function LoginProviders() {
       setLoading(true);
       e.preventDefault()
       if (!email || !password) {
-        setError('Please provide both email and password.');
+        setError("Please provide both email and password.");
         return;
       }
-      const res = await signIn('credentials', {
+      const res = await signIn("credentials", {
         redirect: false,
         email,
         password,
       });
       if (!res) {
-        setError('An error occurred');
+        setError("An error occurred");
         return;
       }
 
@@ -61,10 +61,10 @@ export default function LoginProviders() {
       }
 
       if (res.ok) {
-        router.push('/');        
+        router.push("/");        
       }
     } catch (error: unknown) {
-      setError((error as Error)?.message ?? 'An unknown error occurred');
+      setError((error as Error)?.message ?? "An unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -74,12 +74,12 @@ export default function LoginProviders() {
       try {
         const res = await getProviders();
         if (res) {
-          const credentialsProvider = Object.values(res).find((provider: ClientSafeProvider) => provider.id === 'credentials') ?? null;
+          const credentialsProvider = Object.values(res).find((provider: ClientSafeProvider) => provider.id === "credentials") ?? null;
           setCredentialsProvider(credentialsProvider);
-          setProviders(Object.fromEntries(Object.entries(res).filter(([_, provider]) => provider.id !== 'credentials')));
+          setProviders(Object.fromEntries(Object.entries(res).filter(([_, provider]) => provider.id !== "credentials")));
         }
       } catch (error) {
-        console.error('Error fetching providers:', error);
+        console.error("Error fetching providers:", error);
       }
     }
     void fetchProviders();

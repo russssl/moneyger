@@ -1,25 +1,25 @@
-'use client';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AlertCircle, Check, CircleDollarSign, Eye, EyeOff, X  } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+"use client";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { AlertCircle, Check, CircleDollarSign, Eye, EyeOff, X  } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import Link from 'next/link'
-import { useState, useMemo } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import Link from "next/link"
+import { useState, useMemo } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-import LoadingButton from '@/components/loading-button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { save } from './register';
+import LoadingButton from "@/components/loading-button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { save } from "./register";
 
 const checkStrength = (pass: string) => {
   const requirements = [
-    { regex: /.{8,}/, text: 'At least 8 characters' },
-    { regex: /[0-9]/, text: 'At least 1 number' },
-    { regex: /[a-z]/, text: 'At least 1 lowercase letter' },
-    { regex: /[A-Z]/, text: 'At least 1 uppercase letter' },
+    { regex: /.{8,}/, text: "At least 8 characters" },
+    { regex: /[0-9]/, text: "At least 1 number" },
+    { regex: /[a-z]/, text: "At least 1 lowercase letter" },
+    { regex: /[A-Z]/, text: "At least 1 uppercase letter" },
   ];
 
   return requirements.map((req) => ({
@@ -30,18 +30,18 @@ const checkStrength = (pass: string) => {
 
 
 const getStrengthColor = (score: number) => {
-  if (score === 0) return 'bg-border';
-  if (score <= 1) return 'bg-red-500';
-  if (score <= 2) return 'bg-orange-500';
-  if (score === 3) return 'bg-amber-500';
-  return 'bg-emerald-500';
+  if (score === 0) return "bg-border";
+  if (score <= 1) return "bg-red-500";
+  if (score <= 2) return "bg-orange-500";
+  if (score === 3) return "bg-amber-500";
+  return "bg-emerald-500";
 };
 
 const getStrengthText = (score: number) => {
-  if (score === 0) return 'Enter a password';
-  if (score <= 2) return 'Weak password';
-  if (score === 3) return 'Medium password';
-  return 'Strong password';
+  if (score === 0) return "Enter a password";
+  if (score <= 2) return "Weak password";
+  if (score === 3) return "Medium password";
+  return "Strong password";
 };
 
 function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {
@@ -56,19 +56,19 @@ function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, st
     </>
   );
 }
-const passwordButtonStyle = 'absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50';
+const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
 
 export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [name, setName] = useState('')
-  const [surname, setSurname] = useState('')
-  const [email, setEmail] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [currency, setCurrency] = useState('USD')
-  const [error, setError] = useState('')
+  const [name, setName] = useState("")
+  const [surname, setSurname] = useState("")
+  const [email, setEmail] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [currency, setCurrency] = useState("USD")
+  const [error, setError] = useState("")
   
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState("")
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isConfirmVisible, setIsConfirmVisible] = useState<boolean>(false);
 
@@ -77,11 +77,11 @@ export default function RegisterForm() {
   const router = useRouter();
 
   const [fieldErrors, setFieldErrors] = useState({
-    name: '',
-    surname: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
   });
 
   const strength = checkStrength(password);
@@ -93,15 +93,15 @@ export default function RegisterForm() {
   const register = async (e: React.FormEvent) => {
     e.preventDefault()
     setFieldErrors({
-      name: '',
-      surname: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
+      name: "",
+      surname: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
     });
 
     if (password !== confirmPassword) {
-      setFieldErrors(prev => ({ ...prev, confirmPassword: 'Passwords do not match' }));
+      setFieldErrors(prev => ({ ...prev, confirmPassword: "Passwords do not match" }));
       return;
     }
 
@@ -109,28 +109,28 @@ export default function RegisterForm() {
     try {
       const newUser = await save({name, surname, email, password}, currency);
       if (newUser == null) {
-        setError('An error occurred. Please try again.');
+        setError("An error occurred. Please try again.");
         return;
       }
 
-      const res = await signIn('credentials', {
+      const res = await signIn("credentials", {
         email: newUser.email,
         password: password,
         redirect: false,
       });
 
       if (!res) {
-        setError('An error occurred');
+        setError("An error occurred");
         return;
       }
 
       if (res.error) {
-        setError('An error occurred');
+        setError("An error occurred");
         return;
       }
 
       if (res.ok) {
-        router.push('/');        
+        router.push("/");        
       }
     } catch (error: unknown) {
       setError((error as Error).message);
@@ -195,7 +195,7 @@ export default function RegisterForm() {
                   id="password"
                   className="pe-9"
                   placeholder="Password"
-                  type={isVisible ? 'text' : 'password'}
+                  type={isVisible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -203,7 +203,7 @@ export default function RegisterForm() {
                   className={passwordButtonStyle}
                   type="button"
                   onClick={() => toggleVisibility()}
-                  aria-label={isVisible ? 'Hide password' : 'Show password'}
+                  aria-label={isVisible ? "Hide password" : "Show password"}
                   aria-pressed={isVisible}
                   aria-controls="password"
                 >
@@ -224,7 +224,7 @@ export default function RegisterForm() {
                   id="password-confirmation"
                   className="pe-9"
                   placeholder="Password"
-                  type={isConfirmVisible ? 'text' : 'password'}
+                  type={isConfirmVisible ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -232,7 +232,7 @@ export default function RegisterForm() {
                   className={passwordButtonStyle}
                   type="button"
                   onClick={() => toggleVisibility(true)}
-                  aria-label={isConfirmVisible ? 'Hide password' : 'Show password'}
+                  aria-label={isConfirmVisible ? "Hide password" : "Show password"}
                   aria-pressed={isVisible}
                   aria-controls="confirm-password"
                 >
@@ -293,10 +293,10 @@ export default function RegisterForm() {
                   ) : (
                     <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
                   )}
-                  <span className={`text-xs ${req.met ? 'text-emerald-600' : 'text-muted-foreground'}`}>
+                  <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
                     {req.text}
                     <span className="sr-only">
-                      {req.met ? ' - Requirement met' : ' - Requirement not met'}
+                      {req.met ? " - Requirement met" : " - Requirement not met"}
                     </span>
                   </span>
                 </li>

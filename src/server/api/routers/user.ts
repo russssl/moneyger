@@ -31,10 +31,10 @@ export const userRouter = createTRPCRouter({
       });
 
       if (existingUser) {
-        throw new Error('User already exists');
+        throw new Error("User already exists");
       }
       if (!input.password) {
-        throw new Error('Password is required');
+        throw new Error("Password is required");
       }
 
       const password = await hashPassword(input.password);
@@ -49,7 +49,7 @@ export const userRouter = createTRPCRouter({
       });
 
       return user ?? null;
-  }),
+    }),
 
   createUserSettings: publicProcedure.
     input(z.object({
