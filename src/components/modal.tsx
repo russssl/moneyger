@@ -39,7 +39,7 @@ interface CredenzaProps extends BaseProps {
   asChild?: true
 }
 
-const desktop = '(min-width: 768px)'
+const desktop = "(min-width: 768px)"
 
 const Credenza = ({ children, ...props }: RootCredenzaProps) => {
   const isDesktop = useMediaQuery(desktop)
@@ -120,7 +120,7 @@ const CredenzaTitle = ({ className, children, ...props }: CredenzaProps) => {
 
 const CredenzaBody = ({ className, children, ...props }: CredenzaProps) => {
   return (
-    <div className={cn('px-4 md:px-0', className)} {...props}>
+    <div className={cn("px-4 md:px-0", className)} {...props}>
       {children}
     </div>
   )

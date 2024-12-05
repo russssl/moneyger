@@ -5,6 +5,7 @@ import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -24,40 +25,31 @@ const chartData = [
   { month: "June", expenses: 214, income: 2000 },
 ]
 
-import { DateTime } from "luxon"
+import { DatePickerWithRange } from "../ui/date-range-picker"
+import { type DateRange } from "react-day-picker"
+
 const chartConfig = {
   expenses: {
     label: "Expenses",
     color: "hsl(var(--chart-1))",
   },
   income: {
-    label: "Income",
+    label: "Incomes",
     color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
-export default function ExpenseStatsCard() {
-  const [from, setFrom] = useState<string | null>()
-  // const setRange = (values: Range) => {
-  //   const from = DateTime.fromJSDate(values.range.from).toISODate()
-  //   if (from !== null && from !== undefined && typeof from === "string") {
-  //     setFrom(from)
-  //   }
-  //   if (values.range.to !== null && values.range.to !== undefined) {
-  //     const to = DateTime.fromJSDate(values.range.to).toISODate()
-  //     if (to !== null && to !== undefined && typeof to === "string") {
-  //       setTo(to)
-  //     }
-  //   }
-  //   console.log(from, to)
-  // }
+export default function ExpenseStatsCard({className}: {className?: string | undefined}) {
 
+  const [date, setDate] = useState<DateRange | undefined>();
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Expense Stats</CardTitle>
+        <CardDescription>Expenses and incomes</CardDescription>
       </CardHeader>
       <CardContent>
+        <DatePickerWithRange onDateChange={(v) => setDate(v)} className="mb-2 w-full"/>
         <ChartContainer config={chartConfig}>
           <LineChart
             accessibilityLayer

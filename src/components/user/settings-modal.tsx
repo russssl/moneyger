@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Credenza,
@@ -10,24 +10,24 @@ import {
   CredenzaHeader,
   CredenzaTitle,
   CredenzaTrigger,
-} from '@/components/modal';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
-import { Label } from '../ui/label';
-import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectItem, SelectLabel } from '../ui/select';
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import LoadingButton from '../loading-button';
-import { api } from '@/trpc/react';
-import { Currency } from '@/server/api/routers/currencies';
-import { LoadingSpinner } from '../ui/loading';
+} from "@/components/modal";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import { Label } from "../ui/label";
+import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectItem, SelectLabel } from "../ui/select";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import LoadingButton from "../loading-button";
+import { api } from "@/trpc/react";
+import { type Currency } from "@/server/api/routers/currencies";
+import { LoadingSpinner } from "../ui/loading";
 
 export default function SettingsModal() {
   const { data: session } = useSession();
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const {data: currencies} = api.currencies.getAvailableCurrencies.useQuery();
-  const [currency, setCurrency] = useState('');
+  const [currency, setCurrency] = useState("");
   const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
 
   const saveMutation = api.user.updateUserSettings.useMutation();
@@ -91,9 +91,9 @@ export default function SettingsModal() {
                   </SelectContent>
                 </Select>
               </div>
-              ): <div className='flex justify-center'>
-                  <LoadingSpinner />
-                </div>}
+            ): <div className='flex justify-center'>
+              <LoadingSpinner />
+            </div>}
           </CredenzaBody>
           <CredenzaFooter>
             <CredenzaClose asChild>
