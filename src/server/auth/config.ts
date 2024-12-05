@@ -70,6 +70,7 @@ export const authConfig = {
             code: 'no-password',
           });
         }
+
         // const userSettingsData = await db.query.userSettings.findFirst({
         //   where: eq(userSettings.userId, user.id),
         // });

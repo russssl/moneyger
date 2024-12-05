@@ -10,11 +10,40 @@ import { useState, useMemo } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-import { checkStrength, getStrengthColor, getStrengthText } from './registerHelpers';
-
-// import { save } from './userService';
 import LoadingButton from '@/components/loading-button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { save } from './register';
+
+const checkStrength = (pass: string) => {
+  const requirements = [
+    { regex: /.{8,}/, text: 'At least 8 characters' },
+    { regex: /[0-9]/, text: 'At least 1 number' },
+    { regex: /[a-z]/, text: 'At least 1 lowercase letter' },
+    { regex: /[A-Z]/, text: 'At least 1 uppercase letter' },
+  ];
+
+  return requirements.map((req) => ({
+    met: req.regex.test(pass),
+    text: req.text,
+  }));
+};
+
+
+const getStrengthColor = (score: number) => {
+  if (score === 0) return 'bg-border';
+  if (score <= 1) return 'bg-red-500';
+  if (score <= 2) return 'bg-orange-500';
+  if (score === 3) return 'bg-amber-500';
+  return 'bg-emerald-500';
+};
+
+const getStrengthText = (score: number) => {
+  if (score === 0) return 'Enter a password';
+  if (score <= 2) return 'Weak password';
+  if (score === 3) return 'Medium password';
+  return 'Strong password';
+};
+
 function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {
   return (
     <>
@@ -28,6 +57,7 @@ function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, st
   );
 }
 const passwordButtonStyle = 'absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50';
+
 
 export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)

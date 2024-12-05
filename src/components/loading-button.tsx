@@ -8,7 +8,7 @@ export default function LoadingButton({
   className,
   variant = 'default',
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { loading: boolean, variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'success' | 'ghost' | 'link' }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { loading: boolean, variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'success' | 'ghost' | 'link' | 'success' }) {
   return (
     <Button
       className={cn(className, 'relative flex items-center justify-center')}
@@ -17,7 +17,7 @@ export default function LoadingButton({
       {...props}
     >
       {loading && (
-        <Loader2 className='animate-spin'/>
+      <Loader2 className='animate-spin'/>
       )}
       {children}
     </Button>
