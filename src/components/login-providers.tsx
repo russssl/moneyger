@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { LoadingSpinner } from "./ui/loading";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 type ClientSafeProvider = {
   id: string;
@@ -29,6 +30,9 @@ function getErrorMessage(error: string | undefined) {
     return "An error occurred";
   }
 }
+
+const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
+
 export default function LoginProviders() {
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
@@ -36,6 +40,8 @@ export default function LoginProviders() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
@@ -115,18 +121,34 @@ export default function LoginProviders() {
                 required
               />
             </div>
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2">
               <Label htmlFor="password">
                 Password <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  className="pe-9"
+                  placeholder="Password"
+                  type={isVisible ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  className={passwordButtonStyle}
+                  type="button"
+                  onClick={() => setIsVisible(!isVisible)}
+                  aria-label={isVisible ? "Hide password" : "Show password"}
+                  aria-pressed={isVisible}
+                  aria-controls="password"
+                >
+                  {isVisible ? (
+                    <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                  ) : (
+                    <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
             {error && (
               <Alert variant="destructive" className='mt-3'>
