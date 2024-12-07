@@ -1,14 +1,15 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { getProviders, signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { Input } from './ui/input';
+"use client";
+import { useEffect, useState } from "react";
+import { getProviders, signIn } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "./ui/input";
 
-import { Label } from './ui/label';
-import { Alert, AlertDescription } from './ui/alert';
-import { LoadingSpinner } from './ui/loading';
-import LoadingButton from './loading-button';
-import { useRouter } from 'next/navigation';
+import { Label } from "./ui/label";
+import { Alert, AlertDescription } from "./ui/alert";
+import { LoadingSpinner } from "./ui/loading";
+import LoadingButton from "./loading-button";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 type ClientSafeProvider = {
   id: string;
@@ -21,37 +22,42 @@ type ClientSafeProvider = {
 function getErrorMessage(error: string | undefined) {
   console.log(error);
   switch (error) {
-  case 'invalid-credentials':
-    return 'Invalid email or password';
-  case 'no-password':
-    return 'No password set';
+  case "invalid-credentials":
+    return "Invalid email or password";
+  case "no-password":
+    return "No password set";
   default:
-    return 'An error occurred';
+    return "An error occurred";
   }
 }
+
+const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
+
 export default function LoginProviders() {
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       setLoading(true);
       e.preventDefault()
       if (!email || !password) {
-        setError('Please provide both email and password.');
+        setError("Please provide both email and password.");
         return;
       }
-      const res = await signIn('credentials', {
+      const res = await signIn("credentials", {
         redirect: false,
         email,
         password,
       });
       if (!res) {
-        setError('An error occurred');
+        setError("An error occurred");
         return;
       }
 
@@ -61,10 +67,10 @@ export default function LoginProviders() {
       }
 
       if (res.ok) {
-        router.push('/');        
+        router.push("/");        
       }
     } catch (error: unknown) {
-      setError((error as Error)?.message ?? 'An unknown error occurred');
+      setError((error as Error)?.message ?? "An unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -74,12 +80,12 @@ export default function LoginProviders() {
       try {
         const res = await getProviders();
         if (res) {
-          const credentialsProvider = Object.values(res).find((provider: ClientSafeProvider) => provider.id === 'credentials') ?? null;
+          const credentialsProvider = Object.values(res).find((provider: ClientSafeProvider) => provider.id === "credentials") ?? null;
           setCredentialsProvider(credentialsProvider);
-          setProviders(Object.fromEntries(Object.entries(res).filter(([_, provider]) => provider.id !== 'credentials')));
+          setProviders(Object.fromEntries(Object.entries(res).filter(([_, provider]) => provider.id !== "credentials")));
         }
       } catch (error) {
-        console.error('Error fetching providers:', error);
+        console.error("Error fetching providers:", error);
       }
     }
     void fetchProviders();
@@ -115,18 +121,34 @@ export default function LoginProviders() {
                 required
               />
             </div>
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2">
               <Label htmlFor="password">
                 Password <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  className="pe-9"
+                  placeholder="Password"
+                  type={isVisible ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  className={passwordButtonStyle}
+                  type="button"
+                  onClick={() => setIsVisible(!isVisible)}
+                  aria-label={isVisible ? "Hide password" : "Show password"}
+                  aria-pressed={isVisible}
+                  aria-controls="password"
+                >
+                  {isVisible ? (
+                    <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                  ) : (
+                    <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
             {error && (
               <Alert variant="destructive" className='mt-3'>

@@ -1,5 +1,5 @@
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
 export const env = !process.env.CI ? createEnv({
   /**
@@ -8,7 +8,7 @@ export const env = !process.env.CI ? createEnv({
    */
   server: {
     AUTH_SECRET:
-      process.env.NODE_ENV === 'production'
+      process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
     AUTH_DISCORD_ID: z.string(),
@@ -23,8 +23,8 @@ export const env = !process.env.CI ? createEnv({
     GOOGLE_CLIENT_SECRET: z.string(),
     // DATABASE_URL: z.string().url(),
     NODE_ENV: z
-      .enum(['development', 'test', 'production'])
-      .default('development'),
+      .enum(["development", "test", "production"])
+      .default("development"),
   },
 
   /**

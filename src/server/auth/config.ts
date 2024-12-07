@@ -1,26 +1,25 @@
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { CredentialsSignin, type DefaultSession, type NextAuthConfig } from 'next-auth';
-import DiscordProvider from 'next-auth/providers/discord';
-import GoogleProvider from 'next-auth/providers/google';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { eq } from 'drizzle-orm/expressions';
-import { db } from '@/server/db';
+import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+
+import DiscordProvider from "next-auth/providers/discord";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyPassword } from "./util";
+
+import { db } from "@/server/db";
 import {
   accounts,
   sessions,
   users,
   verificationTokens,
-} from '@/server/db/user';
-import { verifyPassword } from './util';
-import { userSettings } from '../db/userSettings';
-// import { verifyPassword } from "./util";
+} from "@/server/db/user";
+import { eq } from "drizzle-orm";
 
 export class NoPasswordError extends CredentialsSignin {
-  code = 'no-password';
+  code = "no-password";
 }
 
 export class SignInError extends CredentialsSignin {
-  code = 'invalid-credentials';
+  code = "invalid-credentials";
 }
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -28,17 +27,17 @@ export class SignInError extends CredentialsSignin {
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
       surname?: string | null;
       currency?: string;
-    } & DefaultSession['user'];
+    } & DefaultSession["user"];
   }
 }
 
-declare module 'next-auth' {
+declare module "next-auth" {
   interface User {
     surname?: string | null;
     currency?: string;
@@ -47,16 +46,12 @@ declare module 'next-auth' {
 
 export const authConfig = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
     DiscordProvider,
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
         if (!credentials.email || !credentials.password) {
@@ -72,25 +67,26 @@ export const authConfig = {
   
         if (user.password === null) {
           throw new SignInError({
-            code: 'no-password',
+            code: "no-password",
           });
         }
-        const userSettingsData = await db.query.userSettings.findFirst({
-          where: eq(userSettings.userId, user.id),
-        });
 
-        if (!userSettings) {
-          throw new Error('User settings not found');
-        }
+        // const userSettingsData = await db.query.userSettings.findFirst({
+        //   where: eq(userSettings.userId, user.id),
+        // });
+
+        // if (!userSettings) {
+        //   throw new Error('User settings not found');
+        // }
 
         if (await verifyPassword(credentials.password as string, user.password)) {
           return {
             ...user,
-            currency: userSettingsData?.currency ?? undefined,
+            // currency: userSettingsData?.currency ?? undefined,
           };
         } else {
           throw new SignInError({
-            code: 'invalid-credentials',
+            code: "invalid-credentials",
           });
         }
       },
@@ -115,7 +111,6 @@ export const authConfig = {
     },
     jwt: async ({ token, user }) => {
       if (user) {
-        console.log(user);
         token.email = user.email;
         token.name = user.name;
         token.surname = user.surname;
@@ -125,10 +120,10 @@ export const authConfig = {
     },
   },
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 15 * 24 * 60 * 60, // 15 days
   },
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
 } satisfies NextAuthConfig;

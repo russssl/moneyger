@@ -1,18 +1,18 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import LoginProviders from '@/components/login-providers';
-import { auth } from '@/server/auth';
-import { redirect } from 'next/navigation';
-import Link from 'next/link'
-import { type Metadata } from 'next';
-import ThemeToggle from '@/components/theme-toggle';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import LoginProviders from "@/components/login-providers";
+import { auth } from "@/server/auth";
+import { redirect } from "next/navigation";
+import Link from "next/link"
+import { type Metadata } from "next";
+import ThemeToggle from "@/components/theme-toggle";
 export const metadata: Metadata = {
-  title: 'Login',
-  description: 'Login to your account',
+  title: "Login",
+  description: "Login to your account",
 };
 export default async function Page() {
   const session = await auth();
   if (session) {
-    redirect('/');
+    redirect("/");
   }
   return (
     <div className="flex items-center justify-center min-h-screen w-full">
