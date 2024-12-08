@@ -39,8 +39,10 @@ export default function WalletsAndCards({className}: {className?: string | undef
     }
   }, [wallets, items]);
 
-  const handleEditClick = (id: string) => {
-    setSelectedId(id);
+  const openModal = (id?: string) => {
+    if (id) {
+      setSelectedId(id);
+    }
     setIsModalOpen(true);
   };
 
@@ -70,20 +72,20 @@ export default function WalletsAndCards({className}: {className?: string | undef
                 />
               ) : (
                 items.filter(item => item.type === activeTab).map(item => (
-                  <FinanceItem key={item.id} item={item} onEditClick={handleEditClick} />
+                  <FinanceItem key={item.id} item={item} onEditClick={openModal} />
                 ))
               )}
             </TabsContent>
           </Tabs>
           <div className="mt-4">
-            <AddNewWalletModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} id={selectedId}>
-              <Button className="w-full">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add New {activeTab === "wallet" ? "Wallet" : "Card"}
-              </Button>
-            </AddNewWalletModal>
           </div>
+          <Button className="w-full"  onClick={() => openModal()}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New {activeTab === "wallet" ? "Wallet" : "Card"}
+          </Button>
         </CardContent>
+        <AddNewWalletModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} id={selectedId}>
+        </AddNewWalletModal>
       </Card>
     </div>
   );

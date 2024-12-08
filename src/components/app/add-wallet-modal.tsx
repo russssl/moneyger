@@ -7,7 +7,6 @@ import {
   CredenzaFooter,
   CredenzaHeader,
   CredenzaTitle,
-  CredenzaTrigger,
 } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
@@ -20,49 +19,32 @@ import { type Currency } from "@/server/api/routers/currencies";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
 
-export default function AddNewWalletModal({className, children, isOpen, setIsOpen, id}: {className?: string | undefined, children: React.ReactNode, isOpen: boolean, setIsOpen: (isOpen: boolean) => void, id?: string | null }) { 
+export default function AddNewWalletModal({className, isOpen, setIsOpen, id}: {className?: string | undefined, isOpen: boolean, setIsOpen: (isOpen: boolean) => void, id?: string | null }) { 
   const { data: session } = useSession();
   const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
   const [currency, setCurrency] = useState("");
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(isOpen);
   const { data: currencies } = api.currencies.getAvailableCurrencies.useQuery(undefined, {
-    enabled: isModalOpen,
+    enabled: isOpen,
   });
 
   const {data: res} = api.wallets.getWalletById.useQuery({ id: id || null }, {
-    enabled: isModalOpen && !!id,
+    enabled: isOpen && !!id,
   });
-
-  useEffect(() => {
-    if (res) {
-      setWalletName(res.name || "");
-      setInitialBalance(res.balance?.toString() || "");
-      setCurrency(res.currency || "");
-    }
-  }, [res, id]);
+  
   
   useEffect(() => {
     if (currencies) {
       setCurrencyOptions(currencies);
     }
   }, [currencies]);
-
-  const saveWalletMutation = api.wallets.createWallet.useMutation();
-
-  useEffect(() => {
-    if (!isOpen) {
-      setWalletName("");
-      setInitialBalance("");
-      setCurrency("");
-    }
-    setIsModalOpen(isOpen);
-  }, [isOpen]);
-
+  
   if (!session) {
     return null;
   }
+
+  const saveWalletMutation = api.wallets.createWallet.useMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,10 +57,7 @@ export default function AddNewWalletModal({className, children, isOpen, setIsOpe
 
   return (
     <div className={className}>
-      <Credenza open={isModalOpen} onOpenChange={setIsOpen}>
-        <CredenzaTrigger asChild>
-          {children}
-        </CredenzaTrigger>
+      <Credenza open={isOpen} onOpenChange={setIsOpen}>
         <CredenzaContent>
           <CredenzaHeader>
             <CredenzaTitle>{id ? "Edit" : "Add new"} wallet</CredenzaTitle>
