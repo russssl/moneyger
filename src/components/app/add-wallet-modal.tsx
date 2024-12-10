@@ -2,7 +2,6 @@
 import {
   Credenza,
   CredenzaBody,
-  CredenzaClose,
   CredenzaContent,
   CredenzaFooter,
   CredenzaHeader,
@@ -10,7 +9,15 @@ import {
 } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectItem, SelectLabel } from "../ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+} from "../ui/select";
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import LoadingButton from "../loading-button";
@@ -19,7 +26,19 @@ import { type Currency } from "@/server/api/routers/currencies";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
 
-export default function AddNewWalletModal({className, isOpen, setIsOpen, id}: {className?: string | undefined, isOpen: boolean, setIsOpen: (isOpen: boolean) => void, id?: string | null }) { 
+export default function AddNewWalletModal({
+  className,
+  isOpen,
+  setIsOpen,
+  id,
+  onSave,
+}: {
+  className?: string | undefined;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+  id?: string | null;
+  onSave: (wallet: any) => void;
+}) {
   const { data: session } = useSession();
   const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
   const [currency, setCurrency] = useState("");
@@ -29,35 +48,67 @@ export default function AddNewWalletModal({className, isOpen, setIsOpen, id}: {c
     enabled: isOpen,
   });
 
-  const {data: res} = api.wallets.getWalletById.useQuery({ id: id || null }, {
-    enabled: isOpen && !!id,
-  });
-  
-  
+  const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
+    { id: id || null },
+    {
+      enabled: isOpen && !!id,
+    }
+  );
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      resetForm();
+    }
+  };
+
+  const resetForm = () => {
+    setWalletName("");
+    setInitialBalance("");
+    setCurrency("");
+  };
+
+  useEffect(() => {
+    if (res) {
+      setWalletName(res.name || "");
+      setInitialBalance(res.balance?.toString() || "");
+      setCurrency(res.currency || "");
+    }
+  }, [res]);
+
   useEffect(() => {
     if (currencies) {
       setCurrencyOptions(currencies);
     }
   }, [currencies]);
-  
+
   if (!session) {
     return null;
   }
 
-  const saveWalletMutation = api.wallets.createWallet.useMutation();
+  const saveWalletMutation = api.wallets.updateWallet.useMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveWalletMutation.mutate({
-      name: walletName,
-      balance: parseFloat(initialBalance),
-      currency,
-    });
+    saveWalletMutation.mutate(
+      {
+        name: walletName,
+        balance: parseFloat(initialBalance),
+        currency,
+        id: id || undefined,
+      },
+      {
+        onSuccess: (result) => {
+          onSave(result);
+          setIsOpen(false);
+        },
+      }
+    );
   };
 
   return (
     <div className={className}>
-      <Credenza open={isOpen} onOpenChange={setIsOpen}>
+      <Credenza open={isOpen} onOpenChange={handleOpenChange}>
         <CredenzaContent>
           <CredenzaHeader>
             <CredenzaTitle>{id ? "Edit" : "Add new"} wallet</CredenzaTitle>
@@ -71,24 +122,29 @@ export default function AddNewWalletModal({className, isOpen, setIsOpen, id}: {c
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <Label>Wallet Name</Label>
-                  <Input 
-                    placeholder="Main Wallet" 
-                    className="mt-1" 
+                  <Input
+                    placeholder="Main Wallet"
+                    className="mt-1"
                     value={walletName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWalletName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setWalletName(e.target.value)
+                    }
                   />
                 </div>
                 <div className="mb-4">
                   <Label>Initial Balance</Label>
-                  <Input 
+                  <Input
                     placeholder="5000"
                     className="mt-1"
                     value={initialBalance}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInitialBalance(e.target.value)}/>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setInitialBalance(e.target.value)
+                    }
+                  />
                 </div>
                 <div>
                   <Label>Currency</Label>
-                  { currencyOptions ? (
+                  {currencyOptions.length > 0 ? (
                     <Select onValueChange={setCurrency} value={currency}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a currency" />
@@ -108,18 +164,25 @@ export default function AddNewWalletModal({className, isOpen, setIsOpen, id}: {c
                     <div className="flex justify-center">
                       <LoadingSpinner />
                     </div>
-                  )
-                  }
+                  )}
                 </div>
                 <CredenzaFooter>
-                  <CredenzaClose asChild>
-                    <div className="flex mt-3">
-                      <Button type="button" className="me-3">Close</Button>
-                      <LoadingButton loading={false} type="submit">
-                        Save
-                      </LoadingButton>
-                    </div>
-                  </CredenzaClose>
+                  <div className="flex mt-3">
+                    <Button
+                      type="button"
+                      className="me-3"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Close
+                    </Button>
+                    <LoadingButton
+                      loading={saveWalletMutation.isPending}
+                      type="submit"
+                      disabled={isDataLoading || !walletName || !initialBalance || !currency}
+                    >
+                      Save
+                    </LoadingButton>
+                  </div>
                 </CredenzaFooter>
               </form>
             )}

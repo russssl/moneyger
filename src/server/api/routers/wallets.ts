@@ -56,8 +56,9 @@ export const walletRouter = createTRPCRouter({
       };
     }),
   
-  createWallet: protectedProcedure.
+  updateWallet: protectedProcedure.
     input(z.object({
+      id: z.string().optional(),
       name: z.string(),
       balance: z.number(),
       currency: z.string(),
@@ -67,13 +68,61 @@ export const walletRouter = createTRPCRouter({
       if (!loggedInUser) {
         throw new Error("User not logged in");
       }
-      const res_wallet = await ctx.db.insert(wallets).values({
-        userId: loggedInUser.id,
-        name: input.name,
-        balance: input.balance,
-        currency: input.currency,
-      }).execute();
-
+      let res_wallet;
+      if (input.id) {
+        const wallet = await ctx.db.query.wallets.findFirst({
+          where: and(
+            eq(wallets.userId, loggedInUser.id),
+            eq(wallets.id, input.id),
+          ),
+        });
+    
+        if (!wallet) {
+          throw new Error("Wallet not found");
+        }
+    
+        // update the wallet
+        res_wallet = await ctx.db.update(wallets).set({
+          name: input.name,
+          balance: input.balance,
+          currency: input.currency,
+        }).where(
+          and(
+            eq(wallets.userId, loggedInUser.id),
+            eq(wallets.id, input.id),
+          )).returning().execute();
+      } else {
+        res_wallet = await ctx.db.insert(wallets).values({
+          userId: loggedInUser.id,
+          name: input.name,
+          balance: input.balance,
+          currency: input.currency,
+        }).returning().execute();
+      }
+    
+      return res_wallet.map((wallet) => ({
+        name: wallet.name,
+        balance: wallet.balance,
+        currency: wallet.currency,
+        id: wallet.id,
+        type: "wallet",
+      }))[0];
+    }),
+  deleteWallet: protectedProcedure.
+    input(z.object({
+      id: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const loggedInUser = ctx.session.user;
+      if (!loggedInUser) {
+        throw new Error("User not logged in");
+      }
+      const res_wallet = await ctx.db.delete(wallets).where(
+        and(
+          eq(wallets.userId, loggedInUser.id),
+          eq(wallets.id, input.id),
+        )).execute();
+    
       return res_wallet;
     }),
 });
