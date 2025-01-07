@@ -10,8 +10,8 @@ export default async function HomePage() {
   }
   return (
     <>
-      <div>
-        <h1 className="text-4xl font-bold mb-8 ms-4 mt-4">Welcome back, {session.user.name}</h1>
+      <div className="ps-4">
+        <h1 className="text-4xl font-bold mb-8 mt-4">Welcome back, {session.user.name}</h1>
         {/* <ExpenseStatsCard className="ms-4"/> */}
         {/* <WalletsAndCards className="ms-4"/> */}
         <TransactionList />
