@@ -51,14 +51,18 @@ export const authConfig = {
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
+        username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        if (!credentials.email || !credentials.password) {
+        if ((!credentials.email && !credentials.username) || !credentials.password) {
           return null;
         }
+
+        const searchCondition = credentials.email ? eq(users.email, credentials.email as string) : eq(users.username, credentials.username as string);
+
         const user = await db.query.users.findFirst({
-          where: eq(users.email, credentials.email as string),
+          where: searchCondition,
         });
 
         if (!user) {
@@ -71,18 +75,9 @@ export const authConfig = {
           });
         }
 
-        // const userSettingsData = await db.query.userSettings.findFirst({
-        //   where: eq(userSettings.userId, user.id),
-        // });
-
-        // if (!userSettings) {
-        //   throw new Error('User settings not found');
-        // }
-
         if (await verifyPassword(credentials.password as string, user.password)) {
           return {
             ...user,
-            // currency: userSettingsData?.currency ?? undefined,
           };
         } else {
           throw new SignInError({

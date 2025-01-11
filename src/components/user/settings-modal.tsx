@@ -21,18 +21,25 @@ import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { type Currency } from "@/server/api/routers/currencies";
 import { LoadingSpinner } from "../ui/loading";
+import { Input } from "../ui/input";
 
 export default function SettingsModal() {
   const { data: session } = useSession();
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const {data: currencies} = api.currencies.getAvailableCurrencies.useQuery();
+  const [username, setUsername] = useState("");
   const [currency, setCurrency] = useState("");
+
   const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
 
   const saveMutation = api.user.updateUserSettings.useMutation();
+
   useEffect(() => {
     if (userSettings?.currency) {
       setCurrency(userSettings.currency);
+    }
+    if (userSettings?.username) {
+      setUsername(userSettings.username);
     }
   }, [userSettings]);
   
@@ -43,7 +50,7 @@ export default function SettingsModal() {
   }, [currencies]);
 
   const updateSettings = () => {
-    saveMutation.mutate({ currency });
+    saveMutation.mutate({ currency, username });
   };
 
   if (!session) {
@@ -72,24 +79,30 @@ export default function SettingsModal() {
           </CredenzaHeader>
           <CredenzaBody>
             {userSettings ? (
-              <div className="flex flex-col space-y-2">
-                <Label>Currency</Label>
-                <Select onValueChange={setCurrency} value={currency}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Currency</SelectLabel>
-                      {currencyOptions.map((currency) => (
-                        <SelectItem key={currency.code} value={currency.code}>
-                          {currency.name} ({currency.code})
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
+              <>
+                <div className="flex flex-col space-y-2">
+                  <Label>Username</Label>
+                  <Input id="username" placeholder='Username' onChange={(e) => setUsername(e.target.value)} value={username}/>
+                </div>
+                <div className="flex flex-col space-y-2 mt-4">
+                  <Label>Currency</Label>
+                  <Select onValueChange={setCurrency} value={currency}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Currency</SelectLabel>
+                        {currencyOptions.map((currency) => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.name} ({currency.code})
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
             ): <div className='flex justify-center'>
               <LoadingSpinner />
             </div>}

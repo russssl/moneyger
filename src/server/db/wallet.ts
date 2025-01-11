@@ -13,6 +13,8 @@ export const wallets = pgTable("wallet", {
     .notNull()
     .references(() => users.id),
   name: varchar("name", { length: 255 }),
+  description: varchar("description", { length: 255 }),
+  iconName: varchar("icon_name", { length: 255 }),
   balance: integer("balance"),
   currency: varchar("currency", { length: 255 }),
   created_at: timestamp("created_at").defaultNow(),

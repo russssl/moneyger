@@ -31,7 +31,16 @@ export const userRouter = createTRPCRouter({
       });
 
       if (existingUser) {
-        throw new Error("User already exists");
+        throw new Error("Email already in use");
+      }
+
+      if (input.username) {
+        const existingUsername = await ctx.db.query.users.findFirst({
+          where: eq(users.username, input.username),
+        });
+        if (existingUsername) {
+          throw new Error("Username already in use");
+        }
       }
       if (!input.password) {
         throw new Error("Password is required");
@@ -77,11 +86,20 @@ export const userRouter = createTRPCRouter({
         where: eq(userSettings.userId, userId),
       });
 
-      return userSettingsData ?? null;
+      const userData = await ctx.db.query.users.findFirst({
+        where: eq(users.id, userId),
+      });
+
+      if (!userSettingsData || !userData) {
+        return null;
+      }
+
+      return { ...userSettingsData, username: userData.username } ?? null;
     }),
   
   updateUserSettings: protectedProcedure.input(z.object({
     currency: z.string(),
+    username: z.string(),
   }))
     .mutation(async ({ ctx, input }) => {
       const user = ctx.session.user;
@@ -90,6 +108,10 @@ export const userRouter = createTRPCRouter({
       await ctx.db.update(userSettings).set({
         currency: input.currency ,
       }).where(eq(userSettings.userId, userId)).execute();
+
+      await ctx.db.update(users).set({
+        username: input.username,
+      }).where(eq(users.id, userId)).execute();
 
       const updatedUserSettings = await ctx.db.query.userSettings.findFirst({
         where: eq(userSettings.userId, userId),

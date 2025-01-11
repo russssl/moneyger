@@ -6,13 +6,14 @@ import { AlertCircle, Check, CircleDollarSign, Eye, EyeOff, X  } from "lucide-re
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import Link from "next/link"
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import LoadingButton from "@/components/loading-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { save } from "./register";
+import ThemeToggle from "@/components/theme-toggle";
 
 const checkStrength = (pass: string) => {
   const requirements = [
@@ -63,6 +64,7 @@ export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [name, setName] = useState("")
   const [surname, setSurname] = useState("")
+  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [currency, setCurrency] = useState("USD")
@@ -72,7 +74,13 @@ export default function RegisterForm() {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isConfirmVisible, setIsConfirmVisible] = useState<boolean>(false);
 
+  const [passwordsMatch, setPasswordsMatch] = useState(false)
+
   const toggleVisibility = (isConfirmationField?: boolean) => isConfirmationField ? setIsConfirmVisible((prev) => !prev) : setIsVisible((prev) => !prev);
+
+  useEffect(() => {
+    setPasswordsMatch(password === confirmPassword)
+  }, [password, confirmPassword])
 
   const router = useRouter();
 
@@ -107,7 +115,7 @@ export default function RegisterForm() {
 
     setIsSubmitting(true)
     try {
-      const newUser = await save({name, surname, email, password}, currency);
+      const newUser = await save({name, surname, email, password, username}, currency);
       if (newUser == null) {
         setError("An error occurred. Please try again.");
         return;
@@ -143,14 +151,16 @@ export default function RegisterForm() {
     <div className="flex items-center justify-center min-h-screen w-full">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold flex justify-between">Register</CardTitle>
+          <CardTitle className="text-2xl font-bold flex justify-between">
+            Register
+            <ThemeToggle />
+          </CardTitle>
           <CardDescription>Create a new account to get started.</CardDescription>
         </CardHeader>
         <CardContent>
           {
             error &&
             <Alert variant="destructive" className='mb-2'>
-              <AlertTitle>Error</AlertTitle>
               <AlertDescription>
                 {error}
               </AlertDescription>
@@ -178,6 +188,12 @@ export default function RegisterForm() {
                   </div>
                 )}
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="username">
+                Username <span className="text-destructive">*</span>
+              </Label>
+              <Input id="username" placeholder="Username" onChange={(e) => setUsername(e.target.value)}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">
@@ -244,29 +260,8 @@ export default function RegisterForm() {
                 </button>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="select-17">
-                Select your default currency <span className="text-destructive">*</span>
-              </Label>
-              <Select defaultValue="USD" onValueChange={(value) => setCurrency(value)}>
-                <SelectTrigger id="select-17" className="relative ps-9">
-                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[[disabled]]:opacity-50">
-                    <CircleDollarSign size={16} strokeWidth={2} aria-hidden="true"/>
-                  </div>
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="CAD">CAD</SelectItem>
-                  <SelectItem value="AUD">AUD</SelectItem>
-                  <SelectItem value="JPY">JPY</SelectItem>
-                  <SelectItem value="PLN">PLN</SelectItem>
-                  <SelectItem value="CHF">CHF</SelectItem>
-                </SelectContent>
-              </Select>
-
+            <div>
+              {!passwordsMatch && <p className="text-red-500">Passwords do not match</p>}
             </div>
             <div
               className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border"
@@ -302,6 +297,29 @@ export default function RegisterForm() {
                 </li>
               ))}
             </ul>
+            <div className="space-y-2">
+              <Label htmlFor="select-17">
+                Select your default currency <span className="text-destructive">*</span>
+              </Label>
+              <Select defaultValue="USD" onValueChange={(value) => setCurrency(value)}>
+                <SelectTrigger id="select-17" className="relative ps-9">
+                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[[disabled]]:opacity-50">
+                    <CircleDollarSign size={16} strokeWidth={2} aria-hidden="true"/>
+                  </div>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem value="CAD">CAD</SelectItem>
+                  <SelectItem value="AUD">AUD</SelectItem>
+                  <SelectItem value="JPY">JPY</SelectItem>
+                  <SelectItem value="PLN">PLN</SelectItem>
+                  <SelectItem value="CHF">CHF</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <LoadingButton loading={isSubmitting} className="w-full">
               Register
             </LoadingButton>

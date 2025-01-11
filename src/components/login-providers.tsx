@@ -37,6 +37,7 @@ export default function LoginProviders() {
   const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
   const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
   const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false);
@@ -47,13 +48,14 @@ export default function LoginProviders() {
     try {
       setLoading(true);
       e.preventDefault()
-      if (!email || !password) {
-        setError("Please provide both email and password.");
+      if ((!email && !username) || !password) {
+        setError("Please provide both email/username and password.");
         return;
       }
       const res = await signIn("credentials", {
         redirect: false,
         email,
+        username,
         password,
       });
       if (!res) {
@@ -104,6 +106,14 @@ export default function LoginProviders() {
     ) 
   }
 
+  const setUsernameOrEmail = (text: string) => {
+    if (text.includes("@")) {
+      setEmail(text)
+    } else {
+      setUsername(text)
+    }
+  }
+
   return (
     <>
       <form className="space-y-4" onSubmit={handleSubmit}>
@@ -111,13 +121,12 @@ export default function LoginProviders() {
           <div>
             <div className="space-y-2">
               <Label htmlFor="username">
-                Username <span className="text-destructive">*</span>
+                Username or email<span className="text-destructive">*</span>
               </Label>
               <Input
                 id="username"
-                type="email"
-                placeholder="Username"
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Username or email"
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
                 required
               />
             </div>

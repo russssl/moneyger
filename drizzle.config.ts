@@ -1,18 +1,18 @@
-import { type Config } from 'drizzle-kit';
+import { type Config } from "drizzle-kit";
 
-import { env } from '@/env';
+import { env } from "@/env";
 
 if (!env) {
-  throw new Error('Environment variables not found');
+  throw new Error("Environment variables not found");
 }
 export default {
-  schema: './src/server/db/schema.ts',
-  dialect: 'postgresql',
+  schema: "./src/server/db/schema.ts",
+  dialect: "postgresql",
   dbCredentials: {
     host: env.POSTGRES_HOST,
     user: env.POSTGRES_USER,
     password: env.POSTGRES_PASSWORD,
     database: env.POSTGRES_DB,
   },
-  tablesFilter: ['manager_v2_*'],
+  tablesFilter: ["manager_v2_*"],
 } satisfies Config;
