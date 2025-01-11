@@ -10,7 +10,7 @@ import { LoadingSpinner } from "./ui/loading";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-
+import { usePostHog } from "posthog-js/react";
 type ClientSafeProvider = {
   id: string;
   name: string;
@@ -42,7 +42,9 @@ export default function LoginProviders() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-
+  
+  const posthog = usePostHog()
+  
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
@@ -58,6 +60,11 @@ export default function LoginProviders() {
         username,
         password,
       });
+
+      if (res) {
+        posthog?.capture("user_logged_in", { email, username });
+      }
+
       if (!res) {
         setError("An error occurred");
         return;

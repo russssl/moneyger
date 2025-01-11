@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { SessionProvider } from "next-auth/react";
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "next-themes";
+import { PostHogProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "Manager",
@@ -31,7 +32,11 @@ export default function RootLayout({
           disableTransitionOnChange>
           <TRPCReactProvider>
             <SessionProvider>
-              <SessionWrapper>{children}</SessionWrapper>
+              <SessionWrapper>
+                <PostHogProvider>
+                  {children}
+                </PostHogProvider>
+              </SessionWrapper>
             </SessionProvider>
           </TRPCReactProvider>
         </ThemeProvider>

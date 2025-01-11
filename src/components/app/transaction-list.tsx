@@ -9,7 +9,6 @@ import { type Transaction } from "@/server/db/transaction"
 import { api } from "@/trpc/react"
 import { Button } from "../ui/button"
 import AddNewTransactionModal from "./transactions/add-new-transaction-modal"
-
 export function TransactionList() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)

@@ -4,7 +4,7 @@ import {
 } from "@/server/api/trpc";
 import { type Transaction, transactions } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
-import { and, eq } from "drizzle-orm";
+import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
 
 export const transactionsRouter = createTRPCRouter({
@@ -25,7 +25,9 @@ export const transactionsRouter = createTRPCRouter({
           eq(transactions.userId, loggedInUser.id),
           walletId ? eq(transactions.walletId, walletId) : undefined,
           transaction_date ? eq(transactions.transaction_date, transaction_date) : undefined,
-        )
+          not(eq(transactions.type, "adjustment"))
+        ),
+        orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
       });
 
       return res_transactions.map((transaction) => ({
@@ -34,6 +36,8 @@ export const transactionsRouter = createTRPCRouter({
         description: transaction.description,
         category: transaction.category,
         created_at: transaction.created_at,
+        note: transaction.note,
+        type: transaction.type,
         id: transaction.id,
       })) as Transaction[];
     }),
@@ -52,7 +56,12 @@ export const transactionsRouter = createTRPCRouter({
         where: (transaction) => input.id ? and(
           eq(transaction.userId, loggedInUser.id),
           eq(transaction.id, input?.id),
-        ) : eq(transaction.userId, loggedInUser.id),
+          not(eq(transaction.type, "adjustment"))
+        ) : and(
+          eq(transaction.userId, loggedInUser.id),
+          not(eq(transaction.type, "adjustment"))
+        ),
+        orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
       });
 
       if (!res_transaction) {
@@ -64,6 +73,8 @@ export const transactionsRouter = createTRPCRouter({
         description: res_transaction.description,
         category: res_transaction.category,
         created_at: res_transaction.created_at,
+        note: res_transaction.note,
+        type: res_transaction.type,
         id: res_transaction.id,
       };
     }),
@@ -76,6 +87,8 @@ export const transactionsRouter = createTRPCRouter({
       walletId: z.string(),
       description: z.string(),
       category: z.string(),
+      note: z.string().optional(),
+      type: z.enum(["income", "expense", "transfer", "adjustment"]),
     })).mutation(async ({ ctx, input }) => {
       const loggedInUser = ctx.session.user;
 
@@ -112,6 +125,8 @@ export const transactionsRouter = createTRPCRouter({
           transaction_date: input.transaction_date,
           description: input.description,
           category: input.category,
+          note: input.note,
+          type: input.type,
         }).where(
           and(
             eq(transactions.userId, loggedInUser.id),
@@ -126,15 +141,22 @@ export const transactionsRouter = createTRPCRouter({
           transaction_date: input.transaction_date,
           description: input.description,
           category: input.category,
+          note: input.note,
+          type: input.type,
         }).returning().execute();
       }
 
+      if (input.type === "adjustment") {
+        return;
+      }
       return res_transaction.map((transaction) => ({
         amount: transaction.amount,
         transaction_date: transaction.transaction_date,
         description: transaction.description,
         category: transaction.category,
         created_at: transaction.created_at,
+        note: transaction.note,
+        type: transaction.type,
         id: transaction.id,
       }));
     })
