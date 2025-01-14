@@ -79,7 +79,7 @@ export default function RegisterForm() {
   const toggleVisibility = (isConfirmationField?: boolean) => isConfirmationField ? setIsConfirmVisible((prev) => !prev) : setIsVisible((prev) => !prev);
 
   useEffect(() => {
-    setPasswordsMatch(password === confirmPassword)
+    setPasswordsMatch(password === confirmPassword && (confirmPassword.length > 0 && password.length > 0))
   }, [password, confirmPassword])
 
   const router = useRouter();

@@ -43,7 +43,7 @@ export default function AddNewWalletModal({
   const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
   const [currency, setCurrency] = useState("");
   const [walletName, setWalletName] = useState("");
-  const [initialBalance, setInitialBalance] = useState("");
+  const [initialBalance, setInitialBalance] = useState<number | null>(null);
   const { data: currencies } = api.currencies.getAvailableCurrencies.useQuery(undefined, {
     enabled: isOpen,
   });
@@ -64,14 +64,13 @@ export default function AddNewWalletModal({
 
   const resetForm = () => {
     setWalletName("");
-    setInitialBalance("");
     setCurrency("");
+    setInitialBalance(null);
   };
 
   useEffect(() => {
     if (res) {
       setWalletName(res.name || "");
-      setInitialBalance(res.balance?.toString() || "");
       setCurrency(res.currency || "");
     }
   }, [res]);
@@ -93,7 +92,7 @@ export default function AddNewWalletModal({
     saveWalletMutation.mutate(
       {
         name: walletName,
-        balance: parseFloat(initialBalance),
+        initialBalance: initialBalance || undefined,
         currency,
         id: id || undefined,
       },
@@ -136,13 +135,14 @@ export default function AddNewWalletModal({
                   <Input
                     placeholder="5000"
                     className="mt-1"
-                    value={initialBalance}
+                    type="number"
+                    value={initialBalance?.toString() || ""}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setInitialBalance(e.target.value)
+                      setInitialBalance(parseFloat(e.target.value))
                     }
                   />
                 </div>
-                <div>
+                <div className="mb-4">
                   <Label>Currency</Label>
                   {currencyOptions.length > 0 ? (
                     <Select onValueChange={setCurrency} value={currency}>
@@ -178,7 +178,7 @@ export default function AddNewWalletModal({
                     <LoadingButton
                       loading={saveWalletMutation.isPending}
                       type="submit"
-                      disabled={isDataLoading || !walletName || !initialBalance || !currency}
+                      disabled={isDataLoading || !walletName || !currency}
                     >
                       Save
                     </LoadingButton>

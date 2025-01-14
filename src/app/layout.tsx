@@ -40,7 +40,6 @@ export default function RootLayout({
             </SessionProvider>
           </TRPCReactProvider>
         </ThemeProvider>
-        {/* </div> */}
       </body>
     </html>
   );

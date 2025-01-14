@@ -2,9 +2,11 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
+import { transactions as transactionsSchema } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import {  getFormattedWallets } from "../services/wallets";
 
 export const walletRouter = createTRPCRouter({
   getWallets: protectedProcedure.
@@ -15,14 +17,10 @@ export const walletRouter = createTRPCRouter({
       }
       const res_wallets = await ctx.db.query.wallets.findMany({
         where: eq(wallets.userId, loggedInUser.id),
+
       })
-      return res_wallets.map((wallet) => ({
-        name: wallet.name,
-        balance: wallet.balance,
-        currency: wallet.currency,
-        id: wallet.id,
-        type: "wallet",
-      }));
+
+      return await getFormattedWallets(res_wallets);
     }),
 
   getWalletById: protectedProcedure.
@@ -49,7 +47,6 @@ export const walletRouter = createTRPCRouter({
       }
       return {
         name: res_wallet.name,
-        balance: res_wallet.balance,
         currency: res_wallet.currency,
         id: res_wallet.id,
         type: "wallet",
@@ -60,12 +57,13 @@ export const walletRouter = createTRPCRouter({
     input(z.object({
       id: z.string().optional(),
       name: z.string(),
-      balance: z.number(),
+      initialBalance: z.number().optional(),
       currency: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
       const loggedInUser = ctx.session.user;
-      if (!loggedInUser) {
+      if (!loggedInUser.id) {
+        console.log(loggedInUser);
         throw new Error("User not logged in");
       }
       let res_wallet;
@@ -84,7 +82,6 @@ export const walletRouter = createTRPCRouter({
         // update the wallet
         res_wallet = await ctx.db.update(wallets).set({
           name: input.name,
-          balance: input.balance,
           currency: input.currency,
         }).where(
           and(
@@ -95,18 +92,23 @@ export const walletRouter = createTRPCRouter({
         res_wallet = await ctx.db.insert(wallets).values({
           userId: loggedInUser.id,
           name: input.name,
-          balance: input.balance,
           currency: input.currency,
         }).returning().execute();
+
+        if (input.initialBalance && res_wallet[0]) {
+          await ctx.db.insert(transactions).values({
+            walletId: res_wallet[0].id,
+            amount: input.initialBalance,
+            type: "adjustment",
+            userId: loggedInUser.id,
+          }).execute();
+        }
       }
-    
-      return res_wallet.map((wallet) => ({
-        name: wallet.name,
-        balance: wallet.balance,
-        currency: wallet.currency,
-        id: wallet.id,
-        type: "wallet",
-      }))[0];
+      
+      if (!res_wallet) {
+        throw new Error("Wallet not found");
+      }
+      return await getFormattedWallets(res_wallet);
     }),
   deleteWallet: protectedProcedure.
     input(z.object({
@@ -117,12 +119,28 @@ export const walletRouter = createTRPCRouter({
       if (!loggedInUser) {
         throw new Error("User not logged in");
       }
-      const res_wallet = await ctx.db.delete(wallets).where(
-        and(
-          eq(wallets.userId, loggedInUser.id),
+
+      await ctx.db.transaction(async (tx) => {
+        const wallet = await tx.query.wallets.findFirst({
+          where: and(
+            eq(wallets.userId, loggedInUser.id),
+            eq(wallets.id, input.id),
+          ),
+        });
+
+        if (!wallet) {
+          throw new Error("Wallet not found");
+        }
+        
+        await tx.delete(transactionsSchema).where(
+          eq(transactionsSchema.walletId, wallet.id),
+        ).execute();
+        
+        await tx.delete(wallets).where(
           eq(wallets.id, input.id),
-        )).execute();
-    
-      return res_wallet;
+        ).execute();
+
+        return wallet;
+      })
     }),
 });

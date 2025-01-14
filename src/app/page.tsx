@@ -9,13 +9,14 @@ export default async function HomePage() {
     redirect("/login");
   }
   return (
-    <>
-      <div className="ps-4">
-        <h1 className="text-4xl font-bold mb-8 mt-4">Welcome back, {session.user.name}</h1>
-        {/* <ExpenseStatsCard className="ms-4"/> */}
-        {/* <WalletsAndCards className="ms-4"/> */}
+    <div className="container pb-24 md:pb-0 md:pl-6">
+      <div className="flex flex-col gap-6 px-4 md:px-0">
+        <h1 className="text-2xl md:text-4xl font-bold mt-4">
+          Welcome back, {session.user.name}
+        </h1>
+        <WalletsAndCards />
         <TransactionList />
       </div>
-    </>
+    </div>
   );
 }
