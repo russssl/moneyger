@@ -96,7 +96,7 @@ export const walletRouter = createTRPCRouter({
         }).returning().execute();
 
         if (input.initialBalance && res_wallet[0]) {
-          await ctx.db.insert(transactions).values({
+          await ctx.db.insert(transactionsSchema).values({
             walletId: res_wallet[0].id,
             amount: input.initialBalance,
             type: "adjustment",
