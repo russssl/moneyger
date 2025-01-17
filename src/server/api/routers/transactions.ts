@@ -2,7 +2,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { type Transaction, transactions } from "@/server/db/transaction";
+import { transactions } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
 import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
@@ -27,19 +27,31 @@ export const transactionsRouter = createTRPCRouter({
           transaction_date ? eq(transactions.transaction_date, transaction_date) : undefined,
           not(eq(transactions.type, "adjustment"))
         ),
+        with: {
+          wallet: {
+            columns: {
+              currency: true,
+              name: true,
+            },
+          },
+        },
         orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
       });
-
       return res_transactions.map((transaction) => ({
+        id: transaction.id,
+        type: transaction.type,
+        description: transaction.description,
+        userId: transaction.userId,
+        created_at: transaction.created_at,
+        updated_at: transaction.updated_at,
+        walletId: transaction.walletId,
         amount: transaction.amount,
         transaction_date: transaction.transaction_date,
-        description: transaction.description,
-        category: transaction.category,
-        created_at: transaction.created_at,
         note: transaction.note,
-        type: transaction.type,
-        id: transaction.id,
-      })) as Transaction[];
+        category: transaction.category,
+        currency: transaction.wallet?.currency,
+        walletName: transaction.wallet?.name,
+      }));
     }),
 
   getTransactionById: protectedProcedure

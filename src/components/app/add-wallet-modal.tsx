@@ -22,9 +22,9 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
-import { type Currency } from "@/server/api/routers/currencies";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
+import { useCurrencies } from "@/hooks/use-currencies";
 
 export default function AddNewWalletModal({
   className,
@@ -40,14 +40,11 @@ export default function AddNewWalletModal({
   onSave: (wallet: any) => void;
 }) {
   const { data: session } = useSession();
-  const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
   const [currency, setCurrency] = useState("");
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
-  const { data: currencies } = api.currencies.getAvailableCurrencies.useQuery(undefined, {
-    enabled: isOpen,
-  });
 
+  const currencyOptions = useCurrencies();
   const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
     { id: id || null },
     {
@@ -74,12 +71,6 @@ export default function AddNewWalletModal({
       setCurrency(res.currency || "");
     }
   }, [res]);
-
-  useEffect(() => {
-    if (currencies) {
-      setCurrencyOptions(currencies);
-    }
-  }, [currencies]);
 
   if (!session) {
     return null;

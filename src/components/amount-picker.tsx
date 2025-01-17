@@ -1,41 +1,64 @@
 "use client";
 
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Button, Group, Input, Label, NumberField } from "react-aria-components";
+import * as React from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { ChevronUpIcon, ChevronDownIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface AmountPickerProps {
-  value?: number;
-  onChange?: (value: number) => void;
-  label?: string;
+  value?: number
+  onChange?: (value: number) => void
+  label?: string
+  currencySymbol?: string
 }
 
-export default function AmountPicker({ value, onChange, label = "Amount" }: AmountPickerProps) {
+export default function AmountPicker({ value = 0, onChange, label = "Amount", currencySymbol }: AmountPickerProps) {
+  const handleIncrement = () => onChange?.(value + 1)
+  const handleDecrement = () => onChange?.(value - 1)
+
   return (
-    <NumberField
-      minValue={0}
-      value={value}
-      onChange={onChange}
-    >
-      <div className="space-y-2">
-        <Label className="text-sm font-medium text-foreground">{label}</Label>
-        <Group className="relative inline-flex h-9 w-full items-center overflow-hidden whitespace-nowrap rounded-lg border border-input text-sm shadow-sm shadow-black/5 transition-shadow data-[focus-within]:border-ring data-[disabled]:opacity-50 data-[focus-within]:outline-none data-[focus-within]:ring-[3px] data-[focus-within]:ring-ring/20">
-          <Input className="flex-1 bg-background px-3 py-2 tabular-nums text-foreground focus:outline-none pe-7" />
-          <div className="absolute right-0 flex h-full flex-col">
+    <div className="flex flex-col space-y-2">
+      <Label>{label}</Label>
+      <div className="flex">
+        {currencySymbol && (
+          <div className="flex items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground">
+            {currencySymbol}
+          </div>
+        )}
+        <div className="relative flex-1">
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange?.(Number(e.target.value))}
+            className={cn(
+              "pr-7",
+              currencySymbol ? "rounded-l-none" : "rounded-l-md"
+            )}
+          />
+          <div className="absolute right-0 top-0 flex h-full flex-col border-l">
             <Button
-              slot="increment"
-              className="flex h-1/2 w-6 items-center justify-center border-s border-input bg-background text-sm text-muted-foreground/80 transition-shadow hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+              variant="ghost"
+              size="icon"
+              className="h-1/2 rounded-none rounded-tr-md border-b px-2 hover:bg-accent hover:text-accent-foreground"
+              onClick={handleIncrement}
             >
-              <ChevronUp size={13} strokeWidth={2} aria-hidden="true" />
+              <ChevronUpIcon className="h-3 w-3" />
+              <span className="sr-only">Increase</span>
             </Button>
             <Button
-              slot="decrement"
-              className="flex h-1/2 w-6 items-center justify-center border-s border-t border-input bg-background text-sm text-muted-foreground/80 transition-shadow hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+              variant="ghost"
+              size="icon"
+              className="h-1/2 rounded-none rounded-br-md px-2 hover:bg-accent hover:text-accent-foreground"
+              onClick={handleDecrement}
             >
-              <ChevronDown size={13} strokeWidth={2} aria-hidden="true" />
+              <ChevronDownIcon className="h-3 w-3" />
+              <span className="sr-only">Decrease</span>
             </Button>
           </div>
-        </Group>
+        </div>
       </div>
-    </NumberField>
-  );
+    </div>
+  )
 }

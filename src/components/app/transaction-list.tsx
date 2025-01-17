@@ -3,15 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { NoItems } from "./no-items"
-import { Banknote } from "lucide-react"
+import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote } from "lucide-react"
 import { useEffect, useState } from "react"
 import { type Transaction } from "@/server/db/transaction"
 import { api } from "@/trpc/react"
 import { Button } from "../ui/button"
 import AddNewTransactionModal from "./transactions/add-new-transaction-modal"
-
+import { DateTime } from "luxon"
+import { useFormattedCurrency } from "@/hooks/use-currencies"
 export function TransactionList() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState<(Transaction & { currency: string | null, walletName: string | null })[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { data: transactionsData, isLoading } = api.transactions.getTransactions.useQuery()
@@ -35,25 +36,26 @@ export function TransactionList() {
                 <TableHead>Date</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Wallet</TableHead>
+                <TableHead className="text-right">Type</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {transactions.map((transaction) => (
                 <TableRow key={transaction.id}>
-                  {transaction.transaction_date ? (<TableCell>{transaction.transaction_date?.getDate()}</TableCell>) : <div>-</div>}
+                  {transaction.transaction_date ? (<TableCell>{DateTime.fromJSDate(transaction.transaction_date).toFormat("dd/MM/yy")}</TableCell>) : <div>-</div>}
                   <TableCell>{transaction.description}</TableCell>
 
-                  {transaction.amount ? (<TableCell className="text-right">${transaction?.amount?.toFixed(2)}</TableCell>) : null}
+                  {transaction.amount ? (<TableCell className="text-right">
+                    {useFormattedCurrency(transaction.amount, transaction.currency)}
+                    </TableCell>) : null}
+                  <TableCell className="text-right">{transaction.walletName}</TableCell>
                   <TableCell>
-                    <Badge 
-                    // variant={
-                    //   transaction.status === 'completed' ? 'default' :
-                    //   transaction.status === 'pending' ? 'secondary' : 'destructive'
-                    // }
-                    >
-                    wef
-                    </Badge>
+                    <div className="flex justify-center items-center">
+                      {transaction.type === "income" && <ArrowDownIcon className="w-4 h-4 text-green-500" />}
+                      {transaction.type === "expense" && <ArrowUpIcon className="w-4 h-4 text-red-500" />}
+                      {transaction.type === "transfer" && <ArrowLeftRightIcon className="w-4 h-4 text-blue-500" />}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -62,7 +64,7 @@ export function TransactionList() {
             <div className="p-6 text-center text-muted-foreground">
               <NoItems title="No transactions found" icon={Banknote}/>
             </div>}
-          <Button onClick={() => setIsModalOpen(true)} className="w-full">
+          <Button onClick={() => setIsModalOpen(true)} className="w-full mt-4">
             Add New Transaction
           </Button>
         </CardContent>

@@ -19,20 +19,19 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
-import { type Currency } from "@/server/api/routers/currencies";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
+import { useCurrencies } from "@/hooks/use-currencies";
 
 export default function SettingsModal() {
   const { data: session } = useSession();
   const { data: userSettings } = api.user.getUserSettings.useQuery();
-  const {data: currencies} = api.currencies.getAvailableCurrencies.useQuery();
   const [username, setUsername] = useState("");
   const [currency, setCurrency] = useState("");
 
-  const [currencyOptions, setCurrencyOptions] = useState<Currency[]>([]);
-
   const saveMutation = api.user.updateUserSettings.useMutation();
+
+  const currencyOptions = useCurrencies();
 
   useEffect(() => {
     if (userSettings?.currency) {
@@ -42,12 +41,6 @@ export default function SettingsModal() {
       setUsername(userSettings.username);
     }
   }, [userSettings]);
-  
-  useEffect(() => {
-    if (currencies) {
-      setCurrencyOptions(currencies);
-    }
-  }, [currencies]);
 
   const updateSettings = () => {
     saveMutation.mutate({ currency, username });
