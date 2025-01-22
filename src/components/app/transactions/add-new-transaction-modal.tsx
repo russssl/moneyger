@@ -18,7 +18,7 @@ import { ArrowUpIcon, ArrowDownIcon, ArrowLeftRightIcon } from "lucide-react";
 import AmountPicker from "@/components/amount-picker";
 import { api } from "@/trpc/react";
 import { useEffect } from "react";
-import {useCurrencies} from "@/hooks/use-currencies";
+import {currencies, type Currency} from "@/hooks/currencies";
 type TransactionType = "income" | "expense" | "transfer";
 
 interface AddNewTransactionModalProps {
@@ -34,13 +34,13 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
   const [selectedWallet, setSelectedWallet] = useState<string>();
   const [selectedCategory, setSelectedCategory] = useState<string>();
   const [selectedCurrency, setSelectedCurrency] = useState<string>();
-  const [currencyData, setCurrencyData] = useState<any | null>(null);
+  const [currencyData, setCurrencyData] = useState<Currency | undefined>(undefined);
   const [description, setDescription] = useState<string>("");
 
   const updateTransactionMutation = api.transactions.updateTransaction.useMutation();
   useEffect(() => {
     if (selectedCurrency) {
-      const currencyData = useCurrencies(selectedCurrency);
+      const currencyData = currencies(selectedCurrency);
       setCurrencyData(currencyData);
     }
   }, [selectedCurrency]);
@@ -57,18 +57,21 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
   
   const selectWalletAndSetCurrency = (walletId: string) => {
     setSelectedWallet(walletId);
-    setSelectedCurrency(wallets.find((wallet) => wallet.id === walletId)?.currency);
+    const wallet: string = wallets.find((wallet) => wallet.id === walletId);
+    setSelectedCurrency(wallet);
   }
   
   useEffect(() => {
     if (!open) {
       setSelectedWallet(undefined);
       setSelectedCurrency(undefined);
-      setCurrencyData(null);
+      setCurrencyData(undefined);
       setAmount(0);
       setDate(undefined);
     }
   }, [open]);
+
+  const canSave = !selectedWallet || !date || !selectedCategory;
 
   function addTransaction() {
     if (!selectedWallet || !date || !selectedCategory) {
@@ -98,6 +101,11 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
         </CredenzaHeader>
         <CredenzaBody>
           <div className="grid gap-6">
+            {wallets.length === 0 && (
+              <div className="p-4 bg-red-100 text-red-800 rounded-lg">
+                You need to create a wallet before you can add a transaction.
+              </div>
+            )}
             <div className="flex gap-2 p-1 bg-muted rounded-lg">
               <Button
                 variant={transactionType === "expense" ? "default" : "ghost"}
@@ -127,13 +135,15 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
 
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <Label htmlFor="date">Date</Label>
                 <DatePicker label="Date" value={date} onChange={setDate} />
               </div>
               <div>
+                <Label htmlFor="amount">Amount</Label>
                 <AmountPicker value={amount} onChange={setAmount} currencySymbol={currencyData?.symbol}/>
               </div>
             </div>
-            <div className="space-y-2">
+            { wallets.length > 0 ? <div className="space-y-2">
               <Label htmlFor="wallet">Wallet</Label>
               <Select onValueChange={(value) => selectWalletAndSetCurrency(value)}>
                 <SelectTrigger>
@@ -147,7 +157,7 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> : null }
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -184,7 +194,7 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => addTransaction()}>
+          <Button onClick={() => addTransaction()} disabled={canSave}>
             Add Transaction
           </Button>
         </CredenzaFooter>

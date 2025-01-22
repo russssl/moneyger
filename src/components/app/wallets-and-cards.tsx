@@ -59,9 +59,10 @@ export default function WalletsAndCards({className}: {className?: string | undef
         updatedItems[existingIndex] = newItem;
         return updatedItems;
       }
-      return [...prevItems, newItem];
+      return [...prevItems, newItem].flat();
     });
     setSelectedId(null);
+    setIsModalOpen(false);
   };
 
   return (
@@ -103,7 +104,7 @@ export default function WalletsAndCards({className}: {className?: string | undef
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} id={selectedId} onSave={saveWallets}/>
+      <AddNewWalletModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} id={selectedId} onSave={(wallets: WalletsRes) => saveWallets(wallets)}/>
     </div>
   );
 }

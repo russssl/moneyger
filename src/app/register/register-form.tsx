@@ -79,6 +79,10 @@ export default function RegisterForm() {
   const toggleVisibility = (isConfirmationField?: boolean) => isConfirmationField ? setIsConfirmVisible((prev) => !prev) : setIsVisible((prev) => !prev);
 
   useEffect(() => {
+    if (!password) {
+      setPasswordsMatch(true)
+      return
+    }
     setPasswordsMatch(password === confirmPassword && (confirmPassword.length > 0 && password.length > 0))
   }, [password, confirmPassword])
 
@@ -261,7 +265,12 @@ export default function RegisterForm() {
               </div>
             </div>
             <div>
-              {!passwordsMatch && <p className="text-red-500">Passwords do not match</p>}
+              {!passwordsMatch && (
+                <div className="flex items-center space-x-2 text-red-500">
+                  <AlertCircle size={16} />
+                  <span>Passwords do not match</span>
+                </div>
+              )}
             </div>
             <div
               className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border"

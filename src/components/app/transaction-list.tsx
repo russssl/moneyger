@@ -1,7 +1,6 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { NoItems } from "./no-items"
 import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote } from "lucide-react"
 import { useEffect, useState } from "react"
@@ -10,7 +9,7 @@ import { api } from "@/trpc/react"
 import { Button } from "../ui/button"
 import AddNewTransactionModal from "./transactions/add-new-transaction-modal"
 import { DateTime } from "luxon"
-import { useFormattedCurrency } from "@/hooks/use-currencies"
+import { formatCurrency } from "@/hooks/currencies"
 export function TransactionList() {
   const [transactions, setTransactions] = useState<(Transaction & { currency: string | null, walletName: string | null })[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -47,8 +46,8 @@ export function TransactionList() {
                   <TableCell>{transaction.description}</TableCell>
 
                   {transaction.amount ? (<TableCell className="text-right">
-                    {useFormattedCurrency(transaction.amount, transaction.currency)}
-                    </TableCell>) : null}
+                    {formatCurrency(transaction.amount, transaction.currency)}
+                  </TableCell>) : null}
                   <TableCell className="text-right">{transaction.walletName}</TableCell>
                   <TableCell>
                     <div className="flex justify-center items-center">

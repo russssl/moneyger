@@ -3,7 +3,6 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { ChevronUpIcon, ChevronDownIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -14,13 +13,12 @@ interface AmountPickerProps {
   currencySymbol?: string
 }
 
-export default function AmountPicker({ value = 0, onChange, label = "Amount", currencySymbol }: AmountPickerProps) {
+export default function AmountPicker({ value = 0, onChange, currencySymbol }: AmountPickerProps) {
   const handleIncrement = () => onChange?.(value + 1)
   const handleDecrement = () => onChange?.(value - 1)
 
   return (
     <div className="flex flex-col space-y-2">
-      <Label>{label}</Label>
       <div className="flex">
         {currencySymbol && (
           <div className="flex items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground">

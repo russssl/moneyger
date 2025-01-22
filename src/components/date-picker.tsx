@@ -19,12 +19,11 @@ interface DatePickerProps {
   closeOnSelect?: boolean;
 }
 
-export default function DatePicker({ value, onChange, label = "Date", closeOnSelect = true }: DatePickerProps) {
+export default function DatePicker({ value, onChange, closeOnSelect = true }: DatePickerProps) {
   const [open, setOpen] = useState<boolean>(false)
 
   return (
     <div className="flex flex-col space-y-1">
-      <span className="text-sm font-medium text-foreground">{label}</span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

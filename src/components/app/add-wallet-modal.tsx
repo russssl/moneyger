@@ -24,7 +24,7 @@ import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
-import { useCurrencies } from "@/hooks/use-currencies";
+import { currencies } from "@/hooks/currencies";
 
 export default function AddNewWalletModal({
   className,
@@ -44,7 +44,7 @@ export default function AddNewWalletModal({
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
 
-  const currencyOptions = useCurrencies();
+  const currencyOptions = currencies();
   const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
     { id: id || null },
     {
@@ -54,17 +54,15 @@ export default function AddNewWalletModal({
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (!open) {
-      resetForm();
-    }
   };
 
-  const resetForm = () => {
+  useEffect(() => {
     setWalletName("");
     setCurrency("");
     setInitialBalance(null);
-  };
-
+  }
+  , [isOpen]);
+  
   useEffect(() => {
     if (res) {
       setWalletName(res.name || "");
@@ -95,7 +93,6 @@ export default function AddNewWalletModal({
       }
     );
   };
-
   return (
     <div className={className}>
       <Credenza open={isOpen} onOpenChange={handleOpenChange}>

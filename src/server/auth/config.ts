@@ -12,7 +12,7 @@ import {
   users,
   verificationTokens,
 } from "@/server/db/user";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 
 export class NoPasswordError extends CredentialsSignin {
   code = "no-password";
@@ -70,9 +70,11 @@ export const authConfig = {
         }
   
         if (user.password === null) {
+
           throw new SignInError({
             code: "no-password",
           });
+          throw new Error("No password set");
         }
 
         if (await verifyPassword(credentials.password as string, user.password)) {
@@ -113,6 +115,18 @@ export const authConfig = {
       }
       return token;
     },
+    signIn: async ({profile}) => {
+      if (profile?.email) {
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, profile.email),
+        });
+
+        if (user) {
+          return false; // user with this email already exists, don't sign in and recommend to sign in with existing provider
+        }
+      }
+      return true;
+    }
   },
   session: {
     strategy: "jwt",

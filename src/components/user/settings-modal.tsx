@@ -21,7 +21,7 @@ import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
-import { useCurrencies } from "@/hooks/use-currencies";
+import { currencies } from "@/hooks/currencies";
 
 export default function SettingsModal() {
   const { data: session } = useSession();
@@ -31,7 +31,7 @@ export default function SettingsModal() {
 
   const saveMutation = api.user.updateUserSettings.useMutation();
 
-  const currencyOptions = useCurrencies();
+  const currencyOptions = currencies();
 
   useEffect(() => {
     if (userSettings?.currency) {
