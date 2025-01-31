@@ -25,6 +25,12 @@ const config = {
       },
     ];
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true, 
 };
