@@ -65,8 +65,10 @@ export default function AddNewWalletModal({
   
   useEffect(() => {
     if (res) {
-      setWalletName(res.name || "");
       setCurrency(res.currency || "");
+      console.log(currency);
+      // initial balance is calculated from all transactions with 'adjustment' type
+      // setInitialBalance(typeof res.initialBalance === "number" ? res.initialBalance : null);
     }
   }, [res]);
 
@@ -131,7 +133,8 @@ export default function AddNewWalletModal({
                   />
                 </div>
                 <div className="mb-4">
-                  <Label>Currency</Label>
+                  {currency}
+                  <Label className="mb-1">Currency</Label>
                   {currencyOptions.length > 0 ? (
                     <Select onValueChange={setCurrency} value={currency}>
                       <SelectTrigger className="w-full">

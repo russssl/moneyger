@@ -1,12 +1,12 @@
 import * as React from "react"
-import { Home, Plus, Search, Wallet } from "lucide-react"
+import { Home, User, Search, Wallet, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const bottomBarItems = [
   { icon: Home, label: "Home", href: "/" },
   { icon: Wallet, label: "Wallet", href: "/wallet" },
   { icon: Search, label: "Search", href: "/search" },
-  { icon: Plus, label: "Stats", href: "/stats" },
+  { icon: User, label: "User", href: "/stats" },
 ]
 
 export function BottomBar() {

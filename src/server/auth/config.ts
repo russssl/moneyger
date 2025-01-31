@@ -12,7 +12,7 @@ import {
   users,
   verificationTokens,
 } from "@/server/db/user";
-import { eq, count } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export class NoPasswordError extends CredentialsSignin {
   code = "no-password";

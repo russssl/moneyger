@@ -41,7 +41,7 @@ export const walletRouter = createTRPCRouter({
           eq(wallet.id, input?.id),
         ) : eq(wallet.userId, loggedInUser.id),
       });
-
+        
       if (!res_wallet) {
         throw new Error("Wallet not found");
       }
@@ -49,6 +49,7 @@ export const walletRouter = createTRPCRouter({
         name: res_wallet.name,
         currency: res_wallet.currency,
         id: res_wallet.id,
+        // initialBalance: res_wallet.transactions.reduce((acc, curr) => acc + curr.amount, 0),
         type: "wallet",
       };
     }),
