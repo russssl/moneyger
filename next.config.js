@@ -3,6 +3,8 @@
  * for Docker builds.
  */
 import "./src/env.js";
+import { config as dotenvConfig } from "dotenv";
+
 
 /** @type {import("next").NextConfig} */
 const config = {
