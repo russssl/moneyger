@@ -1,7 +1,6 @@
 import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 
-import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyPassword } from "./util";
 
@@ -46,7 +45,6 @@ declare module "next-auth" {
 
 export const authConfig = {
   providers: [
-    DiscordProvider,
     CredentialsProvider({
       name: "Credentials",
       credentials: {
