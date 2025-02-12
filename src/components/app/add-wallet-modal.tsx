@@ -65,12 +65,11 @@ export default function AddNewWalletModal({
   
   useEffect(() => {
     if (res) {
+      console.log(res)
       setCurrency(res.currency || "");
-      console.log(currency);
-      // initial balance is calculated from all transactions with 'adjustment' type
-      // setInitialBalance(typeof res.initialBalance === "number" ? res.initialBalance : null);
+      setWalletName(res.name || "")
     }
-  }, [res]);
+  }, [res, currency]);
 
   if (!session) {
     return null;

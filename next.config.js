@@ -3,6 +3,7 @@
  * for Docker builds.
  */
 import "./src/env.js";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { config as dotenvConfig } from "dotenv";
 
 

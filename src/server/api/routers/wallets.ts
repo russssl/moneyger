@@ -39,6 +39,7 @@ export const walletRouter = createTRPCRouter({
         where: (wallet) => input.id ? and(
           eq(wallet.userId, loggedInUser.id),
           eq(wallet.id, input?.id),
+          eq
         ) : eq(wallet.userId, loggedInUser.id),
       });
         
@@ -49,7 +50,7 @@ export const walletRouter = createTRPCRouter({
         name: res_wallet.name,
         currency: res_wallet.currency,
         id: res_wallet.id,
-        // initialBalance: res_wallet.transactions.reduce((acc, curr) => acc + curr.amount, 0),
+        initialBalance: res_wallet.transactions.reduce((acc, curr) => acc + curr.amount, 0),
         type: "wallet",
       };
     }),
