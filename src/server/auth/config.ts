@@ -130,6 +130,7 @@ export const authConfig = {
     strategy: "jwt",
     maxAge: 15 * 24 * 60 * 60, // 15 days
   },
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
