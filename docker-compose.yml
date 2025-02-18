@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  app:
+    image: my-next-app:latest
+    container_name: nextjs-app
+    restart: always
+    env_file:
+      - .env.development
+    labels:
+      - "traefik.http.routers.app.rule=Host(`local.test`)"
+    depends_on:
+      - db
+      - memcached
+
+  db:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+      POSTGRES_USER: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  memcached:
+    image: memcached:1.6
+    container_name: memcached
+    ports:
+      - "11211:11211"
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
