@@ -11,15 +11,16 @@ import * as schema from "./schema";
 const globalForDb = globalThis as unknown as {
   conn: postgres.Sql | undefined;
 };
-if (!env) {
-  throw new Error("Environment variables not loaded");
-}
+// if (!env) {
+//   throw new Error("Environment variables not loaded");
+// }
+console.log("environment:" + env?.NODE_ENV);
 const conn = globalForDb.conn ?? postgres({
-  host: env.POSTGRES_HOST,
-  user: env.POSTGRES_USER,
-  password: env.POSTGRES_PASSWORD,
-  database: env.POSTGRES_DB,
+  host: env!.POSTGRES_HOST,
+  user: env!.POSTGRES_USER,
+  password: env!.POSTGRES_PASSWORD,
+  database: env!.POSTGRES_DB,
 });
-if (env.NODE_ENV !== "production") globalForDb.conn = conn;
+if (env!.NODE_ENV !== "production") globalForDb.conn = conn;
 
 export const db = drizzle(conn, { schema });
