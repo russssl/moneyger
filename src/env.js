@@ -14,10 +14,10 @@ export const env = !process.env.CI ? createEnv({
     AUTH_DISCORD_ID: z.string().optional(),
     AUTH_DISCORD_SECRET: z.string().optional(),
 
-    POSTGRES_HOST: z.string(),
-    POSTGRES_DB: z.string(),
-    POSTGRES_USER: z.string(),
-    POSTGRES_PASSWORD: z.string(),
+    // POSTGRES_HOST: z.string(),
+    // POSTGRES_DB: z.string(),
+    // POSTGRES_USER: z.string(),
+    // POSTGRES_PASSWORD: z.string(),
 
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
