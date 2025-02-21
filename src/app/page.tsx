@@ -1,5 +1,5 @@
 import { TransactionList } from "@/components/app/transaction-list";
-import WalletsAndCards from "@/components/app/wallets-and-cards";
+import Wallets from "@/components/app/wallets";
 import { auth } from "@/server/auth";
 import { redirect } from "next/navigation";
 
@@ -14,7 +14,7 @@ export default async function HomePage() {
         <h1 className="text-2xl md:text-4xl font-bold mt-4">
           Welcome back, {session.user.name}
         </h1>
-        <WalletsAndCards />
+        <Wallets />
         <TransactionList />
       </div>
     </div>

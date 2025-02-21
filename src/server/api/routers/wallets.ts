@@ -64,15 +64,11 @@ export const walletRouter = createTRPCRouter({
       currency: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const loggedInUser = ctx.session.user;
-      if (!loggedInUser.id) {
-        throw new Error("User not logged in");
-      }
       let res_wallet;
       if (input.id) {
         const wallet = await ctx.db.query.wallets.findFirst({
           where: and(
-            eq(wallets.userId, loggedInUser.id),
+            eq(wallets.userId, ctx.session.user.id),
             eq(wallets.id, input.id),
           ),
         });
@@ -87,12 +83,12 @@ export const walletRouter = createTRPCRouter({
           currency: input.currency,
         }).where(
           and(
-            eq(wallets.userId, loggedInUser.id),
+            eq(wallets.userId, ctx.session.user.id),
             eq(wallets.id, input.id),
           )).returning().execute();
       } else {
         res_wallet = await ctx.db.insert(wallets).values({
-          userId: loggedInUser.id,
+          userId: ctx.session.user.id,
           name: input.name,
           currency: input.currency,
         }).returning().execute();
@@ -102,7 +98,7 @@ export const walletRouter = createTRPCRouter({
             walletId: res_wallet[0].id,
             amount: input.initialBalance,
             type: "adjustment",
-            userId: loggedInUser.id,
+            userId: ctx.session.user.id,
           }).execute();
         }
       }
@@ -119,10 +115,6 @@ export const walletRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }) => {
       const loggedInUser = ctx.session.user;
-      if (!loggedInUser) {
-        throw new Error("User not logged in");
-      }
-
       await ctx.db.transaction(async (tx) => {
         const wallet = await tx.query.wallets.findFirst({
           where: and(

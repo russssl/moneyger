@@ -133,7 +133,6 @@ function FinanceItem({ item, onEdit, onDelete }: FinanceItemProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>View Details</DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(item.id)}>Edit</DropdownMenuItem>
           <DropdownMenuItem className="text-red-600" onClick={() => onDelete(item.id)}>Delete</DropdownMenuItem>
         </DropdownMenuContent>

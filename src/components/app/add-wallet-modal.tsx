@@ -64,12 +64,13 @@ export default function AddNewWalletModal({
   , [isOpen]);
   
   useEffect(() => {
-    if (res) {
-      setCurrency(res.currency || "");
-      setInitialBalance(res.initialBalance || null);
-      setWalletName(res.name || "")
+    if (!res) {
+      return;
     }
-  }, [res, currency]);
+    setCurrency(res.currency || "");
+    setInitialBalance(res.initialBalance || null);
+    setWalletName(res.name || "")
+  }, [res]);
 
   if (!session) {
     return null;
@@ -132,10 +133,15 @@ export default function AddNewWalletModal({
                   />
                 </div>
                 <div className="mb-4">
-                  {currency}
                   <Label className="mb-1">Currency</Label>
                   {currencyOptions.length > 0 ? (
-                    <Select onValueChange={setCurrency} value={currency}>
+                    <Select
+                      onValueChange={(v) => {
+                        console.log("Selected currency:", v);
+                        setCurrency(v);
+                      }}
+                      value={currency}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a currency" />
                       </SelectTrigger>
