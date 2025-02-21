@@ -1,6 +1,7 @@
 import { boolean, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 import { users } from "./user";
 import { relations } from "drizzle-orm";
+import { transactions } from "./transaction";
 
 
 
@@ -21,8 +22,9 @@ export const wallets = pgTable("wallet", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
-export const walletsRelations = relations(wallets, ({ one }) => ({
+export const walletsRelations = relations(wallets, ({ one, many }) => ({
   user: one(users, { fields: [wallets.userId], references: [users.id] }),
+  transactions: many(transactions),
 }));
 
 export type Wallet = typeof wallets.$inferSelect;

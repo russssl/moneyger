@@ -14,11 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import DatePicker from "@/components/date-picker";
 import { useState } from "react";
 import AutogrowingTextarea from "@/components/autogrowing-textarea";
-import { ArrowUpIcon, ArrowDownIcon, ArrowLeftRightIcon } from "lucide-react";
-import AmountPicker from "@/components/amount-picker";
 import { api } from "@/trpc/react";
 import { useEffect } from "react";
 import {currencies, type Currency} from "@/hooks/currencies";
+import AddonInput from "@/components/AddonInput";
+import TransactionTypeSelect from "./transaction-type-select";
 type TransactionType = "income" | "expense" | "transfer";
 
 interface AddNewTransactionModalProps {
@@ -27,27 +27,23 @@ interface AddNewTransactionModalProps {
 }
 
 export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTransactionModalProps) {
+
   const [date, setDate] = useState<Date>();
   const [transactionType, setTransactionType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState<number>(0);
   const [wallets, setWallets] = useState<any[]>([]);
-  const [selectedWallet, setSelectedWallet] = useState<string>();
+
+  const [selectedFirstWallet, setSelectedWallet] = useState<string>();
+  const [selectedSecondWallet, setSelectedSecondWallet] = useState<string>();
+
   const [selectedCategory, setSelectedCategory] = useState<string>();
-  const [selectedCurrency, setSelectedCurrency] = useState<string>();
   const [currencyData, setCurrencyData] = useState<Currency | undefined>(undefined);
   const [description, setDescription] = useState<string>("");
 
   const updateTransactionMutation = api.transactions.updateTransaction.useMutation();
-  useEffect(() => {
-    if (selectedCurrency) {
-      const currencyData = currencies(selectedCurrency);
-      setCurrencyData(currencyData);
-    }
-  }, [selectedCurrency]);
-
-  const { data: walletsData, isLoading } = api.wallets.getWallets.useQuery(undefined, {
-    enabled: open,
-  });
+  const canSave = selectedFirstWallet && date && selectedCategory && amount !== 0;
+  
+  const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open,});
 
   useEffect(() => {
     if (walletsData) {
@@ -55,31 +51,22 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
     }
   }, [walletsData]);
   
-  const selectWalletAndSetCurrency = (walletId: string) => {
-    setSelectedWallet(walletId);
-    const wallet: string = wallets.find((wallet) => wallet.id === walletId);
-    setSelectedCurrency(wallet);
-  }
-  
   useEffect(() => {
     if (!open) {
       setSelectedWallet(undefined);
-      setSelectedCurrency(undefined);
       setCurrencyData(undefined);
       setAmount(0);
       setDate(undefined);
     }
   }, [open]);
 
-  const canSave = !selectedWallet || !date || !selectedCategory;
-
   function addTransaction() {
-    if (!selectedWallet || !date || !selectedCategory) {
+    if (!selectedFirstWallet || !date || !selectedCategory) {
       return;
     }
 
     updateTransactionMutation.mutate({
-      walletId: selectedWallet,
+      walletId: selectedFirstWallet,
       amount: amount,
       transaction_date: date,
       description: description,
@@ -90,49 +77,29 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
     onOpenChange(false);
   }
 
+  function selectWalletAndSetCurrency(walletId: string) {
+    setSelectedWallet(walletId);
+    const curr: string | null = wallets.find((wallet) => wallet.id === walletId).currency;
+    setCurrencyData(currencies(curr));
+  }
+
   return (
     <Credenza open={open} onOpenChange={onOpenChange}>
       <CredenzaContent>
         <CredenzaHeader>
           <CredenzaTitle>Add New Transaction</CredenzaTitle>
           <CredenzaDescription>
-            Fill in the details below to add a new transaction to your account.
+            Fill in the details below to add a new transaction.
           </CredenzaDescription>
         </CredenzaHeader>
         <CredenzaBody>
-          <div className="grid gap-6">
+          <div className="grid gap-3">
             {wallets.length === 0 && (
               <div className="p-4 bg-red-100 text-red-800 rounded-lg">
                 You need to create a wallet before you can add a transaction.
               </div>
             )}
-            <div className="flex gap-2 p-1 bg-muted rounded-lg">
-              <Button
-                variant={transactionType === "expense" ? "default" : "ghost"}
-                className="flex-1 gap-2"
-                onClick={() => setTransactionType("expense")}
-              >
-                <ArrowUpIcon className="h-4 w-4" />
-                Expense
-              </Button>
-              <Button
-                variant={transactionType === "income" ? "default" : "ghost"}
-                className="flex-1 gap-2"
-                onClick={() => setTransactionType("income")}
-              >
-                <ArrowDownIcon className="h-4 w-4" />                
-                Income
-              </Button>
-              <Button
-                variant={transactionType === "transfer" ? "default" : "ghost"}
-                className="flex-1 gap-2"
-                onClick={() => setTransactionType("transfer")}
-              >
-                <ArrowLeftRightIcon className="h-4 w-4" />
-                Transfer
-              </Button>
-            </div>
-
+            <TransactionTypeSelect value={transactionType} setValue={setTransactionType} />
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="date">Date</Label>
@@ -140,11 +107,19 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
               </div>
               <div>
                 <Label htmlFor="amount">Amount</Label>
-                <AmountPicker value={amount} onChange={setAmount} currencySymbol={currencyData?.symbol}/>
+                <AddonInput 
+                  value={amount}
+                  setValue={(value) => setAmount(Number(value))}
+                  addonText={currencyData?.symbol}
+                  type="number"
+                  placeholder="Enter amount"
+                />
               </div>
             </div>
-            { wallets.length > 0 ? <div className="space-y-2">
-              <Label htmlFor="wallet">Wallet</Label>
+            { wallets.length > 0 ? <div>
+              <Label htmlFor="wallet">
+                {transactionType === "transfer" ? "From Wallet" : "Wallet"}
+              </Label>
               <Select onValueChange={(value) => selectWalletAndSetCurrency(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select wallet" />
@@ -159,7 +134,23 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
               </Select>
             </div> : null }
 
-            <div className="space-y-2">
+            { wallets.length > 0 && transactionType == "transfer" ? <div>
+              <Label htmlFor="wallet">To Wallet</Label>
+              <Select onValueChange={(value) => setSelectedSecondWallet(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select wallet" />
+                </SelectTrigger>
+                <SelectContent>
+                  {wallets.map((wallet) => (
+                    <SelectItem key={wallet.id} value={wallet.id}>
+                      {wallet.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div> : null }
+
+            <div>
               <Label htmlFor="description">Description</Label>
               <Input 
                 id="description" 
@@ -168,7 +159,7 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="category">Category</Label>
               <Select onValueChange={(value) => setSelectedCategory(value)}>
                 <SelectTrigger>
@@ -184,7 +175,7 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label htmlFor="notes">Notes</Label>
               <AutogrowingTextarea placeholder="Add any additional notes"/>
             </div>
@@ -194,7 +185,7 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => addTransaction()} disabled={canSave}>
+          <Button onClick={() => addTransaction()} disabled={!canSave}>
             Add Transaction
           </Button>
         </CredenzaFooter>

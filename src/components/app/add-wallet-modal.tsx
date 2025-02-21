@@ -65,8 +65,8 @@ export default function AddNewWalletModal({
   
   useEffect(() => {
     if (res) {
-      console.log(res)
       setCurrency(res.currency || "");
+      setInitialBalance(res.initialBalance || null);
       setWalletName(res.name || "")
     }
   }, [res, currency]);

@@ -14,10 +14,7 @@ export const env = !process.env.CI ? createEnv({
     AUTH_DISCORD_ID: z.string().optional(),
     AUTH_DISCORD_SECRET: z.string().optional(),
 
-    // POSTGRES_HOST: z.string(),
-    // POSTGRES_DB: z.string(),
-    // POSTGRES_USER: z.string(),
-    // POSTGRES_PASSWORD: z.string(),
+    DATABASE_URL: z.string(),
 
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
@@ -45,11 +42,7 @@ export const env = !process.env.CI ? createEnv({
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
-    POSTGRES_HOST: process.env.POSTGRES_HOST,
-    POSTGRES_DB: process.env.POSTGRES_DB,
-    POSTGRES_USER: process.env.POSTGRES_USER,
-    POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
-    // DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**

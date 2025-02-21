@@ -1,10 +1,9 @@
 "use client"
 import { useEffect, useState } from "react"
-import { CreditCard, Wallet, MoreVertical, PlusCircle } from "lucide-react"
+import { Wallet, MoreVertical, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AddNewWalletModal from "./add-wallet-modal"
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading"
@@ -15,7 +14,7 @@ type Wallet = {
   name?: string;
   balance: number;
   currency: string;
-  type: "wallet" | "card";
+  type: "wallet";
 };
 // get this type from drizzle-orm
 type WalletsRes = {
@@ -23,11 +22,10 @@ type WalletsRes = {
   name: string | null;
   balance: number | null;
   currency: string | null;
-  type: "wallet" | "card";
+  type: "wallet";
 }
 
-export default function WalletsAndCards({className}: {className?: string | undefined}) {
-  const [activeTab, setActiveTab] = useState("wallet");
+export default function Wallets({className}: {className?: string | undefined}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [items, setItems] = useState<WalletsRes[]>([]);
@@ -51,15 +49,17 @@ export default function WalletsAndCards({className}: {className?: string | undef
     setSelectedId(null);
   };
 
-  const saveWallets = (newItem: WalletsRes) => {
+  const saveWallets = (newItem: any) => {
     setItems(prevItems => {
-      const existingIndex = prevItems.findIndex(item => item.id === newItem.id);
-      if (existingIndex !== -1) {
+      const existingItem = prevItems.find(item => item.id === newItem[0].id);
+      if (existingItem) {
+        const existingIndex = prevItems.indexOf(existingItem);
         const updatedItems = [...prevItems];
-        updatedItems[existingIndex] = newItem;
+        updatedItems[existingIndex] = newItem[0];
         return updatedItems;
+      } else {
+        return [...prevItems, newItem[0]];
       }
-      return [...prevItems, newItem].flat();
     });
     setSelectedId(null);
     setIsModalOpen(false);
@@ -72,34 +72,26 @@ export default function WalletsAndCards({className}: {className?: string | undef
           <CardTitle>Your Finances overview</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="wallet">Wallets</TabsTrigger>
-              <TabsTrigger value="card">Cards</TabsTrigger>
-            </TabsList>
-            <TabsContent value={activeTab}>
-              {isLoading ? (
-                <div className="flex justify-center mb-4">
-                  <LoadingSpinner />
-                </div>
-              ) : items.filter(item => item.type === activeTab).length === 0 ? (
-                <NoItems
-                  icon={activeTab === "wallet" ? Wallet : CreditCard}
-                  title={activeTab === "wallet" ? "No Wallets" : "No Cards"}
-                  description={activeTab === "wallet" ? "You don't have any wallets yet." : "You don't have any cards yet."}
-                  size="md"
-                />
-              ) : (
-                items.filter(item => item.type === activeTab).map(item => (
-                  <FinanceItem key={item.id} item={item} onEdit={openModal} onDelete={deleteWallet}/>
-                ))
-              )}
-            </TabsContent>
-          </Tabs>
+          {isLoading ? (
+            <div className="flex justify-center mb-4">
+              <LoadingSpinner />
+            </div>
+          ) : items.length === 0 ? (
+            <NoItems
+              icon={Wallet}
+              title="No Wallets"
+              description="You don't have any wallets yet."
+              size="md"
+            />
+          ) : (
+            items.map(item => (
+              <FinanceItem key={item.id} item={item} onEdit={openModal} onDelete={deleteWallet}/>
+            ))
+          )}
           <div className="mt-4">
             <Button className="w-full" onClick={() => openModal()}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add New {activeTab === "wallet" ? "Wallet" : "Card"}
+              Add New Wallet
             </Button>
           </div>
         </CardContent>
@@ -115,24 +107,19 @@ type FinanceItemProps = {
     name: string | null;
     balance?: number | null;
     currency?: string | null;
-    lastFour?: string;
-    expiryDate?: string;
-    type: "wallet" | "card";
+    type: "wallet";
   };
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
 function FinanceItem({ item, onEdit, onDelete }: FinanceItemProps) {
-  const Icon = item.type === "wallet" ? Wallet : CreditCard;
-  const details = item.type === "wallet"
-    ? `${item.balance?.toLocaleString()} ${item.currency}`
-    : `**** ${item.lastFour} | Expires: ${item.expiryDate}`;
+  const details = `${item.balance?.toLocaleString()} ${item.currency}`;
   
   return (
     <div className="flex items-center justify-between space-x-4 mb-4">
       <div className="flex items-center space-x-4">
-        <Icon className={`h-8 w-8 ${item.type === "wallet" ? "text-blue-500" : "text-green-500"}`} />
+        <Wallet className="h-8 w-8 text-blue-500" />
         <div>
           <p className="text-sm font-medium leading-none">{item.name}</p>
           <p className="text-sm text-muted-foreground">{details}</p>
