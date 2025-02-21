@@ -8,6 +8,7 @@ import { SessionProvider } from "next-auth/react";
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "next-themes";
 import { PostHogProvider } from "./providers";
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: "Manager",
@@ -35,6 +36,7 @@ export default function RootLayout({
               <SessionWrapper>
                 <PostHogProvider>
                   {children}
+                  <Toaster />
                 </PostHogProvider>
               </SessionWrapper>
             </SessionProvider>

@@ -14,15 +14,10 @@ export const transactionsRouter = createTRPCRouter({
       transaction_date: z.date().optional(),
     }).optional())
     .query(async ({ ctx, input }) => {
-      const loggedInUser = ctx.session.user;
-      if (!loggedInUser) {
-        throw new Error("User not logged in");
-      }
-
       const { walletId, transaction_date } = input || {};
       const res_transactions = await ctx.db.query.transactions.findMany({
         where: and(
-          eq(transactions.userId, loggedInUser.id),
+          eq(transactions.userId, ctx.session.user.id),
           walletId ? eq(transactions.walletId, walletId) : undefined,
           transaction_date ? eq(transactions.transaction_date, transaction_date) : undefined,
           not(eq(transactions.type, "adjustment"))
@@ -37,21 +32,7 @@ export const transactionsRouter = createTRPCRouter({
         },
         orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
       });
-      return res_transactions.map((transaction) => ({
-        id: transaction.id,
-        type: transaction.type,
-        description: transaction.description,
-        userId: transaction.userId,
-        created_at: transaction.created_at,
-        updated_at: transaction.updated_at,
-        walletId: transaction.walletId,
-        amount: transaction.amount,
-        transaction_date: transaction.transaction_date,
-        note: transaction.note,
-        category: transaction.category,
-        currency: transaction.wallet?.currency,
-        walletName: transaction.wallet?.name,
-      }));
+      return res_transactions;
     }),
 
   getTransactionById: protectedProcedure
@@ -59,18 +40,13 @@ export const transactionsRouter = createTRPCRouter({
       id: z.string()
     }))
     .query(async ({ ctx, input }) => {
-      const loggedInUser = ctx.session.user;
-      if (!loggedInUser) {
-        throw new Error("User not logged in");
-      }
-
       const res_transaction = await ctx.db.query.transactions.findFirst({
         where: (transaction) => input.id ? and(
-          eq(transaction.userId, loggedInUser.id),
+          eq(transaction.userId, ctx.session.user.id),
           eq(transaction.id, input?.id),
           not(eq(transaction.type, "adjustment"))
         ) : and(
-          eq(transaction.userId, loggedInUser.id),
+          eq(transaction.userId, ctx.session.user.id),
           not(eq(transaction.type, "adjustment"))
         ),
         orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
@@ -102,14 +78,9 @@ export const transactionsRouter = createTRPCRouter({
       note: z.string().optional(),
       type: z.enum(["income", "expense", "transfer", "adjustment"]),
     })).mutation(async ({ ctx, input }) => {
-      const loggedInUser = ctx.session.user;
-
-      if (!loggedInUser) {
-        throw new Error("User not logged in");
-      }
       const wallet = await ctx.db.query.wallets.findFirst({
         where: and(
-          eq(wallets.userId, loggedInUser.id),
+          eq(wallets.userId, ctx.session.user.id),
           eq(wallets.id, input.walletId),
         ),
       });
@@ -122,7 +93,7 @@ export const transactionsRouter = createTRPCRouter({
       if (input.id) {
         const transaction = await ctx.db.query.transactions.findFirst({
           where: and(
-            eq(transactions.userId, loggedInUser.id),
+            eq(transactions.userId, ctx.session.user.id),
             eq(transactions.id, input.id),
           ),
         });
@@ -141,13 +112,13 @@ export const transactionsRouter = createTRPCRouter({
           type: input.type,
         }).where(
           and(
-            eq(transactions.userId, loggedInUser.id),
+            eq(transactions.userId, ctx.session.user.id),
             eq(transactions.id, input.id),
           ),
         ).returning().execute();
       } else {
         res_transaction = await ctx.db.insert(transactions).values({
-          userId: loggedInUser.id,
+          userId: ctx.session.user.id,
           walletId: input.walletId,
           amount: input.amount,
           transaction_date: input.transaction_date,
@@ -161,15 +132,49 @@ export const transactionsRouter = createTRPCRouter({
       if (input.type === "adjustment") {
         return;
       }
-      return res_transaction.map((transaction) => ({
-        amount: transaction.amount,
-        transaction_date: transaction.transaction_date,
-        description: transaction.description,
-        category: transaction.category,
-        created_at: transaction.created_at,
-        note: transaction.note,
-        type: transaction.type,
-        id: transaction.id,
-      }));
-    })
+
+      if (!res_transaction || res_transaction.length === 0) {
+        throw new Error("Transaction not found");
+      }
+
+      return ctx.db.query.transactions.findFirst({
+        where: and(
+          eq(transactions.userId, ctx.session.user.id),
+          eq(transactions.id, res_transaction?.[0]?.id ?? ""),
+        ),
+        with: {
+          wallet: {
+            columns: {
+              currency: true,
+              name: true,
+            },
+          },
+        },
+      });
+    }),
+
+  removeTransaction: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+
+      const transaction = await ctx.db.query.transactions.findFirst({
+        where: and(
+          eq(transactions.userId, ctx.session.user.id),
+          eq(transactions.id, input.id),
+        ),
+      });
+
+      if (!transaction) {
+        throw new Error("Transaction not found");
+      }
+
+      const deleted = await ctx.db.delete(transactions).where(
+        eq(transactions.id, transaction.id),
+      ).returning().execute();
+
+      console.log(deleted);
+      return deleted;
+    }),
 });

@@ -24,9 +24,10 @@ type TransactionType = "income" | "expense" | "transfer";
 interface AddNewTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave: (transaction: any) => void;
 }
 
-export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTransactionModalProps) {
+export default function AddNewTransactionModal({ open, onOpenChange, onSave }: AddNewTransactionModalProps) {
 
   const [date, setDate] = useState<Date>();
   const [transactionType, setTransactionType] = useState<TransactionType>("expense");
@@ -57,6 +58,7 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
       setCurrencyData(undefined);
       setAmount(0);
       setDate(undefined);
+      setDescription("");
     }
   }, [open]);
 
@@ -72,9 +74,12 @@ export default function AddNewTransactionModal({ open, onOpenChange }: AddNewTra
       description: description,
       category: selectedCategory,
       type: transactionType,
+    }, {
+      onSuccess: (result) => {
+        onSave(result);
+        onOpenChange(false);
+      },
     });
-
-    onOpenChange(false);
   }
 
   function selectWalletAndSetCurrency(walletId: string) {
