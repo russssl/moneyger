@@ -76,7 +76,8 @@
     "dark": "Ciemny",
     "light": "Jasny",
     "system": "Systemowy",
-    "language": "Język"
+    "language": "Język",
+    "settings": "Ustawienia"
   },
   "finances": {
     "wallets_title": "Portfele",

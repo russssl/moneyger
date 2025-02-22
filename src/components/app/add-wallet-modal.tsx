@@ -72,7 +72,7 @@ export default function AddNewWalletModal({
       return;
     }
     setCurrency(res.currency || "");
-    setInitialBalance(res.initialBalance || null);
+    setInitialBalance(res.initialBalance);
     setWalletName(res.name || "")
   }, [res]);
 
@@ -141,7 +141,9 @@ export default function AddNewWalletModal({
                   {currencyOptions.length > 0 ? (
                     <Select
                       onValueChange={(v) => {
-                        console.log("Selected currency:", v);
+                        if (!v) {
+                          return;
+                        }
                         setCurrency(v);
                       }}
                       value={currency}

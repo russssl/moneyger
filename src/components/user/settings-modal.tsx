@@ -24,7 +24,7 @@ import { Input } from "../ui/input";
 import { currencies } from "@/hooks/currencies";
 import {useTranslations} from "next-intl";
 
-export default function SettingsModal({trigger}: {trigger: React.ReactNode | null}) {
+export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
   const { data: session } = useSession();
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const [username, setUsername] = useState("");
@@ -107,7 +107,7 @@ export default function SettingsModal({trigger}: {trigger: React.ReactNode | nul
           </CredenzaBody>
           <CredenzaFooter>
             <CredenzaClose asChild>
-              <div className="flex flex-col w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+              <div className="flex flex-col justify-end w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                 <Button className="w-full sm:w-auto" variant="outline">{serviceTranslations("close")}</Button>
                 <LoadingButton
                   className="w-full sm:w-auto"

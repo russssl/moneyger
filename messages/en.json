@@ -76,7 +76,8 @@
     "dark": "Dark",
     "light": "Light",
     "system": "System",
-    "language": "Language"
+    "language": "Language",
+    "settings": "Settings"
   },
   "finances": {
     "wallets_title": "Wallets",
