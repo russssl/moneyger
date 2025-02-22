@@ -14,13 +14,14 @@ import LoadingButton from "@/components/loading-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { save } from "./register";
 import ThemeToggle from "@/components/theme-toggle";
+import { useTranslations } from "next-intl";
 
 const checkStrength = (pass: string) => {
   const requirements = [
-    { regex: /.{8,}/, text: "At least 8 characters" },
-    { regex: /[0-9]/, text: "At least 1 number" },
-    { regex: /[a-z]/, text: "At least 1 lowercase letter" },
-    { regex: /[A-Z]/, text: "At least 1 uppercase letter" },
+    { regex: /.{8,}/, text: "character_length" },
+    { regex: /[0-9]/, text: "one_number" },
+    { regex: /[a-z]/, text: "one_lowercase" },
+    { regex: /[A-Z]/, text: "one_special_character" },
   ];
 
   return requirements.map((req) => ({
@@ -39,10 +40,10 @@ const getStrengthColor = (score: number) => {
 };
 
 const getStrengthText = (score: number) => {
-  if (score === 0) return "Enter a password";
-  if (score <= 2) return "Weak password";
-  if (score === 3) return "Medium password";
-  return "Strong password";
+  if (score === 0) return "enter_password";
+  if (score <= 2) return "weak_password";
+  if (score === 3) return "medium_password";
+  return "strong_password";
 };
 
 function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {
@@ -78,6 +79,7 @@ export default function RegisterForm() {
 
   const toggleVisibility = (isConfirmationField?: boolean) => isConfirmationField ? setIsConfirmVisible((prev) => !prev) : setIsVisible((prev) => !prev);
 
+  const t = useTranslations("register_login");
   useEffect(() => {
     if (!password) {
       setPasswordsMatch(true)
@@ -156,10 +158,10 @@ export default function RegisterForm() {
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex justify-between">
-            Register
+            {t("register")}
             <ThemeToggle />
           </CardTitle>
-          <CardDescription>Create a new account to get started.</CardDescription>
+          <CardDescription>{t("register_modal_description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {
@@ -175,16 +177,18 @@ export default function RegisterForm() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  First Name <span className="text-destructive">*</span>
+                  {t("first_name")}
+                  <span className="text-destructive ms-1">*</span>
                 </Label>
-                <Input id="name" placeholder='Name' onChange={(e) => setName(e.target.value)}/>
+                <Input id="name" placeholder={t("first_name")} onChange={(e) => setName(e.target.value)}/>
                 <FieldErrorAlert fieldErrors={fieldErrors} name="name" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">
-                  Surname <span className="text-destructive">*</span>
+                  {t("last_name")}
+                  <span className="text-destructive ms-1">*</span>
                 </Label>
-                <Input id="lastName" placeholder='Surname' onChange={(e) => setSurname(e.target.value)}/>
+                <Input id="lastName" placeholder={t("last_name")} onChange={(e) => setSurname(e.target.value)}/>
                 {fieldErrors.surname && (
                   <div className="flex items-center space-x-2 text-red-500">
                     <AlertCircle size={16} />
@@ -195,26 +199,29 @@ export default function RegisterForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="username">
-                Username <span className="text-destructive">*</span>
+                {t("username")}
+                <span className="text-destructive ms-1">*</span>
               </Label>
-              <Input id="username" placeholder="Username" onChange={(e) => setUsername(e.target.value)}/>
+              <Input id="username" placeholder={t("username")} onChange={(e) => setUsername(e.target.value)}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">
-                Email <span className="text-destructive">*</span>
+                {t("email")}
+                <span className="text-destructive">*</span>
               </Label>
               <Input id="email" type="email" onChange={(e) => setEmail(e.target.value)}/>
               <FieldErrorAlert fieldErrors={fieldErrors} name="email" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">
-                Password <span className="text-destructive">*</span>
+                {t("password")}
+                <span className="text-destructive ms-1">*</span>
               </Label>
               <div className="relative">
                 <Input
                   id="password"
                   className="pe-9"
-                  placeholder="Password"
+                  placeholder={t("password")}
                   type={isVisible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -237,13 +244,14 @@ export default function RegisterForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password-confirmation">
-                Confirm Password <span className="text-destructive">*</span>
+                {t("confirm_password")}
+                <span className="text-destructive ms-1">*</span>
               </Label>
               <div className="relative">
                 <Input
                   id="password-confirmation"
                   className="pe-9"
-                  placeholder="Password"
+                  placeholder={t("confirm_password")}
                   type={isConfirmVisible ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -268,7 +276,7 @@ export default function RegisterForm() {
               {!passwordsMatch && (
                 <div className="flex items-center space-x-2 text-red-500">
                   <AlertCircle size={16} />
-                  <span>Passwords do not match</span>
+                  <span>{t("passwords_do_not_match")}</span>
                 </div>
               )}
             </div>
@@ -286,7 +294,7 @@ export default function RegisterForm() {
               ></div>
             </div>
             <p id="password-strength" className="mb-2 text-sm font-medium text-foreground">
-              {getStrengthText(strengthScore)}. Must contain:
+              {t(getStrengthText(strengthScore))}. {t("must_contain")}:
             </p>
 
             <ul className="space-y-1.5" aria-label="Password requirements">
@@ -298,7 +306,7 @@ export default function RegisterForm() {
                     <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
                   )}
                   <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
-                    {req.text}
+                    {t(req.text)}
                     <span className="sr-only">
                       {req.met ? " - Requirement met" : " - Requirement not met"}
                     </span>
@@ -308,14 +316,14 @@ export default function RegisterForm() {
             </ul>
             <div className="space-y-2">
               <Label htmlFor="select-17">
-                Select your default currency <span className="text-destructive">*</span>
+                {t("default_currency")} <span className="text-destructive">*</span>
               </Label>
               <Select defaultValue="USD" onValueChange={(value) => setCurrency(value)}>
                 <SelectTrigger id="select-17" className="relative ps-9">
                   <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[[disabled]]:opacity-50">
                     <CircleDollarSign size={16} strokeWidth={2} aria-hidden="true"/>
                   </div>
-                  <SelectValue placeholder="Select currency" />
+                  <SelectValue placeholder={t("select_default_currency")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="USD">USD</SelectItem>
@@ -330,15 +338,15 @@ export default function RegisterForm() {
               </Select>
             </div>
             <LoadingButton loading={isSubmitting} className="w-full">
-              Register
+              {t("register")}
             </LoadingButton>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-          Already have an account?
+            {t("already_have_account")}{" "}
             <Link href="/login" className="text-blue-500 ml-2">
-              Login
+              {t("login")}
             </Link>
           </p>
         </CardFooter>

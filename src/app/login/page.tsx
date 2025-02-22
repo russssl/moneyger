@@ -5,12 +5,15 @@ import { redirect } from "next/navigation";
 import Link from "next/link"
 import { type Metadata } from "next";
 import ThemeToggle from "@/components/theme-toggle";
+import { getTranslations } from "next-intl/server";
+
 export const metadata: Metadata = {
   title: "Login",
   description: "Login to your account",
 };
 export default async function Page() {
   const session = await auth();
+  const t = await getTranslations("register_login");
   if (session) {
     redirect("/");
   }
@@ -19,22 +22,22 @@ export default async function Page() {
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex justify-between">
-            Login to your account
+            {t("login")}
             <ThemeToggle />
           </CardTitle>
-          <CardDescription>Enter your email and password to access your account.</CardDescription>
+          <CardDescription>{t("login_modal_description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginProviders />
         </CardContent>
         <CardFooter className="text-sm text-center text-gray-500 flex flex-col space-y-2">
           <div>
-            By logging in, you agree to our Terms of Service and Privacy Policy.
+            {t("terms_and_conditions")}
           </div>
           <div>
-            Don’t have an account? 
+            {t("no_account")}{" "}
             <Link href="/register" className="text-blue-500 ml-2">
-              Register
+              {t("register")}
             </Link>
           </div>
         </CardFooter>

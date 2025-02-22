@@ -104,5 +104,41 @@
     "utilities": "Usługi komunalne",
     "entertainment": "Rozrywki",
     "other": "Inne"
+  },
+  "register_login": {
+    "login": "Zaloguj",
+    "login_modal_description": "Wpisz swój login lub email i hasło, aby zalogować się",
+    "username_or_email": "Nazwa użytkownika lub email",
+    "password": "Hasło",
+    "confirm_password": "Potwierdź hasło",
+    "forgot_password": "Zapomniałeś hasła?",
+    "must_contain": "Musi zawierać",
+    "enter_password": "Wpisz hasło",
+    "weak_password": "Słabe hasło",
+    "medium_password": "Średnie hasło",
+    "strong_password": "Silne hasło",
+    "terms_and_conditions": "Korzystając z tej aplikacji, zgadzasz się z naszymi warunkami korzystania i polityką prywatności.",
+    "no_account": "Nie masz jeszcze konta?",
+    "register": "Zarejestruj się",
+    "register_modal_description": "Utwórz konto, aby korzystać z aplikacji",
+    "already_have_account": "Masz już konto?",
+    "first_name": "Imię",
+    "passwords_do_not_match": "Hasła są różne",
+    "last_name": "Nazwisko",
+    "username": "Nazwa użytkownika",
+    "email": "Email",
+    "character_length": "Co najmniej 8 znaków",
+    "one_number": "Co najmniej jedną cyfrę",
+    "one_uppercase": "Co najmniej jedną wielką literę",
+    "one_lowercase": "Co najmniej jedną małą literę",
+    "one_special_character": "Co najmniej jeden znak specjalny",
+    "default_currency": "Domyślna waluta",
+    "select_default_currency": "Wybierz domyślną walutę"
+  },
+  "theme-toggle": {
+    "theme": "Motyw",
+    "dark": "Ciemny",
+    "light": "Jasny",
+    "system": "Systemowy"
   }
 }

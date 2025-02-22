@@ -11,6 +11,8 @@ import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
+import { useTranslations } from "next-intl";
+
 type ClientSafeProvider = {
   id: string;
   name: string;
@@ -45,6 +47,7 @@ export default function LoginProviders() {
   
   const posthog = usePostHog()
   
+  const t = useTranslations("register_login");
   const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     try {
@@ -128,24 +131,26 @@ export default function LoginProviders() {
           <div>
             <div className="space-y-2">
               <Label htmlFor="username">
-                Username or email<span className="text-destructive">*</span>
+                {t("username_or_email")}
+                <span className="text-destructive ms-1">*</span>
               </Label>
               <Input
                 id="username"
-                placeholder="Username or email"
+                placeholder={t("username_or_email")}
                 onChange={(e) => setUsernameOrEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2 mt-2">
               <Label htmlFor="password">
-                Password <span className="text-destructive">*</span>
+                {t("password")}
+                <span className="text-destructive ms-1">*</span>
               </Label>
               <div className="relative">
                 <Input
                   id="password"
                   className="pe-9"
-                  placeholder="Password"
+                  placeholder={t("password")}
                   type={isVisible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -172,11 +177,11 @@ export default function LoginProviders() {
               </Alert>
             )}
             <LoadingButton loading={loading} className='w-full mt-5'>
-              Login
+              {t("login")}
             </LoadingButton>
             <div className='text-center mt-3'>
               <a href="/password-reset" className="text-blue-500">
-              Forgot password?
+                {t("forgot_password")}
               </a>
             </div>
           </div>

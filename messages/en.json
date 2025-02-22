@@ -104,5 +104,42 @@
     "utilities": "Utilities",
     "entertainment": "Entertainment",
     "other": "Other"
+  },
+  "register_login": {
+    "login": "Login",
+    "login_modal_description": "Enter your username or email and password to log in",
+    "login_description": "Log in to continue",
+    "username_or_email": "Username or Email",
+    "password": "Password",
+    "confirm_password": "Confirm Password",
+    "forgot_password": "Forgot Password?",
+    "passwords_do_not_match": "Passwords do not match",
+    "must_contain": "Must contain",
+    "enter_password": "Enter password",
+    "weak_password": "Weak password",
+    "medium_password": "Medium password",
+    "strong_password": "Strong password",
+    "terms_and_conditions": "By using this app, you agree to our terms of use and privacy policy.",
+    "no_account": "Don't have an account yet?",
+    "register": "Register",
+    "register_modal_description": "Create an account to get started",
+    "already_have_account": "Already have an account?",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "username": "Username",
+    "email": "Email",
+    "character_length": "At least 8 characters",
+    "one_number": "At least one number",
+    "one_uppercase": "At least one uppercase letter",
+    "one_lowercase": "At least one lowercase letter",
+    "one_special_character": "At least one special character",
+    "default_currency": "Default Currency",
+    "select_default_currency": "Select default currency"
+  },
+  "theme-toggle": {
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System"
   }
 }
