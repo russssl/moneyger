@@ -8,13 +8,14 @@ import AddNewWalletModal from "./add-wallet-modal"
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading"
 import { NoItems } from "./no-items"
+import { useTranslations } from "next-intl"
 
 type Wallet = {
   id: number;
   name?: string;
   balance: number;
   currency: string;
-  type: "wallet";
+  type: "wallet"; // remove this
 };
 // get this type from drizzle-orm
 type WalletsRes = {
@@ -30,6 +31,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [items, setItems] = useState<WalletsRes[]>([]);
   const { data: wallets, isLoading } = api.wallets.getWallets.useQuery();
+  const t = useTranslations("finances");
 
   const deleteMutation = api.wallets.deleteWallet.useMutation();
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
     <div className={className}>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Your Finances overview</CardTitle>
+          <CardTitle>{t("wallets_title")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -79,8 +81,8 @@ export default function Wallets({className}: {className?: string | undefined}) {
           ) : items.length === 0 ? (
             <NoItems
               icon={Wallet}
-              title="No Wallets"
-              description="You don't have any wallets yet."
+              title={t("no_wallets")}
+              description={t("no_wallets_desc")}
               size="md"
             />
           ) : (
@@ -91,7 +93,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           <div className="mt-4">
             <Button className="w-full" onClick={() => openModal()}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add New Wallet
+              {t("add_wallet")}
             </Button>
           </div>
         </CardContent>
@@ -115,6 +117,7 @@ type FinanceItemProps = {
 
 function FinanceItem({ item, onEdit, onDelete }: FinanceItemProps) {
   const details = `${item.balance?.toLocaleString()} ${item.currency}`;
+  const t = useTranslations("service");
   
   return (
     <div className="flex items-center justify-between space-x-4 mb-4">
@@ -133,8 +136,8 @@ function FinanceItem({ item, onEdit, onDelete }: FinanceItemProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onEdit(item.id)}>Edit</DropdownMenuItem>
-          <DropdownMenuItem className="text-red-600" onClick={() => onDelete(item.id)}>Delete</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onEdit(item.id)}>{t("edit")}</DropdownMenuItem>
+          <DropdownMenuItem className="text-red-600" onClick={() => onDelete(item.id)}>{t("delete")}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

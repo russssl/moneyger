@@ -5,7 +5,9 @@
 import "./src/env.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { config as dotenvConfig } from "dotenv";
+import createNextIntlPlugin from "next-intl/plugin";
 
+const withNextIntl = createNextIntlPlugin();
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -38,4 +40,4 @@ const config = {
   skipTrailingSlashRedirect: true, 
 };
 
-export default config;
+export default withNextIntl(config);

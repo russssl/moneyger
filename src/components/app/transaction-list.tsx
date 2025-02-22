@@ -13,6 +13,7 @@ import { DateTime } from "luxon"
 import { formatCurrency } from "@/hooks/currencies"
 import { LoadingSpinner } from "../ui/loading"
 import { toast } from "sonner"
+import { useTranslations } from "next-intl"
 
 type TransactionWithWallet = Transaction & { wallet: Wallet };
 
@@ -24,6 +25,9 @@ export function TransactionList() {
   const { data: transactionsData, isLoading } = api.transactions.getTransactions.useQuery()
   const removeTransactionMutation = api.transactions.removeTransaction.useMutation()
   
+  const t = useTranslations("finances")
+  const tGeneral = useTranslations("general")
+
   useEffect(() => {
     setIsPending(removeTransactionMutation.isPending)
   }, [removeTransactionMutation.isPending])
@@ -49,7 +53,7 @@ export function TransactionList() {
     <>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          <CardTitle>{t("transactions_title")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? 
@@ -62,10 +66,10 @@ export function TransactionList() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Wallet</TableHead>
-                    <TableHead className="text-right">Type</TableHead>
+                    <TableHead>{tGeneral("date")}</TableHead>
+                    <TableHead className="text-right">{tGeneral("amount")}</TableHead>
+                    <TableHead className="text-right">{tGeneral("wallet")}</TableHead>
+                    <TableHead className="text-right">{tGeneral("type")}</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -105,7 +109,7 @@ export function TransactionList() {
               </div>
             )}
           <Button onClick={() => setIsModalOpen(true)} className="w-full mt-4">
-            Add New Transaction
+            {t("add_transaction")}
           </Button>
         </CardContent>
       </Card>

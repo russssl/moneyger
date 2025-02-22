@@ -1,8 +1,10 @@
 import { ArrowUpIcon, ArrowDownIcon, ArrowLeftRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 type TransactionType = "income" | "expense" | "transfer";
 export default function TransactionTypeSelect({ value, setValue }: { value: TransactionType, setValue: (value: TransactionType) => void }) {
+  const t = useTranslations("general");
   return (
     <div className="flex gap-2 p-1 bg-muted rounded-lg">
       <Button
@@ -11,7 +13,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
         onClick={() => setValue("expense")}
       >
         <ArrowUpIcon className="h-4 w-4" />
-      Expense
+        {t("expense")}
       </Button>
       <Button
         variant={value === "income" ? "success" : "ghost"}
@@ -19,7 +21,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
         onClick={() => setValue("income")}
       >
         <ArrowDownIcon className="h-4 w-4" />                
-      Income
+        {t("income")}
       </Button>
       <Button
         variant={value === "transfer" ? "warning" : "ghost"}
@@ -27,7 +29,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
         onClick={() => setValue("transfer")}
       >
         <ArrowLeftRightIcon className="h-4 w-4" />
-      Transfer
+        {t("transfer")}
       </Button>
     </div>
 

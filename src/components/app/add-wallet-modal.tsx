@@ -25,6 +25,7 @@ import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
 import { currencies } from "@/hooks/currencies";
+import { useTranslations } from "next-intl";
 
 export default function AddNewWalletModal({
   className,
@@ -44,6 +45,9 @@ export default function AddNewWalletModal({
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
 
+  const t = useTranslations("finances");
+  const tService = useTranslations("service");
+  const tGeneral = useTranslations("general");
   const currencyOptions = currencies();
   const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
     { id: id || null },
@@ -100,7 +104,7 @@ export default function AddNewWalletModal({
       <Credenza open={open} onOpenChange={handleOpenChange}>
         <CredenzaContent>
           <CredenzaHeader>
-            <CredenzaTitle>{id ? "Edit" : "Add new"} wallet</CredenzaTitle>
+            <CredenzaTitle>{id ? tService("edit") : tService("add")} {tGeneral("wallet")}</CredenzaTitle>
           </CredenzaHeader>
           <CredenzaBody>
             {id && !res ? (
@@ -110,7 +114,7 @@ export default function AddNewWalletModal({
             ) : (
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
-                  <Label>Wallet Name</Label>
+                  <Label>{t("wallet_name")}</Label>
                   <Input
                     placeholder="Main Wallet"
                     className="mt-1"
@@ -121,7 +125,7 @@ export default function AddNewWalletModal({
                   />
                 </div>
                 <div className="mb-4">
-                  <Label>Initial Balance</Label>
+                  <Label>{t("wallet_initial_balance")}</Label>
                   <Input
                     placeholder="5000"
                     className="mt-1"
@@ -133,7 +137,7 @@ export default function AddNewWalletModal({
                   />
                 </div>
                 <div className="mb-4">
-                  <Label className="mb-1">Currency</Label>
+                  <Label className="mb-1">{tGeneral("currency")}</Label>
                   {currencyOptions.length > 0 ? (
                     <Select
                       onValueChange={(v) => {
@@ -143,11 +147,11 @@ export default function AddNewWalletModal({
                       value={currency}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a currency" />
+                        <SelectValue placeholder={tGeneral("select_currency")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          <SelectLabel>Currency</SelectLabel>
+                          <SelectLabel>{tGeneral("currency")}</SelectLabel>
                           {currencyOptions.map((currency) => (
                             <SelectItem key={currency.code} value={currency.code}>
                               {currency.name} ({currency.code})
@@ -163,20 +167,21 @@ export default function AddNewWalletModal({
                   )}
                 </div>
                 <CredenzaFooter>
-                  <div className="flex mt-3">
+                  <div className="flex justify-end mt-3">
                     <Button
                       type="button"
                       className="me-3"
                       onClick={() => onOpenChange(false)}
                     >
-                      Close
+                      {tService("cancel")}
                     </Button>
                     <LoadingButton
                       loading={saveWalletMutation.isPending}
                       type="submit"
                       disabled={isDataLoading || !walletName || !currency}
+                      variant="success"
                     >
-                      Save
+                      {tService("save")}
                     </LoadingButton>
                   </div>
                 </CredenzaFooter>

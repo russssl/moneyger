@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar"
 import { LoadingSpinner } from "./ui/loading"
 import SettingsModal from "./user/settings-modal"
-
+import { useTranslations } from "next-intl"
 function CurrentThemeIcon() {
   const {theme} = useTheme()
   return (
@@ -49,6 +49,7 @@ export function NavUser({
   session: Session | null,
 }) {
   const { isMobile } = useSidebar()
+  const t = useTranslations("navbar")
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -101,7 +102,7 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
-                Upgrade to Pro
+                {t("upgrade_to_pro")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -109,21 +110,21 @@ export function NavUser({
               <SettingsModal />
               <DropdownMenuItem>
                 <CreditCard />
-                Billing
+                {t("billing")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
-                Notifications
+                {t("notifications")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={useSetTheme()}>
                 <CurrentThemeIcon />
-                Theme
+                {t("theme")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut({redirectTo: "/login", redirect: true})}>
               <LogOut />
-              Log out
+              {t("logout")}
             </DropdownMenuItem>
             {/* <ThemeToggle /> */}
           </DropdownMenuContent>

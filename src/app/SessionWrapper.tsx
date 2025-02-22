@@ -17,13 +17,17 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
       </div>
     )
   }
+  
+  function reload() {
+    window.location.reload();
+  }
 
   return session ? (
     <SidebarProvider>
       <AppSidebar session={session} className="hidden md:flex"/>
       {children}
       <div className="md:hidden">
-        <BottomBar />
+        <BottomBar updateList={reload}/>
       </div>
     </SidebarProvider>
   ) : (

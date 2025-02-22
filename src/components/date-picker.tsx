@@ -17,9 +17,10 @@ interface DatePickerProps {
   onChange?: (date: Date | undefined) => void;
   label?: string;
   closeOnSelect?: boolean;
+  placeholder?: string;
 }
 
-export default function DatePicker({ value, onChange, closeOnSelect = true }: DatePickerProps) {
+export default function DatePicker({ value, onChange, closeOnSelect = true, placeholder }: DatePickerProps) {
   const [open, setOpen] = useState<boolean>(false)
 
   return (
@@ -36,7 +37,7 @@ export default function DatePicker({ value, onChange, closeOnSelect = true }: Da
             {value ? (
               format(value, "PPP")
             ) : (
-              <span>Pick a date</span>
+              <span>{placeholder}</span>
             )}
             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
           </Button>

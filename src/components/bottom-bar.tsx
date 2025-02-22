@@ -1,41 +1,39 @@
 import * as React from "react"
 import Link from "next/link"
 
-import { Home, User, PiggyBank, ChartLine } from "lucide-react"
+import { Home, PiggyBank, ChartLine, Settings } from "lucide-react"
 import {BottomBarActionButton} from "./bottom-bar-action-button"
+import SettingsModal from "./user/settings-modal"
 
-const bottomBarItems = [
-  { icon: Home, label: "Home", href: "/" },
-  { icon: PiggyBank, label: "Savings", href: "/savings" },
-  { icon: ChartLine, label: "Stats", href: "/stats" },
-  { icon: User, label: "User", href: "/user" },
-]
-
-export function BottomBar() {
+export function BottomBar({ updateList }: { updateList: () => void }) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background md:hidden">
       <div className="safe-area-bottom">
         <div className="h-16 border-t relative">
           <div className="grid h-full grid-cols-[1fr,1fr,auto,1fr,1fr] items-center px-1">
-            {bottomBarItems.slice(0, 2).map((item) => (
-              <Link key={item.label}
-                href={item.href}
-                className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
-                <item.icon className="h-5 w-5" />
-                <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
-              </Link>
-            ))}
-
+            <Link href="/" className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
+              <Home className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5 font-medium">Home</span>
+            </Link>
+            <Link href="/savings" className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
+              <PiggyBank className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5 font-medium">Savings</span>
+            </Link>
             <div className="relative flex justify-center items-center mx-4">
-              <BottomBarActionButton />
+              <BottomBarActionButton updateList={updateList}/>
             </div>
-
-            {bottomBarItems.slice(2).map((item) => (
-              <Link key={item.label} href={item.href} className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
-                <item.icon className="h-5 w-5" />
-                <span className="text-[10px] mt-0.5 font-medium">{item.label}</span>
-              </Link>
-            ))}
+            <Link href="/stats" className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
+              <ChartLine className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5 font-medium">Stats</span>
+            </Link>
+            <div>
+              <div className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
+                <SettingsModal trigger={
+                  <Settings className="h-5 w-5" />
+                }/>
+                <span className="text-[10px] mt-0.5 font-medium">Settings</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -22,15 +22,17 @@ import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
 import { currencies } from "@/hooks/currencies";
+import {useTranslations} from "next-intl";
 
-export default function SettingsModal() {
+export default function SettingsModal({trigger}: {trigger: React.ReactNode | null}) {
   const { data: session } = useSession();
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const [username, setUsername] = useState("");
   const [currency, setCurrency] = useState("");
 
   const saveMutation = api.user.updateUserSettings.useMutation();
-
+  const t = useTranslations("settings");
+  const serviceTranslations = useTranslations("service");
   const currencyOptions = currencies();
 
   useEffect(() => {
@@ -54,38 +56,41 @@ export default function SettingsModal() {
     <>
       <Credenza>
         <CredenzaTrigger asChild>
-          <DropdownMenuItem
-            onSelect={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}>
-            <Settings />
-            Settings
-          </DropdownMenuItem>
+          {
+            trigger ? trigger : 
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}>
+                <Settings />
+                <span>{t("settings")}</span>
+              </DropdownMenuItem>
+          }
         </CredenzaTrigger>
         <CredenzaContent>
           <CredenzaHeader>
-            <CredenzaTitle>Setting</CredenzaTitle>
+            <CredenzaTitle>{t("settings")}</CredenzaTitle>
             <CredenzaDescription>
-              Change your settings here.
+              {t("settings_description")}
             </CredenzaDescription>
           </CredenzaHeader>
           <CredenzaBody>
             {userSettings ? (
               <>
                 <div className="flex flex-col space-y-2">
-                  <Label>Username</Label>
+                  <Label>{t("username")}</Label>
                   <Input id="username" placeholder='Username' onChange={(e) => setUsername(e.target.value)} value={username}/>
                 </div>
                 <div className="flex flex-col space-y-2 mt-4">
-                  <Label>Currency</Label>
+                  <Label>{t("currency")}</Label>
                   <Select onValueChange={setCurrency} value={currency}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a currency" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Currency</SelectLabel>
+                        <SelectLabel>{t("currency")}</SelectLabel>
                         {currencyOptions.map((currency) => (
                           <SelectItem key={currency.code} value={currency.code}>
                             {currency.name} ({currency.code})
@@ -102,15 +107,16 @@ export default function SettingsModal() {
           </CredenzaBody>
           <CredenzaFooter>
             <CredenzaClose asChild>
-              <div className="flex">
-                <Button className="me-3">Close</Button>
+              <div className="flex flex-col w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+                <Button className="w-full sm:w-auto" variant="outline">{serviceTranslations("close")}</Button>
                 <LoadingButton
+                  className="w-full sm:w-auto"
                   loading={saveMutation.isPending}
                   variant="success"
                   disabled={saveMutation.isPending || !userSettings?.currency}
                   onClick={updateSettings}
                 >
-                  Save
+                  {serviceTranslations("save")}
                 </LoadingButton>
               </div>
             </CredenzaClose>

@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import {currencies, type Currency} from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
+import { useTranslations } from "next-intl";
 type TransactionType = "income" | "expense" | "transfer";
 
 interface AddNewTransactionModalProps {
@@ -29,6 +30,11 @@ interface AddNewTransactionModalProps {
 }
 
 export default function AddNewTransactionModal({ open, onOpenChange, onSave, defaultTab = "expense" }: AddNewTransactionModalProps) {
+
+  const t = useTranslations("finances")
+  const tService = useTranslations("service")
+  const tGeneral = useTranslations("general")
+  const tCategory = useTranslations("categories")
 
   const [date, setDate] = useState<Date>();
   const [transactionType, setTransactionType] = useState<TransactionType>(defaultTab);
@@ -92,42 +98,42 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
     <Credenza open={open} onOpenChange={onOpenChange}>
       <CredenzaContent>
         <CredenzaHeader>
-          <CredenzaTitle>Add New Transaction</CredenzaTitle>
+          <CredenzaTitle>{t("add_transaction")}</CredenzaTitle>
           <CredenzaDescription>
-            Fill in the details below to add a new transaction.
+            {t("transaction_description")}
           </CredenzaDescription>
         </CredenzaHeader>
         <CredenzaBody>
           <div className="grid gap-3">
             {wallets.length === 0 && (
               <div className="p-4 bg-red-100 text-red-800 rounded-lg">
-                You need to create a wallet before you can add a transaction.
+                {t("no_wallet_warning")}
               </div>
             )}
             <TransactionTypeSelect value={transactionType} setValue={setTransactionType} />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="date">Date</Label>
-                <DatePicker label="Date" value={date} onChange={setDate} />
+                <Label htmlFor="date">{tGeneral("date")}</Label>
+                <DatePicker value={date} onChange={setDate} placeholder={tGeneral("select_date")}/>
               </div>
               <div>
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">{tGeneral("amount")}</Label>
                 <AddonInput 
                   value={amount}
                   setValue={(value) => setAmount(Number(value))}
                   addonText={currencyData?.symbol}
                   type="number"
-                  placeholder="Enter amount"
+                  placeholder={tGeneral("enter_amount")}
                 />
               </div>
             </div>
-            { wallets.length > 0 ? <div>
+            {wallets.length > 0 ? <div>
               <Label htmlFor="wallet">
-                {transactionType === "transfer" ? "From Wallet" : "Wallet"}
+                {transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
               </Label>
               <Select onValueChange={(value) => selectWalletAndSetCurrency(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select wallet" />
+                  <SelectValue placeholder={tGeneral("select_wallet")} />
                 </SelectTrigger>
                 <SelectContent>
                   {wallets.map((wallet) => (
@@ -139,11 +145,11 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
               </Select>
             </div> : null }
 
-            { wallets.length > 0 && transactionType == "transfer" ? <div>
-              <Label htmlFor="wallet">To Wallet</Label>
+            {wallets.length > 0 && transactionType == "transfer" ? <div>
+              <Label htmlFor="wallet">{tGeneral("to_wallet")}</Label>
               <Select onValueChange={(value) => setSelectedSecondWallet(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select wallet" />
+                  <SelectValue placeholder={tGeneral("select_wallet")} />
                 </SelectTrigger>
                 <SelectContent>
                   {wallets.map((wallet) => (
@@ -153,45 +159,45 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
                   ))}
                 </SelectContent>
               </Select>
-            </div> : null }
+            </div> : null}
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{tGeneral("description")}</Label>
               <Input 
                 id="description" 
-                placeholder="Enter transaction description"
+                placeholder={tGeneral("enter_description")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{tGeneral("category")}</Label>
               <Select onValueChange={(value) => setSelectedCategory(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={tGeneral("select_category")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="food">Food & Dining</SelectItem>
-                  <SelectItem value="transport">Transportation</SelectItem>
-                  <SelectItem value="utilities">Utilities</SelectItem>
-                  <SelectItem value="entertainment">Entertainment</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
+                  <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
+                  <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
+                  <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
+                  <SelectItem value="other">{tCategory("other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="notes">Notes</Label>
-              <AutogrowingTextarea placeholder="Add any additional notes"/>
+              <Label htmlFor="notes">{tGeneral("notes")}</Label>
+              <AutogrowingTextarea placeholder={tGeneral("notes_description")}/>
             </div>
           </div>
         </CredenzaBody>
         <CredenzaFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tService("cancel")}
           </Button>
-          <Button onClick={() => addTransaction()} disabled={!canSave}>
-            Add Transaction
+          <Button onClick={() => addTransaction()} disabled={!canSave} variant="success">
+            {tService("save")}
           </Button>
         </CredenzaFooter>
       </CredenzaContent>
