@@ -45,6 +45,7 @@ export default async function RootLayout({
                   <PostHogProvider>
                     {children}
                     <Toaster />
+                    <SpeedInsights />
                   </PostHogProvider>
                 </SessionWrapper>
               </NextIntlClientProvider>
