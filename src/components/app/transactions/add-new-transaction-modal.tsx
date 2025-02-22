@@ -25,12 +25,13 @@ interface AddNewTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (transaction: any) => void;
+  defaultTab?: "income" | "expense" | "transfer";
 }
 
-export default function AddNewTransactionModal({ open, onOpenChange, onSave }: AddNewTransactionModalProps) {
+export default function AddNewTransactionModal({ open, onOpenChange, onSave, defaultTab = "expense" }: AddNewTransactionModalProps) {
 
   const [date, setDate] = useState<Date>();
-  const [transactionType, setTransactionType] = useState<TransactionType>("expense");
+  const [transactionType, setTransactionType] = useState<TransactionType>(defaultTab);
   const [amount, setAmount] = useState<number>(0);
   const [wallets, setWallets] = useState<any[]>([]);
 
@@ -45,7 +46,6 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave }: A
   const canSave = selectedFirstWallet && date && selectedCategory && amount !== 0;
   
   const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open,});
-
   useEffect(() => {
     if (walletsData) {
       setWallets(walletsData);

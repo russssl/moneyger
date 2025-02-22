@@ -28,14 +28,14 @@ import { currencies } from "@/hooks/currencies";
 
 export default function AddNewWalletModal({
   className,
-  isOpen,
-  setIsOpen,
+  open,
+  onOpenChange,
   id,
   onSave,
 }: {
   className?: string | undefined;
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   id?: string | null;
   onSave: (wallet: any) => void;
 }) {
@@ -48,12 +48,12 @@ export default function AddNewWalletModal({
   const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
     { id: id || null },
     {
-      enabled: isOpen && !!id,
+      enabled: open && !!id,
     }
   );
 
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
+    onOpenChange(open);
   };
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function AddNewWalletModal({
     setCurrency("");
     setInitialBalance(null);
   }
-  , [isOpen]);
+  , [open]);
   
   useEffect(() => {
     if (!res) {
@@ -90,14 +90,14 @@ export default function AddNewWalletModal({
       {
         onSuccess: (result) => {
           onSave(result);
-          setIsOpen(false);
+          onOpenChange(false);
         },
       }
     );
   };
   return (
     <div className={className}>
-      <Credenza open={isOpen} onOpenChange={handleOpenChange}>
+      <Credenza open={open} onOpenChange={handleOpenChange}>
         <CredenzaContent>
           <CredenzaHeader>
             <CredenzaTitle>{id ? "Edit" : "Add new"} wallet</CredenzaTitle>
@@ -167,7 +167,7 @@ export default function AddNewWalletModal({
                     <Button
                       type="button"
                       className="me-3"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => onOpenChange(false)}
                     >
                       Close
                     </Button>

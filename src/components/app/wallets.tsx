@@ -96,7 +96,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} id={selectedId} onSave={(wallets: WalletsRes) => saveWallets(wallets)}/>
+      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} id={selectedId} onSave={(wallets: WalletsRes) => saveWallets(wallets)}/>
     </div>
   );
 }
