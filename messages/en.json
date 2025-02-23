@@ -65,6 +65,9 @@
     "username": "Username",
     "email": "Email",
     "language": "Language",
+    "select_language": "Select language",
+    "english": "English",
+    "polish": "Polish",
     "currency": "Currency"
   },
   "navbar": {

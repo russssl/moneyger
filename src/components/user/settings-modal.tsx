@@ -29,6 +29,13 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const [username, setUsername] = useState("");
   const [currency, setCurrency] = useState("");
+  
+  const savedLocale = document.cookie
+    .split("; ")
+    .find(row => row.startsWith("locale="))
+    ?.split("=")[1];
+
+  const [language, setLanguage] = useState(savedLocale || "en");
 
   const saveMutation = api.user.updateUserSettings.useMutation();
   const t = useTranslations("settings");
@@ -46,6 +53,11 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
 
   const updateSettings = () => {
     saveMutation.mutate({ currency, username });
+
+    if (language !== savedLocale) {
+      document.cookie = `locale=${language}; path=/; max-age=31536000`;
+      window.location.reload();
+    }
   };
 
   if (!session) {
@@ -96,6 +108,20 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
                             {currency.name} ({currency.code})
                           </SelectItem>
                         ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col space-y-2 mt-4">
+                  <Label>{t("language")}</Label>
+                  <Select onValueChange={setLanguage} value={language}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("select_language")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="en">{t("english")}</SelectItem>
+                        <SelectItem value="pl">{t("polish")}</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
