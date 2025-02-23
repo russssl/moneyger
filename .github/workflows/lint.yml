@@ -18,8 +18,8 @@ jobs:
     - name: Install pnpm
       run: npm install -g pnpm
 
-    - name: Install dependencies
-      run: pnpm install
+    - name: Install ESLint
+      run: pnpm add eslint --save-dev
 
     - name: Run ESLint
       run: pnpm lint
