@@ -44,6 +44,7 @@
     "@trpc/react-query": "^11.0.0-rc.446",
     "@trpc/server": "^11.0.0-rc.446",
     "@types/bcrypt": "^5.0.2",
+    "@upstash/redis": "^1.34.4",
     "@vercel/speed-insights": "^1.2.0",
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.1",
@@ -78,7 +79,8 @@
   "devDependencies": {
     "@types/eslint": "^8.56.10",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.9.0",
+    "@types/next": "^9.0.0",
+    "@types/node": "^22.13.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.1.0",

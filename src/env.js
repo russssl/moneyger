@@ -21,6 +21,10 @@ export const env = !process.env.CI ? createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    REDIS_KV_URL: z.string().optional(),
+    REDIS_KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
+    REDIS_KV_REST_API_TOKEN: z.string().optional(),
+    REDIS_KV_REST_API_URL: z.string().optional(),
   },
 
   /**

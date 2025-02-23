@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/cron/route.ts": {
+      "schedule": "5 * * * *"
+    }
+  }
+}
