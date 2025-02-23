@@ -1,7 +1,8 @@
 {
-  "functions": {
-    "api/cron/route.ts": {
+  "crons": [
+    {
+      "path": "api/cron/route.ts",
       "schedule": "5 * * * *"
     }
-  }
+  ]
 }
