@@ -1,21 +1,24 @@
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { CredentialsSignin, type DefaultSession, type NextAuthConfig } from 'next-auth';
-import DiscordProvider from 'next-auth/providers/discord';
-import GoogleProvider from 'next-auth/providers/google';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { eq } from 'drizzle-orm/expressions';
-import { db } from '@/server/db';
+import { type DefaultSession, type NextAuthConfig, CredentialsSignin } from "next-auth";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+
+import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyPassword } from "./util";
+
+import { db } from "@/server/db";
 import {
   accounts,
   sessions,
   users,
   verificationTokens,
-} from '@/server/db/schema';
-import { verifyPassword } from './util';
-// import { verifyPassword } from "./util";
+} from "@/server/db/user";
+import { eq } from "drizzle-orm";
 
 export class NoPasswordError extends CredentialsSignin {
-  code = 'no-password';
+  code = "no-password";
+}
+
+export class SignInError extends CredentialsSignin {
+  code = "invalid-credentials";
 }
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -23,57 +26,64 @@ export class NoPasswordError extends CredentialsSignin {
  *
  * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
  */
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-    } & DefaultSession['user'];
+      surname?: string | null;
+      currency?: string;
+    } & DefaultSession["user"];
   }
 }
 
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
+declare module "next-auth" {
+  interface User {
+    surname?: string | null;
+    currency?: string;
+  }
+}
 
 export const authConfig = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
-    DiscordProvider,
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        if (!credentials.email || !credentials.password) {
+        if ((!credentials.email && !credentials.username) || !credentials.password) {
           return null;
         }
+
+        const searchCondition = credentials.email ? eq(users.email, credentials.email as string) : eq(users.username, credentials.username as string);
+
         const user = await db.query.users.findFirst({
-          where: eq(users.email, credentials.email as string),
+          where: searchCondition,
         });
+
         if (!user) {
           return null;
         }
-        console.log('user exists', user)
+  
         if (user.password === null) {
-          throw new NoPasswordError();
+
+          throw new SignInError({
+            code: "no-password",
+          });
+          throw new Error("No password set");
         }
-        console.log('has password')
+
         if (await verifyPassword(credentials.password as string, user.password)) {
-          return user;
+          return {
+            ...user,
+          };
         } else {
-          throw new CredentialsSignin({
-            message: 'Invalid password',
+          throw new SignInError({
+            code: "invalid-credentials",
           });
         }
-        return null;
       },
     }),
   ],
@@ -84,18 +94,44 @@ export const authConfig = {
     verificationTokensTable: verificationTokens,
   }),
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: ({session, token}) => {
+      if (token?.email && token?.name && token?.sub) {
+        session.user.id = token.sub;
+        session.user.email = token.email;
+        session.user.name = token.name;
+        session.user.surname = token.surname as string | null | undefined;
+        session.user.currency = token.currency as string | undefined;
+      }
+      return session;
+    },
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.email = user.email;
+        token.name = user.name;
+        token.surname = user.surname;
+        token.currency = user.currency;
+      }
+      return token;
+    },
+    signIn: async ({profile}) => {
+      if (profile?.email) {
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, profile.email),
+        });
+
+        if (user) {
+          return false; // user with this email already exists, don't sign in and recommend to sign in with existing provider
+        }
+      }
+      return true;
+    }
   },
   session: {
-    strategy: 'database',
+    strategy: "jwt",
+    maxAge: 15 * 24 * 60 * 60, // 15 days
   },
+  trustHost: true,
   pages: {
-    signIn: '/signin',
+    signIn: "/login",
   },
 } satisfies NextAuthConfig;

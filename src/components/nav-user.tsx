@@ -1,8 +1,8 @@
-'use client'
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from 'lucide-react'
-import { useTheme, } from 'next-themes'
-import type { Session } from 'next-auth'
-import { Avatar, AvatarFallback} from '@/components/ui/avatar'
+"use client"
+import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from "lucide-react"
+import { useTheme, } from "next-themes"
+import type { Session } from "next-auth"
+import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,20 +11,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { signOut } from 'next-auth/react';
+} from "@/components/ui/dropdown-menu"
+import { signOut } from "next-auth/react";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/components/ui/sidebar'
-
+} from "@/components/ui/sidebar"
+import { LoadingSpinner } from "./ui/loading"
+import SettingsModal from "./user/settings-modal"
+import { useTranslations } from "next-intl"
 function CurrentThemeIcon() {
   const {theme} = useTheme()
   return (
     <div className="flex items-center gap-2">
-      {theme === 'dark' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+      {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
     </div>
   )
 }
@@ -34,10 +36,10 @@ function useSetTheme() {
   return (event: React.MouseEvent) => {
     event.preventDefault()
     event.stopPropagation()
-    if (theme === 'dark') {
-      setTheme('light')
+    if (theme === "dark") {
+      setTheme("light")
     } else {
-      setTheme('dark')
+      setTheme("dark")
     }
   }
 }
@@ -47,6 +49,7 @@ export function NavUser({
   session: Session | null,
 }) {
   const { isMobile } = useSidebar()
+  const t = useTranslations("navbar")
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -58,30 +61,40 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-full border-dashed border-3">
+                  {session?.user?.name?.[0] ?? ""}{session?.user?.surname?.[0] ?? ""}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{session?.user.name ?? 'Loading...'}</span>
-                {/* <span className="truncate text-xs">{user.email}</span> */}
+                <span className="truncate font-semibold">{
+                  session ? 
+                    <>
+                      {session.user.name} {session.user?.surname ?? ""}
+                    </> 
+                    : <LoadingSpinner/> }</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
+            side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {session?.user?.name?.[0] ?? ""}{session?.user?.surname?.[0] ?? ""}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{session?.user.name ?? 'Loading...'}</span>
-                  {/* <span className="truncate text-xs">{user.email}</span> */}
+                  <span className="truncate font-semibold">
+                    {session ? 
+                      session.user.name + " " + session.user.surname
+                      : <LoadingSpinner></LoadingSpinner>}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -89,32 +102,29 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
-                Upgrade to Pro
+                {t("upgrade_to_pro")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
+              <SettingsModal />
               <DropdownMenuItem>
                 <CreditCard />
-                Billing
+                {t("billing")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
-                Notifications
+                {t("notifications")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={useSetTheme()}>
                 <CurrentThemeIcon />
-                Theme
+                {t("theme")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({redirectTo: '/signin', redirect: true})}>
+            <DropdownMenuItem onClick={() => signOut({redirectTo: "/login", redirect: true})}>
               <LogOut />
-              Log out
+              {t("logout")}
             </DropdownMenuItem>
             {/* <ThemeToggle /> */}
           </DropdownMenuContent>
