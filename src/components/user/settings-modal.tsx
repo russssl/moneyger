@@ -122,6 +122,7 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
                       <SelectGroup>
                         <SelectItem value="en">{t("english")}</SelectItem>
                         <SelectItem value="pl">{t("polish")}</SelectItem>
+                        <SelectItem value="ua">{t("ukrainian")}</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>

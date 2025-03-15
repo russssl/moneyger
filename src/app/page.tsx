@@ -11,13 +11,15 @@ export default async function HomePage() {
     redirect("/login");
   }
   return (
-    <div className="container pb-24 md:pb-0 md:pl-6">
-      <div className="flex flex-col gap-6 px-4 md:px-0">
-        <h1 className="text-2xl md:text-4xl font-bold mt-4">
-          {t("welcome_message", { name: session.user.name })}
-        </h1>
-        <WalletsAndCards />
-        <TransactionList />
+    <div className="flex justify-center pb-24 md:pb-0">
+      <div className="max-w-3xl w-full px-4 md:px-6">
+        <div className="flex flex-col gap-6">
+          <h1 className="text-xl md:text-4xl font-bold mt-4 text-center">
+            {t("welcome_message", { name: session.user.name })}
+          </h1>
+          <WalletsAndCards />
+          <TransactionList />
+        </div>
       </div>
     </div>
   );
