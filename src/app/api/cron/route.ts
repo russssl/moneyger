@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { Redis } from "@upstash/redis"
 
 const redis = new Redis({
   url: process.env.REDIS_KV_REST_API_URL,
@@ -17,18 +17,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(quota)
       // we need to give some buffer because the quota is not updated in real-time
       if (quota.requests_left < 10) {
-        return res.status(429).json({ error: 'Rate limit exceeded' })
+        return res.status(429).json({ error: "Rate limit exceeded" })
       }
 
       // get exchange rate
 
-      const exchangeRate = await fetch(`https://open.er-api.com/v6/${env.EXCHANGE_RATE_API_KEY}/latest/USD`)
+      const exchangeRate = await fetch(`${process.env.EXCHANGE_RATE_URL}${process.env.EXCHANGE_RATE_API_KEY}/latest/USD`) // this is unsafe
       const exchangeRateData = await exchangeRate.json()
       console.log(exchangeRateData)
-      await redis.set('exchangeRate', JSON.stringify(exchangeRateData.rates))
+      await redis.set("exchangeRate", JSON.stringify(exchangeRateData.rates))
 
-    } catch (error) {
-      return res.status(405).json({ error: 'Method not allowed' });
+    } catch (e: any) {
+      return res.status(405).json({ error: "Method not allowed", message: e.message });
     }
   }
 }

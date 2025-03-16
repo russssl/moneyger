@@ -6,6 +6,7 @@ import { transactions } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
 import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
+import { getCurrentExchangeRate } from "../services/wallets";
 
 export const transactionsRouter = createTRPCRouter({
   getTransactions: protectedProcedure
@@ -76,7 +77,7 @@ export const transactionsRouter = createTRPCRouter({
       description: z.string(),
       category: z.string(),
       note: z.string().optional(),
-      type: z.enum(["income", "expense", "transfer", "adjustment"]),
+      type: z.enum(["income", "expense", "adjustment"]),
     })).mutation(async ({ ctx, input }) => {
       const wallet = await ctx.db.query.wallets.findFirst({
         where: and(
@@ -177,4 +178,73 @@ export const transactionsRouter = createTRPCRouter({
       console.log(deleted);
       return deleted;
     }),
+  
+  transferFunds: protectedProcedure
+    .input(z.object({
+      fromWalletId: z.string(),
+      toWalletId: z.string(),
+      amount: z.number(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { fromWalletId, toWalletId, amount } = input;
+
+      const fromWallet = await ctx.db.query.wallets.findFirst({
+        where: and(
+          eq(wallets.userId, ctx.session.user.id),
+          eq(wallets.id, fromWalletId),
+        ),
+      });
+
+      if (!fromWallet) {
+        throw new Error("Source wallet not found");
+      }
+
+      const toWallet = await ctx.db.query.wallets.findFirst({
+        where: and(
+          eq(wallets.userId, ctx.session.user.id),
+          eq(wallets.id, toWalletId),
+        ),
+      });
+
+      if (!toWallet) {
+        throw new Error("Destination wallet not found");
+      }
+
+      const originalCurrency = fromWallet.currency; const newCurrency = toWallet.currency;
+
+      if (!originalCurrency || !newCurrency) {
+        // theoretically will never happen
+        throw new Error("missing currencies")
+      }
+      let convertedAmount = amount;
+    
+      // If currencies are different, apply exchange rate
+      if (originalCurrency !== newCurrency) {
+        const exchangeRate = await getCurrentExchangeRate(originalCurrency, newCurrency, ctx);
+        convertedAmount = amount * exchangeRate;
+      }
+  
+      await ctx.db.transaction(async (tx) => {
+        await tx.insert(transactions).values({
+          userId: ctx.session.user.id,
+          walletId: fromWalletId,
+          amount: amount,
+          transaction_date: new Date(),
+          category: "transfer",
+          type: "expense",
+        }).execute();
+
+        await tx.insert(transactions).values({
+          userId: ctx.session.user.id,
+          walletId: toWalletId,
+          amount: convertedAmount,
+          transaction_date: new Date(),
+          category: "transfer",
+          type: "income",
+        }).execute();
+      });
+
+      return { success: true };
+    })
+    
 });
