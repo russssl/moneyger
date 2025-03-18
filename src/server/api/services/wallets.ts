@@ -3,7 +3,7 @@ import { type Transaction, transactions as transactionsSchema} from "@/server/db
 import { and, eq, inArray, lt } from "drizzle-orm";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import { env } from "process";
-import { currencyExchangeRate, type SelectCurrencyExchangeRate } from "@/server/db/currencyExchangeRate";
+import { currencyExchangeRates, type SelectCurrencyExchangeRate } from "@/server/db/currencyExchangeRate";
 import { DateTime } from "luxon";
 
 export async function calculateWalletBalance(walletId: string) {
@@ -93,15 +93,13 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
 
   // try to get exchange rate from database
 
-  let exchangeRate= await ctx.db.query.currencyExchangeRate.findFirst({
-    where: {
-      baseCurrency: fromCurrency,
-    },
+  let exchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
+    where: eq(currencyExchangeRates.baseCurrency, fromCurrency),
   });
 
   if (exchangeRate) {
     if (exchangeRate.createdAt && isOutdated(exchangeRate.createdAt as string)) {
-      exchangeRate = await updateCurrenciesExchangeRate(ctx, fromCurrency);
+      exchangeRate = await updateCurrenciesExchangeRate(api, ctx, fromCurrency);
     }
     const rate = (exchangeRate.rates as Record<string, number>)[toCurrency];
     if (rate) {
@@ -111,46 +109,48 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
 
   // if not found, get rate for USD and convert it
 
-  const usdExchangeRate: SelectCurrencyExchangeRate = await ctx.db.query.currencyExchangeRate.findFirst({
-    where: {
-      baseCurrency: "USD",
-    },
+
+  const usdExchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
+    where: eq(currencyExchangeRates.baseCurrency, "USD"),
   });
 
-  if (!usdExchangeRate || (usdExchangeRate.createdAt && isOutdated(usdExchangeRate.createdAt))) {
-    await updateCurrenciesExchangeRate(ctx);
+  if (!usdExchangeRate || (usdExchangeRate.createdAt && isOutdated(usdExchangeRate.createdAt as string))) {
+    await updateCurrenciesExchangeRate(api, ctx);
   }
 
-  const rates = usdExchangeRate.rates as any; // FIXME: this is a hack
+  const rates = usdExchangeRate.rates
   const finalRate = rates[fromCurrency] / rates[toCurrency];
   return finalRate;
 }
 
-async function updateCurrenciesExchangeRate(ctx: any, currencyToRetrieve: string | null = null) {
-
-  const api = new CurrencyApi(env.EXCHANGE_RATE_URL, env.EXCHANGE_RATE_API_KEY);
+async function updateCurrenciesExchangeRate(api: any, ctx: any, currencyToRetrieve: string | null = null) {
 
   if (await api.getQuota() < 10) {
     throw new Error("Rate limit exceeded");
   }
 
-  const currenciesToUpdate : Array<string> = await ctx.db.select({
-    baseCurrency: currencyExchangeRate.baseCurrency,
-    createdAt: currencyExchangeRate.createdAt,
+  const currenciesToUpdate : Array<SelectCurrencyExchangeRate> = await ctx.db.select({
+    baseCurrency: currencyExchangeRates.baseCurrency,
+    createdAt: currencyExchangeRates.createdAt,
   })
-    .from(currencyExchangeRate)
+    .from(currencyExchangeRates)
     .where(
       and(
         ...[
-          inArray(currencyExchangeRate.baseCurrency, ["USD", "EUR", "GBP", "JPY"]),
-          lt(currencyExchangeRate.createdAt, DateTime.now().minus({ days: 1 }).toISODate())
+          inArray(currencyExchangeRates.baseCurrency, ["USD", "EUR", "GBP", "JPY"]),
+          lt(currencyExchangeRates.createdAt, DateTime.now().minus({ days: 1 }).toISODate())
         ]
       )
     )
     .execute()
-    .map((currency: SelectCurrencyExchangeRate) => currency.baseCurrency);
-
-  const res = await Promise.all(currenciesToUpdate.map(async (currency) => {
+  
+  let currencyStrings: string[] = []
+  if (currenciesToUpdate.length > 0) {
+    currencyStrings = currenciesToUpdate.map(c => c.baseCurrency)
+  } else {
+    currencyStrings = ["USD", "EUR", "GBP", "JPY"]
+  }
+  const res = await Promise.all(currencyStrings.map(async (currency) => {
     const exchangeRate = await api.getExchangeRate(currency);
     
     if (!exchangeRate) {
@@ -164,7 +164,7 @@ async function updateCurrenciesExchangeRate(ctx: any, currencyToRetrieve: string
     }
   }));
 
-  await ctx.db.insert(currencyExchangeRate).values(res).execute();
+  await ctx.db.insert(currencyExchangeRates).values(res).execute();
 
   if (currencyToRetrieve) {
     return res.find((rate) => rate.baseCurrency === currencyToRetrieve);

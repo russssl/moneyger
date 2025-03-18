@@ -77,7 +77,7 @@ export const transactionsRouter = createTRPCRouter({
       description: z.string(),
       category: z.string(),
       note: z.string().optional(),
-      type: z.enum(["income", "expense", "adjustment"]),
+      type: z.enum(["income", "expense", "adjustment", "transfer"]),
     })).mutation(async ({ ctx, input }) => {
       const wallet = await ctx.db.query.wallets.findFirst({
         where: and(
@@ -245,6 +245,20 @@ export const transactionsRouter = createTRPCRouter({
       });
 
       return { success: true };
-    })
+    }),
     
+  getCurrentExchangeRate: protectedProcedure
+    .input(z.object({
+      from: z.string().uuid(),
+      to: z.string().uuid(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { from, to } = input;
+      const fromCurrency = await ctx.db.select({currency: wallets.currency}).from(wallets).where(eq(wallets.id, from)).execute().then((res) => res[0]?.currency);
+      const toCurrency = await ctx.db.select({currency: wallets.currency}).from(wallets).where(eq(wallets.id, to)).execute().then((res) => res[0]?.currency);
+      if (!fromCurrency || !toCurrency) {
+        throw new Error("Wallet not found");
+      }
+      return await getCurrentExchangeRate(fromCurrency, toCurrency, ctx);
+    }),
 });

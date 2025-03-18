@@ -47,17 +47,33 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
   const [selectedCategory, setSelectedCategory] = useState<string>();
   const [currencyData, setCurrencyData] = useState<Currency | undefined>(undefined);
   const [description, setDescription] = useState<string>("");
-
+  const [exchangeRate, setExchangeRate] = useState<number>(1);
+  const [toCurrencyCode, setToCurrencyCode] = useState<string | null>(null);
   const updateTransactionMutation = api.transactions.updateTransaction.useMutation();
   const canSave = selectedFirstWallet && date && selectedCategory && amount !== 0;
   
   const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open,});
+
+  const currencyConversionRateQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
+  const {data: currency_conversion_res} = api.transactions.getCurrentExchangeRate.useQuery({
+    from: selectedFirstWallet!,
+    to: selectedSecondWallet!,
+  }, { enabled: currencyConversionRateQueryEnabled });
+
   useEffect(() => {
     if (walletsData) {
       setWallets(walletsData);
     }
   }, [walletsData]);
   
+  useEffect(() => {
+    if (currency_conversion_res) {
+      setExchangeRate(currency_conversion_res);
+      const walletCurrency: string = wallets.find((wallet) => wallet.id === selectedSecondWallet)?.currency || "";
+      setToCurrencyCode(walletCurrency)
+    }
+  }, [currency_conversion_res, selectedSecondWallet, wallets]);
+
   useEffect(() => {
     if (!open) {
       setSelectedWallet(undefined);
@@ -144,6 +160,14 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
                 </SelectContent>
               </Select>
             </div> : null }
+            
+            {exchangeRate !== 1 && transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-600">
+                  {"1 " + currencyData?.code + " = " + exchangeRate + " " + toCurrencyCode}
+                </p>
+              </div>
+            )}
 
             {wallets.length > 0 && transactionType == "transfer" ? <div>
               <Label htmlFor="wallet">{tGeneral("to_wallet")}</Label>
