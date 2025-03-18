@@ -52,7 +52,6 @@ export const walletRouter = createTRPCRouter({
         currency: res_wallet.currency,
         id: res_wallet.id,
         initialBalance: res_wallet.transactions.reduce((acc: number, curr: {amount: number | null}) => acc + (curr.amount ?? 0), 0),
-        type: "wallet",
       };
     }),
 

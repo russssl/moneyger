@@ -1,10 +1,10 @@
-import {json, pgTable, varchar, date} from "drizzle-orm/pg-core";
+import { pgTable, varchar, date, jsonb} from "drizzle-orm/pg-core";
 
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const currencyExchangeRate = pgTable("currency_exchange_rate", {
   baseCurrency: varchar("base_currency", {length: 255}).notNull().primaryKey(),
-  rates: json("rates").notNull(),
+  rates: jsonb("rates").notNull(),
   createdAt: date().defaultNow()
 });
 

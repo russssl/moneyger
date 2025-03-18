@@ -1,6 +1,6 @@
 import { db } from "@/server/db";
 import { type Transaction, transactions as transactionsSchema} from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import { env } from "process";
 import { currencyExchangeRate, type SelectCurrencyExchangeRate } from "@/server/db/currencyExchangeRate";
@@ -76,53 +76,97 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
   if (fromCurrency == toCurrency) {
     return 1;
   }
+
+  const isOutdated = (createdAt: string | null): boolean => {
+    if (!createdAt) {
+      return true;
+    }
+    return DateTime.fromJSDate(new Date(createdAt)).diffNow("days").days > 1;
+  }
+
+
   const api = new CurrencyApi(env.EXCHANGE_RATE_URL, env.EXCHANGE_RATE_API_KEY);
 
   if (await api.getQuota() < 10) {
     throw new Error("Rate limit exceeded");
   }
 
-  // try to get record with base "fromCurrency" if exists
-  const fromCurrencyExchangeRate = await ctx.db.query.currencyExchangeRate.findFirst({
+  // try to get exchange rate from database
+
+  let exchangeRate= await ctx.db.query.currencyExchangeRate.findFirst({
     where: {
       baseCurrency: fromCurrency,
     },
   });
 
-  if (fromCurrencyExchangeRate) {
-    const res = fromCurrencyExchangeRate.conversion_rates[toCurrency];
-    if (res) {
-      return res;
+  if (exchangeRate) {
+    if (exchangeRate.createdAt && isOutdated(exchangeRate.createdAt as string)) {
+      exchangeRate = await updateCurrenciesExchangeRate(ctx, fromCurrency);
     }
-    throw new Error("Exchange rate not found");
-  }
-  
-  const getDollarExchangeRate = async (): Promise<SelectCurrencyExchangeRate | null> => {
-    return ctx.db.query.currencyExchangeRate.findFirst({
-      where: (eq: any) => eq.baseCurrency("USD"),
-    });
-  }
-  // if not found get dollar record and convert it to "toCurrency"
-  let exchangeRate = await getDollarExchangeRate();
-
-  if (!exchangeRate || (exchangeRate.createdAt && DateTime.fromJSDate(new Date(exchangeRate.createdAt)).diffNow("days").days > 1)) {
-    await Promise.all(["USD", "EUR", "GBP", "JPY"].map(async (currency) => {
-      const exchangeRate = await api.getExchangeRate(currency);
-      await ctx.db.insert(currencyExchangeRate).values({
-        baseCurrency: currency,
-        rates: exchangeRate.conversion_rates,
-        createdAt: new Date(),
-      }).execute();
-    }));
-
-    exchangeRate = await getDollarExchangeRate()
+    const rate = (exchangeRate.rates as Record<string, number>)[toCurrency];
+    if (rate) {
+      return rate;
+    }
   }
 
-  if (!exchangeRate) {
-    throw new Error("Exchange rate not found");
+  // if not found, get rate for USD and convert it
+
+  const usdExchangeRate: SelectCurrencyExchangeRate = await ctx.db.query.currencyExchangeRate.findFirst({
+    where: {
+      baseCurrency: "USD",
+    },
+  });
+
+  if (!usdExchangeRate || (usdExchangeRate.createdAt && isOutdated(usdExchangeRate.createdAt))) {
+    await updateCurrenciesExchangeRate(ctx);
   }
 
-  const rates = exchangeRate.rates as any; // FIXME: this is a hack
+  const rates = usdExchangeRate.rates as any; // FIXME: this is a hack
   const finalRate = rates[fromCurrency] / rates[toCurrency];
   return finalRate;
+}
+
+async function updateCurrenciesExchangeRate(ctx: any, currencyToRetrieve: string | null = null) {
+
+  const api = new CurrencyApi(env.EXCHANGE_RATE_URL, env.EXCHANGE_RATE_API_KEY);
+
+  if (await api.getQuota() < 10) {
+    throw new Error("Rate limit exceeded");
+  }
+
+  const currenciesToUpdate : Array<string> = await ctx.db.select({
+    baseCurrency: currencyExchangeRate.baseCurrency,
+    createdAt: currencyExchangeRate.createdAt,
+  })
+    .from(currencyExchangeRate)
+    .where(
+      and(
+        ...[
+          inArray(currencyExchangeRate.baseCurrency, ["USD", "EUR", "GBP", "JPY"]),
+          lt(currencyExchangeRate.createdAt, DateTime.now().minus({ days: 1 }).toISODate())
+        ]
+      )
+    )
+    .execute()
+    .map((currency: SelectCurrencyExchangeRate) => currency.baseCurrency);
+
+  const res = await Promise.all(currenciesToUpdate.map(async (currency) => {
+    const exchangeRate = await api.getExchangeRate(currency);
+    
+    if (!exchangeRate) {
+      throw new Error("Exchange rate not found");
+    }
+    
+    return {
+      baseCurrency: currency,
+      rates: exchangeRate.conversion_rates,
+      createdAt: new Date(),
+    }
+  }));
+
+  await ctx.db.insert(currencyExchangeRate).values(res).execute();
+
+  if (currencyToRetrieve) {
+    return res.find((rate) => rate.baseCurrency === currencyToRetrieve);
+  }
 }
