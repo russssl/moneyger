@@ -162,10 +162,15 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
             </div> : null }
             
             {exchangeRate !== 1 && transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-600">
+              <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                <p className="text-sm text-blue-700 font-medium">
                   {"1 " + currencyData?.code + " = " + exchangeRate + " " + toCurrencyCode}
                 </p>
+                {amount !== 0 && (
+                  <p className="text-sm text-blue-700 font-medium">
+                    { "You will receive " + (amount * exchangeRate).toFixed(2) + " " + toCurrencyCode }
+                  </p>
+                )}
               </div>
             )}
 

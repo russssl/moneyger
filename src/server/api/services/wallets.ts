@@ -73,43 +73,34 @@ class CurrencyApi {
  * @returns 
  */
 export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: string, ctx: any) : Promise<number> {
-  if (fromCurrency == toCurrency) {
-    return 1;
-  }
-
   const isOutdated = (createdAt: string | null): boolean => {
     if (!createdAt) {
       return true;
     }
     return DateTime.fromJSDate(new Date(createdAt)).diffNow("days").days > 1;
+  };
+
+  const formatRate = (rate: number): number => {
+    return Math.round(rate * 100) / 100;
   }
 
-
-  const api = new CurrencyApi(env.EXCHANGE_RATE_URL, env.EXCHANGE_RATE_API_KEY);
-
-  if (await api.getQuota() < 10) {
-    throw new Error("Rate limit exceeded");
-  }
-
-  // try to get exchange rate from database
-
-  let exchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
+  // Try to get exchange rate from database first
+  const exchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
     where: eq(currencyExchangeRates.baseCurrency, fromCurrency),
   });
 
-  if (exchangeRate) {
-    if (exchangeRate.createdAt && isOutdated(exchangeRate.createdAt as string)) {
-      exchangeRate = await updateCurrenciesExchangeRate(api, ctx, fromCurrency);
-    }
+  // If exchange rate exists and is not outdated, return it immediately
+  if (exchangeRate && !isOutdated(exchangeRate.createdAt as string)) {
     const rate = (exchangeRate.rates as Record<string, number>)[toCurrency];
     if (rate) {
-      return rate;
+      return formatRate(rate);
     }
   }
 
+  // If exchange rate is outdated or not found, check API quota before calling API
+  const api = new CurrencyApi(env.EXCHANGE_RATE_URL, env.EXCHANGE_RATE_API_KEY);
+
   // if not found, get rate for USD and convert it
-
-
   const usdExchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
     where: eq(currencyExchangeRates.baseCurrency, "USD"),
   });
@@ -119,8 +110,11 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
   }
 
   const rates = usdExchangeRate.rates
-  const finalRate = rates[fromCurrency] / rates[toCurrency];
-  return finalRate;
+
+  // rates are rates from USD to other currencies (e.g. 1 USD = 0.85 EUR)
+  const dollarAmount = 1 / rates[fromCurrency];
+  const finalRate = dollarAmount * rates[toCurrency];
+  return formatRate(finalRate);
 }
 
 async function updateCurrenciesExchangeRate(api: any, ctx: any, currencyToRetrieve: string | null = null) {
