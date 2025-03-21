@@ -1,25 +1,24 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { type ReactNode } from "react";
 import { LoadingSpinner } from "@/components/ui/loading";
 import { BottomBar } from "@/components/bottom-bar";
-
+import { useAuthSession } from "@/hooks/use-session";
 
 export default function SessionWrapper({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const {data: session, isPending} = useAuthSession();
 
-  if (status === "loading") {
+  const reload = () => {
+    window.location.reload();
+  }
+
+  if (isPending) {
     return (
       <div className="flex justify-center items-center h-screen">
         <LoadingSpinner />
       </div>
     )
-  }
-  
-  function reload() {
-    window.location.reload();
   }
 
   return session ? (

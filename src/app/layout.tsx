@@ -4,7 +4,6 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "@/trpc/react";
-import { SessionProvider } from "next-auth/react";
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "next-themes";
 import { PostHogProvider } from "./providers";
@@ -39,17 +38,15 @@ export default async function RootLayout({
           vaul-drawer-wrapper="" 
           disableTransitionOnChange>
           <TRPCReactProvider>
-            <SessionProvider>
-              <NextIntlClientProvider messages={messages}>
-                <SessionWrapper>
-                  <PostHogProvider>
-                    {children}
-                    <Toaster />
-                    <SpeedInsights />
-                  </PostHogProvider>
-                </SessionWrapper>
-              </NextIntlClientProvider>
-            </SessionProvider>
+            <NextIntlClientProvider messages={messages}>
+              <SessionWrapper>
+                <PostHogProvider>
+                  {children}
+                  <Toaster />
+                  <SpeedInsights />
+                </PostHogProvider>
+              </SessionWrapper>
+            </NextIntlClientProvider>
           </TRPCReactProvider>
         </ThemeProvider>
       </body>

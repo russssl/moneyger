@@ -1,4 +1,4 @@
-import { db } from "@/server/db";
+import db from "@/server/db";
 import { type Transaction, transactions as transactionsSchema} from "@/server/db/schema";
 import { and, eq, inArray, lt } from "drizzle-orm";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";

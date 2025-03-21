@@ -1,209 +1,117 @@
 "use client";
-import { useEffect, useState } from "react";
-import { getProviders, signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Input } from "./ui/input";
-
 import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
-import { LoadingSpinner } from "./ui/loading";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { usePostHog } from "posthog-js/react";
 import { useTranslations } from "next-intl";
-
-type ClientSafeProvider = {
-  id: string;
-  name: string;
-  type: string;
-  signinUrl: string;
-  callbackUrl: string;
-};
-
-function getErrorMessage(error: string | undefined) {
-  console.log(error);
-  switch (error) {
-  case "invalid-credentials":
-    return "Invalid email or password";
-  case "no-password":
-    return "No password set";
-  default:
-    return "An error occurred";
-  }
-}
+import { signIn } from "@/hooks/use-session";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
 export default function LoginProviders() {
-  const [providers, setProviders] = useState<Record<string, ClientSafeProvider> | null>(null);
-  const [credentialsProvider, setCredentialsProvider] = useState<ClientSafeProvider | null>(null);
-  const [email, setEmail] = useState("")
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  
-  const posthog = usePostHog()
-  
+  const posthog = usePostHog();
   const t = useTranslations("register_login");
   const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       setLoading(true);
-      e.preventDefault()
-      if ((!email && !username) || !password) {
-        setError("Please provide both email/username and password.");
-        return;
-      }
-      const res = await signIn("credentials", {
-        redirect: false,
-        email,
-        username,
-        password,
-      });
+      setError("");
 
-      if (res) {
-        posthog?.capture("user_logged_in", { email, username });
-      }
-
-      if (!res) {
-        setError("An error occurred");
+      if (!email || !password) {
+        setError("Please provide both email and password.");
         return;
       }
 
-      if (res.error) {
-        setError(getErrorMessage(res.error));
+      const {data, error } = await signIn.email({ email, password });
+
+      if (error?.message) {
+        setError(error.message);
         return;
       }
 
-      if (res.ok) {
-        router.push("/");        
-      }
-    } catch (error: unknown) {
-      setError((error as Error)?.message ?? "An unknown error occurred");
+      posthog?.capture("user_logged_in", { email });
+      router.push("/");
+    } catch (e) {
+      console.error(e);
+      setError("An unknown error occurred");
     } finally {
       setLoading(false);
     }
-  }
-  useEffect(() => {
-    async function fetchProviders() {
-      try {
-        const res = await getProviders();
-        if (res) {
-          const credentialsProvider = Object.values(res).find((provider: ClientSafeProvider) => provider.id === "credentials") ?? null;
-          setCredentialsProvider(credentialsProvider);
-          setProviders(Object.fromEntries(Object.entries(res).filter(([_, provider]) => provider.id !== "credentials")));
-        }
-      } catch (error) {
-        console.error("Error fetching providers:", error);
-      }
-    }
-    void fetchProviders();
-  }, []);
-  
-  if (!providers || !credentialsProvider) {
-    return (
-      <div className='flex justify-center font-bold text-pretty align-middle'>
-        <div className='me-2'>
-          Loading
-        </div>
-        <div>
-          <LoadingSpinner />
-        </div>
-      </div>
-    ) 
-  }
-
-  const setUsernameOrEmail = (text: string) => {
-    if (text.includes("@")) {
-      setEmail(text)
-    } else {
-      setUsername(text)
-    }
-  }
+  };
 
   return (
     <>
       <form className="space-y-4" onSubmit={handleSubmit}>
-        {credentialsProvider && (
-          <div>
-            <div className="space-y-2">
-              <Label htmlFor="username">
-                {t("username_or_email")}
-                <span className="text-destructive ms-1">*</span>
-              </Label>
-              <Input
-                id="username"
-                placeholder={t("username_or_email")}
-                onChange={(e) => setUsernameOrEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2 mt-2">
-              <Label htmlFor="password">
-                {t("password")}
-                <span className="text-destructive ms-1">*</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  className="pe-9"
-                  placeholder={t("password")}
-                  type={isVisible ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  className={passwordButtonStyle}
-                  type="button"
-                  onClick={() => setIsVisible(!isVisible)}
-                  aria-label={isVisible ? "Hide password" : "Show password"}
-                  aria-pressed={isVisible}
-                  aria-controls="password"
-                >
-                  {isVisible ? (
-                    <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-                  ) : (
-                    <Eye size={16} strokeWidth={2} aria-hidden="true" />
-                  )}
-                </button>
-              </div>
-            </div>
-            {error && (
-              <Alert variant="destructive" className='mt-3'>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <LoadingButton loading={loading} className='w-full mt-5'>
-              {t("login")}
-            </LoadingButton>
-            <div className='text-center mt-3'>
-              <a href="/password-reset" className="text-blue-500">
-                {t("forgot_password")}
-              </a>
-            </div>
-          </div>
-        )}
-      </form>
-        
-      {Object.keys(providers).length > 0 && (
         <div>
-          <div className='flex justify-center items-center mt-3'>
-            <div className='border-t border-gray-300 flex-grow mr-3'></div>
-            <span className='text-gray-500'>or</span>
-            <div className='border-t border-gray-300 flex-grow ml-3'></div>
+          <div className="space-y-2">
+            <Label htmlFor="email">
+              Email
+              <span className="text-destructive ms-1">*</span>
+            </Label>
+            <Input
+              id="email"
+              placeholder="Email"
+              type="email"
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-          <div className='mt-5'>
-            {Object.values(providers).map((provider: ClientSafeProvider) => (
-              <Button key={provider.name} onClick={() => signIn(provider.id)} className='w-full mb-3'>
-              Login with {provider.name}
-              </Button>
-            ))}
+          <div className="space-y-2 mt-2">
+            <Label htmlFor="password">
+              {t("password")}
+              <span className="text-destructive ms-1">*</span>
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                className="pe-9"
+                placeholder={t("password")}
+                type={isVisible ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                className={passwordButtonStyle}
+                type="button"
+                onClick={() => setIsVisible(!isVisible)}
+                aria-label={isVisible ? "Hide password" : "Show password"}
+                aria-pressed={isVisible}
+                aria-controls="password"
+              >
+                {isVisible ? (
+                  <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <Eye size={16} strokeWidth={2} aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          </div>
+          {error && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <LoadingButton loading={loading} className="w-full mt-5" type="submit">
+            {t("login")}
+          </LoadingButton>
+          <div className="text-center mt-3">
+            <a href="/password-reset" className="text-blue-500">
+              {t("forgot_password")}
+            </a>
           </div>
         </div>
-      )}
+      </form>
     </>
   );
 }

@@ -1,40 +1,52 @@
 CREATE TABLE "account" (
-	"user_id" varchar(255) NOT NULL,
-	"type" varchar(255) NOT NULL,
-	"provider" varchar(255) NOT NULL,
-	"provider_account_id" varchar(255) NOT NULL,
-	"refresh_token" text,
+	"id" text PRIMARY KEY NOT NULL,
+	"account_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"user_id" text NOT NULL,
 	"access_token" text,
-	"expires_at" integer,
-	"token_type" varchar(255),
-	"scope" varchar(255),
+	"refresh_token" text,
 	"id_token" text,
-	"session_state" varchar(255),
-	CONSTRAINT "account_provider_provider_account_id_pk" PRIMARY KEY("provider","provider_account_id")
+	"access_token_expires_at" timestamp,
+	"refresh_token_expires_at" timestamp,
+	"scope" text,
+	"password" text,
+	"created_at" timestamp NOT NULL,
+	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
-	"session_token" varchar(255) PRIMARY KEY NOT NULL,
-	"user_id" varchar(255) NOT NULL,
-	"expires" timestamp with time zone NOT NULL
+	"id" text PRIMARY KEY NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"token" text NOT NULL,
+	"created_at" timestamp NOT NULL,
+	"updated_at" timestamp NOT NULL,
+	"ip_address" text,
+	"user_agent" text,
+	"user_id" text NOT NULL,
+	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
-	"id" varchar(255) PRIMARY KEY NOT NULL,
-	"name" varchar(255),
-	"surname" varchar(255),
-	"username" varchar(255),
-	"email" varchar(255) NOT NULL,
-	"email_verified" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-	"password" text,
-	"image" varchar(255)
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"surname" text NOT NULL,
+	"username" text NOT NULL,
+	"email" text NOT NULL,
+	"email_verified" boolean NOT NULL,
+	"image" text,
+	"created_at" timestamp NOT NULL,
+	"updated_at" timestamp NOT NULL,
+	CONSTRAINT "user_username_unique" UNIQUE("username"),
+	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "verification_token" (
-	"identifier" varchar(255) NOT NULL,
-	"token" varchar(255) NOT NULL,
-	"expires" timestamp with time zone NOT NULL,
-	CONSTRAINT "verification_token_identifier_token_pk" PRIMARY KEY("identifier","token")
+CREATE TABLE "verification" (
+	"id" text PRIMARY KEY NOT NULL,
+	"identifier" text NOT NULL,
+	"value" text NOT NULL,
+	"expires_at" timestamp NOT NULL,
+	"created_at" timestamp,
+	"updated_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "user_settings" (
@@ -74,11 +86,9 @@ CREATE TABLE "currency_exchange_rate" (
 	"created_at" date DEFAULT now()
 );
 --> statement-breakpoint
-ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_settings" ADD CONSTRAINT "user_settings_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "wallet" ADD CONSTRAINT "wallet_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_wallet_id_wallet_id_fk" FOREIGN KEY ("wallet_id") REFERENCES "public"."wallet"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "account_user_id_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "session_user_id_idx" ON "session" USING btree ("user_id");
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_wallet_id_wallet_id_fk" FOREIGN KEY ("wallet_id") REFERENCES "public"."wallet"("id") ON DELETE no action ON UPDATE no action;

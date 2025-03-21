@@ -19,7 +19,6 @@ import {
   SelectLabel,
 } from "../ui/select";
 import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
@@ -40,7 +39,6 @@ export default function AddNewWalletModal({
   id?: string | null;
   onSave: (wallet: any) => void;
 }) {
-  const { data: session } = useSession();
   const [currency, setCurrency] = useState("");
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
@@ -76,9 +74,6 @@ export default function AddNewWalletModal({
     setWalletName(res.name || "")
   }, [res]);
 
-  if (!session) {
-    return null;
-  }
 
   const saveWalletMutation = api.wallets.updateWallet.useMutation();
 

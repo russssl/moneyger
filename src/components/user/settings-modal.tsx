@@ -16,7 +16,6 @@ import { Settings } from "lucide-react";
 import { Label } from "../ui/label";
 import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectItem, SelectLabel } from "../ui/select";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
@@ -25,7 +24,6 @@ import { currencies } from "@/hooks/currencies";
 import {useTranslations} from "next-intl";
 
 export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
-  const { data: session } = useSession();
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const [username, setUsername] = useState("");
   const [currency, setCurrency] = useState("");
@@ -46,9 +44,9 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
     if (userSettings?.currency) {
       setCurrency(userSettings.currency);
     }
-    if (userSettings?.username) {
-      setUsername(userSettings.username);
-    }
+    // if (userSettings?.username) {
+    //   setUsername(userSettings.username);
+    // }
   }, [userSettings]);
 
   const updateSettings = () => {
@@ -59,10 +57,6 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
       window.location.reload();
     }
   };
-
-  if (!session) {
-    return null;
-  }
 
   return (
     <>

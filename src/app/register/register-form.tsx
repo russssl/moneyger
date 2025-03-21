@@ -7,12 +7,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import Link from "next/link"
 import { useState, useMemo, useEffect } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
+import { signUp } from "@/hooks/use-session";
 import LoadingButton from "@/components/loading-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { save } from "./register";
 import ThemeToggle from "@/components/theme-toggle";
 import { useTranslations } from "next-intl";
 
@@ -121,31 +119,30 @@ export default function RegisterForm() {
 
     setIsSubmitting(true)
     try {
-      const newUser = await save({name, surname, email, password, username}, currency);
-      if (newUser == null) {
-        setError("An error occurred. Please try again.");
-        return;
-      }
+      const {data } = await signUp.email(
+        {
+          name, email, password: password.toString(), username, surname,
+          callbackURL: "/",
+          fetchOptions: {
+            onResponse: () => {
+              setIsSubmitting(false);
+            },
+            onRequest: () => {
+              setIsSubmitting(true);
+            },
+            onError: (ctx) => {
+              setError(ctx.error.message);
+            },
+            onSuccess: async () => {
+              router.push("/");
+            },
+          },});
 
-      const res = await signIn("credentials", {
-        email: newUser.email,
-        password: password,
-        redirect: false,
-      });
-
-      if (!res) {
+      if (!data) {
         setError("An error occurred");
         return;
       }
 
-      if (res.error) {
-        setError("An error occurred");
-        return;
-      }
-
-      if (res.ok) {
-        router.push("/");        
-      }
     } catch (error: unknown) {
       setError((error as Error).message);
     } finally {

@@ -1,5 +1,5 @@
 import { boolean, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
-import { users } from "./user";
+import { user } from "./user";
 import { relations } from "drizzle-orm";
 import { transactions } from "./transaction";
 
@@ -12,7 +12,7 @@ export const wallets = pgTable("wallet", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: varchar("user_id", { length: 255 })
     .notNull()
-    .references(() => users.id),
+    .references(() => user.id),
   name: varchar("name", { length: 255 }),
   description: varchar("description", { length: 255 }),
   iconName: varchar("icon_name", { length: 255 }),
@@ -23,7 +23,7 @@ export const wallets = pgTable("wallet", {
 });
 
 export const walletsRelations = relations(wallets, ({ one, many }) => ({
-  user: one(users, { fields: [wallets.userId], references: [users.id] }),
+  user: one(user, { fields: [wallets.userId], references: [user.id] }),
   transactions: many(transactions),
 }));
 

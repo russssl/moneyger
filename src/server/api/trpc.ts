@@ -11,8 +11,8 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { auth } from "@/server/auth";
-import { db } from "@/server/db";
+import { auth } from "@/lib/auth";
+import db from "@/server/db";
 
 /**
  * 1. CONTEXT
@@ -27,8 +27,11 @@ import { db } from "@/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: opts.headers,
+  });
 
+  console.log("session", session);
   return {
     db,
     session,
@@ -97,7 +100,7 @@ export const publicProcedure = t.procedure;
  */
 export const protectedProcedure = t.procedure
   .use(({ ctx, next }) => {
-    if (!ctx.session || !ctx.session.user) {
+    if (!ctx.session?.user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({
