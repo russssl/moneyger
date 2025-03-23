@@ -3,8 +3,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { hashPassword } from "@/server/auth/util";
-import { user as users, insertUserSchema} from "@/server/db/user";
+import { user as users} from "@/server/db/user";
 import { userSettings } from "@/server/db/userSettings";
 import { eq } from "drizzle-orm";
 import { z } from "zod";

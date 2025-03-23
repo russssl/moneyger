@@ -20,8 +20,7 @@ import {
 import { LoadingSpinner } from "./ui/loading"
 import SettingsModal from "./user/settings-modal"
 import { useTranslations } from "next-intl"
-import { type Session } from "@/hooks/use-session";
-
+import { type Session, signOut } from "@/hooks/use-session";
 function CurrentThemeIcon() {
   const {theme} = useTheme()
   return (
@@ -49,7 +48,6 @@ export function NavUser({
   session: Session | null,
 }) {
   const { isMobile } = useSidebar()
-  // FIXME: better-auth
   const t = useTranslations("navbar")
   return (
     <SidebarMenu>
@@ -70,7 +68,7 @@ export function NavUser({
                 <span className="truncate font-semibold">{
                   session ? 
                     <>
-                      {session.user.name}
+                      {session.user.name} {session.user.surname}
                     </> 
                     : <LoadingSpinner/> }</span>
               </div>
@@ -93,7 +91,7 @@ export function NavUser({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {session ? 
-                      session.user.name + " "
+                      session.user.name + " " + session.user.surname
                       : <LoadingSpinner></LoadingSpinner>}
                   </span>
                 </div>
@@ -123,9 +121,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            {/* <DropdownMenuItem onClick={() => signOut({redirectTo: "/login", redirect: true})}> */}
-            {/*  FIXME: better-auth */}
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />
               {t("logout")}
             </DropdownMenuItem>

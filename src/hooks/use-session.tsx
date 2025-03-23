@@ -1,31 +1,15 @@
-import { type BetterFetchError, createAuthClient } from "better-auth/react";
-import { type createAuthClient as createServerAuthClient } from "better-auth/client";
+import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
+import type { auth } from "@/lib/auth";
 
-const { useSession, signIn, signOut, signUp } = createAuthClient({
-  plugins: [inferAdditionalFields({
-    user: {
-      username: {
-        type: "string",
-        required: true,
-        unique: true,
-        input: true,
-      },
-      surname: {
-        type: "string",
-        required: true,
-        input: true,
-      }
-    }
-  })],
+const { useSession, signIn, signOut, signUp, getSession } = createAuthClient({
+  plugins: [inferAdditionalFields<typeof auth>()],
 });
 
-export type Session = ReturnType<typeof createServerAuthClient>["$Infer"]["Session"];
+export type Session = ReturnType<typeof createAuthClient>["$Infer"]["Session"] & { user: { surname: string}}; // workaround for missing user.surname
 
-export const useAuthSession = (): { data: Session | null, isPending: boolean, error: BetterFetchError | null } => {
+export const useAuthSession = (): { data: Session | null; isPending: boolean; error: Error | null } => {
   return useSession();
 };
 
-export { signIn, signOut, signUp };
-
-//FIXME: better-auth, figure out not to use createAuthClient twice
+export { signIn, signOut, signUp, getSession };

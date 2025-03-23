@@ -12,6 +12,7 @@ import { signUp } from "@/hooks/use-session";
 import LoadingButton from "@/components/loading-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ThemeToggle from "@/components/theme-toggle";
+import LanguageToggle from "@/components/language-toggle";
 import { useTranslations } from "next-intl";
 
 const checkStrength = (pass: string) => {
@@ -121,7 +122,7 @@ export default function RegisterForm() {
     try {
       const {data } = await signUp.email(
         {
-          name, email, password: password.toString(), username, surname,
+          name, email, password: password.toString(), username, surname, currency,
           callbackURL: "/",
           fetchOptions: {
             onResponse: () => {
@@ -156,7 +157,10 @@ export default function RegisterForm() {
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex justify-between">
             {t("register")}
-            <ThemeToggle />
+            <div className="flex space-x-3">
+              <ThemeToggle/>
+              <LanguageToggle />
+            </div>
           </CardTitle>
           <CardDescription>{t("register_modal_description")}</CardDescription>
         </CardHeader>

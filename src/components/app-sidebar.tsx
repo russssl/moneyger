@@ -35,7 +35,7 @@ const data = {
 }
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  session: Session | null, // FIXME: better-auth
+  session: Session | null,
 }
 
 export function AppSidebar({ session, ...props }: AppSidebarProps) {
