@@ -120,10 +120,11 @@ export default function RegisterForm() {
 
     setIsSubmitting(true)
     try {
-      const {data } = await signUp.email(
+      const {data, error } = await signUp.email(
         {
-          name, email, password: password.toString(), username, surname, currency,
+          name, email, password: password.toString(), username, surname,
           callbackURL: "/",
+          
           fetchOptions: {
             onResponse: () => {
               setIsSubmitting(false);
@@ -132,18 +133,19 @@ export default function RegisterForm() {
               setIsSubmitting(true);
             },
             onError: (ctx) => {
+              console.error("Error", ctx.error.message);
               setError(ctx.error.message);
             },
             onSuccess: async () => {
               router.push("/");
             },
           },});
-
-      if (!data) {
-        setError("An error occurred");
+      if (error?.message) {
+        setError(error.message);
         return;
       }
 
+      router.push("/");
     } catch (error: unknown) {
       setError((error as Error).message);
     } finally {

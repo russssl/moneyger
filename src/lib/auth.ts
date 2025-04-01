@@ -4,6 +4,8 @@ import db from "@/server/db";
 import { createAuthMiddleware } from "better-auth/api";
 import { userSettings } from "@/server/db/userSettings";
 
+const userCurrencies = new Map();
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -24,31 +26,47 @@ export const auth = betterAuth({
         required: true,
         input: true,
       },
-      currency: {
-        type: "string",
-        required: true,
-        input: true,
-      },
     }
   },
-  hooks: {
-    after: createAuthMiddleware(async (ctx) => {
-      // after user is created, send a welcome email
-      if (ctx.path.startsWith("/sign-up")) {
-        const newSession = ctx.context.newSession;
-        if (!newSession) {
-          return;
-        }
+  // hooks: {
+  //   before: createAuthMiddleware(async (ctx) => {
+  //     if (ctx.path.startsWith("/sign-up")) {
+  //       const currency = ctx.body.currency;
+  //       if (currency) {
+  //         // Store currency in map
+  //         userCurrencies.set(ctx.body.username, currency);
+  //         delete ctx.body.currency; // Remove currency from body
+  //       }
+  //     }
+  //   }),
 
-        const userSetting = db.insert(userSettings).values({
-          userId: newSession.user.id,
-          currency: ctx.body.currency,
-        });
+  //   after: createAuthMiddleware(async (ctx) => {
+  //     if (ctx.path.startsWith("/sign-up")) {
+  //       const newSession = ctx.context.newSession;
+  //       if (!newSession) {
+  //         return;
+  //       }
 
-        await userSetting.execute();
+  //       const currency = userCurrencies.get(newSession.user.username);
 
-        
-      }
-    })
-  }, 
+  //       // Check if currency is defined, otherwise throw an error
+  //       if (!currency) {
+  //         console.error("Currency is missing in afterCreate hook");
+  //         throw new Error("Currency is required for userSettings");
+  //       } else {
+  //         // Remove currency from map
+  //         userCurrencies.delete(newSession.user.username);
+  //       }
+
+  //       // Create userSettings entry with currency
+  //       await db.insert(userSettings).values({
+  //         userId: newSession.user.id,
+  //         currency: currency, // use currency stored in context
+  //       }).execute();
+
+  //       console.log("UserSettings created with currency for user:", newSession.user.id);
+  //       ctx.redirect("/"); // Redirect after user settings are created
+  //     }
+  //   }),
+  // },
 });

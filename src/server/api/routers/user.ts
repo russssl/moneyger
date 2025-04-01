@@ -80,4 +80,16 @@ export const userRouter = createTRPCRouter({
 
       return updatedUserSettings ?? null;
     }),
+  
+  getUserAdditionalData: protectedProcedure
+    .query(async ({ ctx }) => {
+      const user = ctx.session.user;
+      const userId = user.id;
+
+      const userSettingsData = await ctx.db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
+      });
+
+      return { currency: userSettingsData?.currency ?? null };
+    }),
 });

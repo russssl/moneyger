@@ -144,5 +144,16 @@
     "dark": "Ciemny",
     "light": "Jasny",
     "system": "Systemowy"
+  },
+  "currency-select": {
+    "currency": "Waluta",
+    "select_currency": "Wybierz walutę",
+    "us_dollar": "Dolar amerykański",
+    "euro": "Euro",
+    "polish_zloty": "Złoty polski",
+    "ukrainian_hryvnia": "Hrywna ukraińska",
+    "pound_sterling": "Funt szterling",
+    "japanese_yen": "Jen japoński",
+    "czech_koruna": "Korona czeska"
   }
 }

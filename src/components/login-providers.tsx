@@ -36,11 +36,12 @@ export default function LoginProviders() {
       const {data, error } = await signIn.email({ email, password });
 
       if (error?.message) {
+        alert(error.message);
         setError(error.message);
         return;
       }
 
-      posthog?.capture("user_logged_in", { email });
+      // posthog?.capture("user_logged_in", { email });
       router.push("/");
     } catch (e) {
       console.error(e);

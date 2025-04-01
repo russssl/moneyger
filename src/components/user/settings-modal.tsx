@@ -20,7 +20,6 @@ import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
-import { currencies } from "@/hooks/currencies";
 import {useTranslations} from "next-intl";
 
 export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
@@ -38,15 +37,11 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
   const saveMutation = api.user.updateUserSettings.useMutation();
   const t = useTranslations("settings");
   const serviceTranslations = useTranslations("service");
-  const currencyOptions = currencies();
 
   useEffect(() => {
     if (userSettings?.currency) {
       setCurrency(userSettings.currency);
     }
-    // if (userSettings?.username) {
-    //   setUsername(userSettings.username);
-    // }
   }, [userSettings]);
 
   const updateSettings = () => {
@@ -89,22 +84,7 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
                   <Input id="username" placeholder='Username' onChange={(e) => setUsername(e.target.value)} value={username}/>
                 </div>
                 <div className="flex flex-col space-y-2 mt-4">
-                  <Label>{t("currency")}</Label>
-                  <Select onValueChange={setCurrency} value={currency}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>{t("currency")}</SelectLabel>
-                        {currencyOptions.map((currency) => (
-                          <SelectItem key={currency.code} value={currency.code}>
-                            {currency.name} ({currency.code})
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  
                 </div>
                 <div className="flex flex-col space-y-2 mt-4">
                   <Label>{t("language")}</Label>

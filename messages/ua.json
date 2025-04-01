@@ -144,5 +144,16 @@
     "dark": "Темна",
     "light": "Світла",
     "system": "Системна"
+  },
+  "currency-select": {
+    "currency": "Валюта",
+    "select_currency": "Виберіть валюту",
+    "us_dollar": "Долар США",
+    "euro": "Євро",
+    "pound_sterling": "Фунт стерлінгів",
+    "japanese_yen": "Японська єна",
+    "ukrainian_hryvnia": "Гривня",
+    "polish_zloty": "Польський злотий",
+    "czech_koruna": "Чеська крона"
   }
 }
