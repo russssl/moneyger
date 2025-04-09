@@ -93,7 +93,8 @@
     "transactions_title": "Transakcje",
     "add_transaction": "Dodaj nową transakcję",
     "transaction_description": "Tutaj możesz dodać nową transakcję",
-    "no_wallet_warning": "Nie masz jeszcze żadnych portfeli. Dodaj nowy portfel, aby móc dodawać transakcje."
+    "no_wallet_warning": "Nie masz jeszcze żadnych portfeli. Dodaj nowy portfel, aby móc dodawać transakcje.",
+    "same_wallet_warning": "Nie możesz przelać pieniędzy na ten sam portfel. Wybierz inny portfel docelowy."
   },
   "categories": {
     "categories": "Kategorie",

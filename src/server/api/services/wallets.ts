@@ -22,13 +22,12 @@ export async function calculateWalletBalance(walletId: string) {
 export async function getFormattedWallets(wallets: Wallet[] | NewWallet[]) {
   return await Promise.all(wallets.map(async (wallet: Wallet | NewWallet) => {
     if (!wallet.id) {
-      throw new Error("Wallet ID is required");
+      throw new Error("wallet id is required");
     }
     const balance = await calculateWalletBalance(wallet.id);
     return {
       ...wallet,
       balance,
-      type: "wallet",
     };
   }));
 }

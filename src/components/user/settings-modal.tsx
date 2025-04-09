@@ -30,8 +30,7 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
   const savedLocale = document.cookie
     .split("; ")
     .find(row => row.startsWith("locale="))
-    ?.split("=")[1];
-
+    ?.split("=")[1] ?? "en";
   const [language, setLanguage] = useState<string | undefined>(savedLocale);
 
 
@@ -81,7 +80,7 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
               <>
                 <div className="flex flex-col space-y-2">
                   <Label>{t("username")}</Label>
-                  <Input id="username" placeholder='Username' onChange={(e) => setUsername(e.target.value)} value={username}/>
+                  <Input id="username" placeholder='Username' onChange={(e) => setUsername(e.target.value)} value={username} autoFocus={false}/>
                 </div>
                 <div className="flex flex-col space-y-2 mt-4">
                   <LanguageSelect

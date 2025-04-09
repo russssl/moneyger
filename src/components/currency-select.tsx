@@ -25,11 +25,13 @@ export default function CurrencySelect({ selectedCurrency, setSelectedCurrency }
         <SelectContent>
           <SelectGroup>
             <SelectLabel>{t("currency")}</SelectLabel>
-            {currencyOptions.map((currency) => (
-              <SelectItem key={currency.code} value={currency.code}>
-                {t(currency.name_code)} ({currency.code})
-              </SelectItem>
-            ))}
+            {currencyOptions.map((currency) => {
+              return (
+                <SelectItem key={currency.code} value={currency.code}>
+                  {t(currency.name_code)} ({currency.code})
+                </SelectItem>
+              );
+            })}
           </SelectGroup>
         </SelectContent>
       </Select>

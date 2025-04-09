@@ -93,7 +93,8 @@
     "transactions_title": "Транзакції",
     "add_transaction": "Додати транзакцію",
     "transaction_description": "Додати нову транзакцію",
-    "no_wallet_warning": "Немає гаманця для вибору. Спочатку створіть гаманець."
+    "no_wallet_warning": "Немає гаманця для вибору. Спочатку створіть гаманець.",
+    "same_wallet_warning": "Ви не можете переказати гроші на той самий гаманець"
   },
   "categories": {
     "categories": "Категорії",

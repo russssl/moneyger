@@ -93,7 +93,8 @@
     "transactions_title": "Transactions",
     "add_transaction": "Add new transaction",
     "transaction_description": "Here you can add a new transaction",
-    "no_wallet_warning": "You don't have any wallets yet. Please create a new wallet first."
+    "no_wallet_warning": "You don't have any wallets yet. Please create a new wallet first.",
+    "same_wallet_warning": "You cannot transfer money to the same wallet"
   },
   "categories": {
     "categories": "Categories",

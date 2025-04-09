@@ -49,8 +49,10 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
   const [description, setDescription] = useState<string>("");
   const [exchangeRate, setExchangeRate] = useState<number>(1);
   const [toCurrencyCode, setToCurrencyCode] = useState<string | null>(null);
+  const [sameDestinationWallet, setSameDestinationWallet] = useState<boolean>(false);
+
   const updateTransactionMutation = api.transactions.updateTransaction.useMutation();
-  const canSave = selectedFirstWallet && date && selectedCategory && amount !== 0;
+  const canSave = selectedFirstWallet && date && amount !== 0 && sameDestinationWallet === false;
   
   const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open,});
 
@@ -66,6 +68,12 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
     }
   }, [walletsData]);
   
+  useEffect(() => {
+    if (selectedFirstWallet && selectedSecondWallet) {
+      setSameDestinationWallet(selectedFirstWallet === selectedSecondWallet);
+    }
+  }, [selectedFirstWallet, selectedSecondWallet]);
+
   useEffect(() => {
     if (currency_conversion_res) {
       setExchangeRate(currency_conversion_res);
@@ -85,7 +93,7 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
   }, [open]);
 
   function addTransaction() {
-    if (!selectedFirstWallet || !date || !selectedCategory) {
+    if (!selectedFirstWallet || !date) {
       return;
     }
 
@@ -94,7 +102,7 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
       amount: amount,
       transaction_date: date,
       description: description,
-      category: selectedCategory,
+      category: transactionType === "transfer" ? "Transfer" : (selectedCategory ?? "other"),
       type: transactionType,
     }, {
       onSuccess: (result) => {
@@ -190,6 +198,13 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
               </Select>
             </div> : null}
 
+            {transactionType === "transfer" && sameDestinationWallet && (
+              <div className="p-2 bg-yellow-50 text-yellow-800 rounded-md">
+                <p className="text-sm font-medium">
+                  {t("same_wallet_warning")}
+                </p>
+              </div>
+            )}
             <div>
               <Label htmlFor="description">{tGeneral("description")}</Label>
               <Input 
@@ -199,21 +214,23 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            <div>
-              <Label htmlFor="category">{tGeneral("category")}</Label>
-              <Select onValueChange={(value) => setSelectedCategory(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={tGeneral("select_category")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
-                  <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
-                  <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
-                  <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
-                  <SelectItem value="other">{tCategory("other")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {transactionType !== "transfer" && (
+              <div>
+                <Label htmlFor="category">{tGeneral("category")}</Label>
+                <Select onValueChange={(value) => setSelectedCategory(value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={tGeneral("select_category")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
+                    <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
+                    <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
+                    <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
+                    <SelectItem value="other">{tCategory("other")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="notes">{tGeneral("notes")}</Label>
