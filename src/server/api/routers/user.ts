@@ -11,7 +11,7 @@ import { z } from "zod";
 export const userRouter = createTRPCRouter({
 
   getUserByEmail: publicProcedure.input(z.object({
-    email: z.string().email(), // Validate input to ensure it's an email
+    email: z.string().email(),
   }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.db.query.user.findFirst({
@@ -21,22 +21,28 @@ export const userRouter = createTRPCRouter({
       return user ?? null;
     }),
 
-  createUserSettings: publicProcedure.
+  createUserSettings: protectedProcedure.
     input(z.object({
-      userId: z.string(),
       currency: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(userSettings).values({
-        userId: input.userId,
-        currency: input.currency,
-      }).execute();
+      const user = ctx.session.user;
+      const userId = user.id;
 
-      const newUserSettings = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, input.userId),
+      const existingSettings = await ctx.db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
       });
 
-      return newUserSettings ?? null;
+      if (existingSettings) {
+        return existingSettings;
+      }
+
+      const newUserSettings = await ctx.db.insert(userSettings).values({
+        userId,
+        currency: input.currency,
+      }).returning().execute();
+
+      return newUserSettings[0] ?? null;
     }),
   
   getUserSettings: protectedProcedure
@@ -57,22 +63,32 @@ export const userRouter = createTRPCRouter({
 
       return { ...userSettingsData, username: userData.username };
     }),
-  
+
+
   updateUserSettings: protectedProcedure.input(z.object({
     currency: z.string(),
-    username: z.string(),
+    username: z.string().optional(),
   }))
     .mutation(async ({ ctx, input }) => {
       const user = ctx.session.user;
       const userId = user.id;
 
+      const us = await ctx.db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
+      });
+      if (!us) {
+        throw new Error("User settings not found");
+      }
+
       await ctx.db.update(userSettings).set({
         currency: input.currency ,
       }).where(eq(userSettings.userId, userId)).execute();
 
-      await ctx.db.update(users).set({
-        username: input.username,
-      }).where(eq(users.id, userId)).execute();
+      if (input.username) {
+        await ctx.db.update(users).set({
+          username: input.username,
+        }).where(eq(users.id, userId)).execute();
+      }
 
       const updatedUserSettings = await ctx.db.query.userSettings.findFirst({
         where: eq(userSettings.userId, userId),

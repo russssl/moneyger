@@ -151,7 +151,7 @@ export default function AddNewWalletModal({
                           <SelectLabel>{tGeneral("currency")}</SelectLabel>
                           {currencyOptions.map((currency) => (
                             <SelectItem key={currency.code} value={currency.code}>
-                              {currency.name} ({currency.code})
+                              {currency.name_code} ({currency.code})
                             </SelectItem>
                           ))}
                         </SelectGroup>

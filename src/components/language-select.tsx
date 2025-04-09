@@ -1,4 +1,3 @@
-"use client"
 
 import * as React from "react"
 import { Globe } from "lucide-react"
@@ -10,15 +9,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "./ui/select";
+import { Label } from "./ui/label";
 
-export default function LanguageToggle() {
+interface LanguageSelectProps {
+  language: string | undefined | null;
+  setLanguage: (languageCode: string | undefined | null) => void;
+}
+
+
+export function LanguageSelect({language, setLanguage}: LanguageSelectProps) {
   const t = useTranslations("settings");
+  return (
+    <>
+      <Label>{t("language")}</Label>
+      <Select onValueChange={setLanguage} value={language ?? undefined}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={t("select_language")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="en">{t("english")}</SelectItem>
+            <SelectItem value="pl">{t("polish")}</SelectItem>
+            <SelectItem value="ua">{t("ukrainian")}</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </>
+  )
+}
+
+export function LanguageToggle() {
 
   const setLocale = (locale: string) => {
     document.cookie = `locale=${locale}; path=/; max-age=31536000`;
     window.location.reload();
   };
   
+  const t = useTranslations("settings");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

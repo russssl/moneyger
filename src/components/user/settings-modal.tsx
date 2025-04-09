@@ -14,13 +14,13 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { Label } from "../ui/label";
-import { Select, SelectTrigger, SelectValue, SelectGroup, SelectContent, SelectItem, SelectLabel } from "../ui/select";
 import { useState, useEffect } from "react";
 import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
 import {useTranslations} from "next-intl";
+import { LanguageSelect } from "../language-select";
 
 export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
   const { data: userSettings } = api.user.getUserSettings.useQuery();
@@ -32,16 +32,16 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
     .find(row => row.startsWith("locale="))
     ?.split("=")[1];
 
-  const [language, setLanguage] = useState(savedLocale || "en");
+  const [language, setLanguage] = useState<string | undefined>(savedLocale);
+
 
   const saveMutation = api.user.updateUserSettings.useMutation();
   const t = useTranslations("settings");
   const serviceTranslations = useTranslations("service");
 
   useEffect(() => {
-    if (userSettings?.currency) {
-      setCurrency(userSettings.currency);
-    }
+    setCurrency(userSettings?.currency ?? "");
+    setUsername(userSettings?.username ?? "");
   }, [userSettings]);
 
   const updateSettings = () => {
@@ -84,22 +84,10 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
                   <Input id="username" placeholder='Username' onChange={(e) => setUsername(e.target.value)} value={username}/>
                 </div>
                 <div className="flex flex-col space-y-2 mt-4">
-                  
-                </div>
-                <div className="flex flex-col space-y-2 mt-4">
-                  <Label>{t("language")}</Label>
-                  <Select onValueChange={setLanguage} value={language}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("select_language")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="en">{t("english")}</SelectItem>
-                        <SelectItem value="pl">{t("polish")}</SelectItem>
-                        <SelectItem value="ua">{t("ukrainian")}</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  <LanguageSelect
+                    language={language}
+                    setLanguage={(value) => setLanguage(value ?? undefined)}
+                  />
                 </div>
               </>
             ): <div className='flex justify-center'>
@@ -111,7 +99,6 @@ export default function SettingsModal({trigger}: {trigger?: React.ReactNode}) {
               <div className="flex flex-col justify-end w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                 <Button className="w-full sm:w-auto" variant="outline">{serviceTranslations("close")}</Button>
                 <LoadingButton
-                  className="w-full sm:w-auto"
                   loading={saveMutation.isPending}
                   variant="success"
                   disabled={saveMutation.isPending || !userSettings?.currency}

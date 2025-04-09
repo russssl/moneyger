@@ -2,7 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, Check, CircleDollarSign, Eye, EyeOff, X  } from "lucide-react";
+import { AlertCircle, Check, Eye, EyeOff, X  } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import Link from "next/link"
@@ -10,9 +10,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/hooks/use-session";
 import LoadingButton from "@/components/loading-button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ThemeToggle from "@/components/theme-toggle";
-import LanguageToggle from "@/components/language-toggle";
+import {LanguageToggle} from "@/components/language-select";
 import { useTranslations } from "next-intl";
 
 const checkStrength = (pass: string) => {
@@ -67,7 +66,6 @@ export default function RegisterForm() {
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [currency, setCurrency] = useState("USD")
   const [error, setError] = useState("")
   
   const [password, setPassword] = useState("")
@@ -120,7 +118,7 @@ export default function RegisterForm() {
 
     setIsSubmitting(true)
     try {
-      const {data, error } = await signUp.email(
+      const { error } = await signUp.email(
         {
           name, email, password: password.toString(), username, surname,
           callbackURL: "/",
@@ -317,29 +315,6 @@ export default function RegisterForm() {
                 </li>
               ))}
             </ul>
-            <div className="space-y-2">
-              <Label htmlFor="select-17">
-                {t("default_currency")} <span className="text-destructive">*</span>
-              </Label>
-              <Select defaultValue="USD" onValueChange={(value) => setCurrency(value)}>
-                <SelectTrigger id="select-17" className="relative ps-9">
-                  <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-muted-foreground/80 group-has-[[disabled]]:opacity-50">
-                    <CircleDollarSign size={16} strokeWidth={2} aria-hidden="true"/>
-                  </div>
-                  <SelectValue placeholder={t("select_default_currency")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="CAD">CAD</SelectItem>
-                  <SelectItem value="AUD">AUD</SelectItem>
-                  <SelectItem value="JPY">JPY</SelectItem>
-                  <SelectItem value="PLN">PLN</SelectItem>
-                  <SelectItem value="CHF">CHF</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <LoadingButton loading={isSubmitting} className="w-full">
               {t("register")}
             </LoadingButton>
