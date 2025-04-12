@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link"
 import { type Metadata } from "next";
-import ThemeToggle from "@/components/theme-toggle";
+import {ThemeToggle} from "@/components/theme-toggle";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 

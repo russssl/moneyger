@@ -7,6 +7,7 @@ const { useSession, signIn, signOut, signUp, getSession } = createAuthClient({
 });
 
 export type Session = ReturnType<typeof createAuthClient>["$Infer"]["Session"] & { user: { surname: string}}; // workaround for missing user.surname
+export type Provider = "github" | "google" | "facebook" | "twitter";
 
 export const useAuthSession = (): { data: Session | null; isPending: boolean; error: Error | null } => {
   return useSession();

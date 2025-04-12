@@ -1,5 +1,5 @@
 "use client"
-import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from "lucide-react"
+import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun, Settings } from "lucide-react"
 import { useTheme, } from "next-themes"
 import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
@@ -18,7 +18,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { LoadingSpinner } from "./ui/loading"
-import SettingsModal from "./user/settings-modal"
 import { useTranslations } from "next-intl"
 import { type Session, signOut } from "@/hooks/use-session";
 function CurrentThemeIcon() {
@@ -106,7 +105,10 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <SettingsModal />
+              <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
+                <Settings />
+                {t("settings")}
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />
                 {t("billing")}
@@ -125,7 +127,6 @@ export function NavUser({
               <LogOut />
               {t("logout")}
             </DropdownMenuItem>
-            {/* <ThemeToggle /> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

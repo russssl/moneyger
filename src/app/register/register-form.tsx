@@ -2,7 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, Check, Eye, EyeOff, X  } from "lucide-react";
+import { AlertCircle, Check, X  } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import Link from "next/link"
@@ -10,54 +10,11 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/hooks/use-session";
 import LoadingButton from "@/components/loading-button";
-import ThemeToggle from "@/components/theme-toggle";
+import {ThemeToggle} from "@/components/theme-toggle";
 import {LanguageToggle} from "@/components/language-select";
 import { useTranslations } from "next-intl";
-
-const checkStrength = (pass: string) => {
-  const requirements = [
-    { regex: /.{8,}/, text: "character_length" },
-    { regex: /[0-9]/, text: "one_number" },
-    { regex: /[a-z]/, text: "one_lowercase" },
-    { regex: /[A-Z]/, text: "one_special_character" },
-  ];
-
-  return requirements.map((req) => ({
-    met: req.regex.test(pass),
-    text: req.text,
-  }));
-};
-
-
-const getStrengthColor = (score: number) => {
-  if (score === 0) return "bg-border";
-  if (score <= 1) return "bg-red-500";
-  if (score <= 2) return "bg-orange-500";
-  if (score === 3) return "bg-amber-500";
-  return "bg-emerald-500";
-};
-
-const getStrengthText = (score: number) => {
-  if (score === 0) return "enter_password";
-  if (score <= 2) return "weak_password";
-  if (score === 3) return "medium_password";
-  return "strong_password";
-};
-
-function FieldErrorAlert({ fieldErrors, name }: { fieldErrors: Record<string, string>, name: string }) {
-  return (
-    <>
-      {fieldErrors[name] && (
-        <div className="flex items-center space-x-2 text-red-500">
-          <AlertCircle size={16} />
-          <span>{fieldErrors[name]}</span>
-        </div>
-      )}
-    </>
-  );
-}
-const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
-
+import { checkStrength, getStrengthColor, getStrengthText } from "@/hooks/passwordUtil";
+import PasswordInput from "@/components/password-input";
 
 export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -69,12 +26,8 @@ export default function RegisterForm() {
   const [error, setError] = useState("")
   
   const [password, setPassword] = useState("")
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [isConfirmVisible, setIsConfirmVisible] = useState<boolean>(false);
 
   const [passwordsMatch, setPasswordsMatch] = useState(false)
-
-  const toggleVisibility = (isConfirmationField?: boolean) => isConfirmationField ? setIsConfirmVisible((prev) => !prev) : setIsVisible((prev) => !prev);
 
   const t = useTranslations("register_login");
   useEffect(() => {
@@ -87,14 +40,6 @@ export default function RegisterForm() {
 
   const router = useRouter();
 
-  const [fieldErrors, setFieldErrors] = useState({
-    name: "",
-    surname: "",
-    email: "",
-    password: "",
-    confirmPassword: ""
-  });
-
   const strength = checkStrength(password);
 
   const strengthScore = useMemo(() => {
@@ -103,52 +48,27 @@ export default function RegisterForm() {
 
   const register = async (e: React.FormEvent) => {
     e.preventDefault()
-    setFieldErrors({
-      name: "",
-      surname: "",
-      email: "",
-      password: "",
-      confirmPassword: ""
-    });
-
-    if (password !== confirmPassword) {
-      setFieldErrors(prev => ({ ...prev, confirmPassword: "Passwords do not match" }));
-      return;
-    }
 
     setIsSubmitting(true)
-    try {
-      const { error } = await signUp.email(
-        {
-          name, email, password: password.toString(), username, surname,
-          callbackURL: "/",
-          
-          fetchOptions: {
-            onResponse: () => {
-              setIsSubmitting(false);
-            },
-            onRequest: () => {
-              setIsSubmitting(true);
-            },
-            onError: (ctx) => {
-              console.error("Error", ctx.error.message);
-              setError(ctx.error.message);
-            },
-            onSuccess: async () => {
-              router.push("/");
-            },
-          },});
-      if (error?.message) {
-        setError(error.message);
-        return;
-      }
-
-      router.push("/");
-    } catch (error: unknown) {
-      setError((error as Error).message);
-    } finally {
-      setIsSubmitting(false)
-    }
+    await signUp.email(
+      {
+        name, email, password: password.toString(), username, surname,
+        callbackURL: "/",
+        fetchOptions: {
+          onResponse: () => {
+            setIsSubmitting(false);
+          },
+          onRequest: () => {
+            setIsSubmitting(true);
+          },
+          onError: (ctx) => {
+            console.error("Error", ctx.error.message);
+            setError(ctx.error.message);
+          },
+          onSuccess: async () => {
+            router.push("/");
+          },
+        }});
   };
 
   return (
@@ -182,7 +102,6 @@ export default function RegisterForm() {
                   <span className="text-destructive ms-1">*</span>
                 </Label>
                 <Input id="name" placeholder={t("first_name")} onChange={(e) => setName(e.target.value)}/>
-                <FieldErrorAlert fieldErrors={fieldErrors} name="name" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">
@@ -190,12 +109,6 @@ export default function RegisterForm() {
                   <span className="text-destructive ms-1">*</span>
                 </Label>
                 <Input id="lastName" placeholder={t("last_name")} onChange={(e) => setSurname(e.target.value)}/>
-                {fieldErrors.surname && (
-                  <div className="flex items-center space-x-2 text-red-500">
-                    <AlertCircle size={16} />
-                    <span>{fieldErrors.surname}</span>
-                  </div>
-                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -211,67 +124,20 @@ export default function RegisterForm() {
                 <span className="text-destructive">*</span>
               </Label>
               <Input id="email" type="email" onChange={(e) => setEmail(e.target.value)}/>
-              <FieldErrorAlert fieldErrors={fieldErrors} name="email" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">
                 {t("password")}
                 <span className="text-destructive ms-1">*</span>
               </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  className="pe-9"
-                  placeholder={t("password")}
-                  type={isVisible ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  className={passwordButtonStyle}
-                  type="button"
-                  onClick={() => toggleVisibility()}
-                  aria-label={isVisible ? "Hide password" : "Show password"}
-                  aria-pressed={isVisible}
-                  aria-controls="password"
-                >
-                  {isVisible ? (
-                    <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-                  ) : (
-                    <Eye size={16} strokeWidth={2} aria-hidden="true" />
-                  )}
-                </button>
-              </div>
+              <PasswordInput password={password} setPassword={setPassword} placeholder={t("password")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password-confirmation">
                 {t("confirm_password")}
                 <span className="text-destructive ms-1">*</span>
               </Label>
-              <div className="relative">
-                <Input
-                  id="password-confirmation"
-                  className="pe-9"
-                  placeholder={t("confirm_password")}
-                  type={isConfirmVisible ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                <button
-                  className={passwordButtonStyle}
-                  type="button"
-                  onClick={() => toggleVisibility(true)}
-                  aria-label={isConfirmVisible ? "Hide password" : "Show password"}
-                  aria-pressed={isVisible}
-                  aria-controls="confirm-password"
-                >
-                  {isConfirmVisible ? (
-                    <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-                  ) : (
-                    <Eye size={16} strokeWidth={2} aria-hidden="true" />
-                  )}
-                </button>
-              </div>
+              <PasswordInput password={confirmPassword} setPassword={setConfirmPassword} placeholder={t("confirm_password")}/>
             </div>
             <div>
               {!passwordsMatch && (
@@ -315,7 +181,7 @@ export default function RegisterForm() {
                 </li>
               ))}
             </ul>
-            <LoadingButton loading={isSubmitting} className="w-full">
+            <LoadingButton loading={isSubmitting} className="w-full" disabled={isSubmitting || !passwordsMatch} variant="success" type="submit">
               {t("register")}
             </LoadingButton>
           </form>

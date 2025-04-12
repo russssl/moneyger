@@ -3,7 +3,6 @@ import Link from "next/link"
 
 import { Home, PiggyBank, ChartLine, Settings } from "lucide-react"
 import {BottomBarActionButton} from "./bottom-bar-action-button"
-import SettingsModal from "./user/settings-modal"
 import { useTranslations } from "next-intl"
 
 export function BottomBar({ updateList }: { updateList: () => void }) {
@@ -30,9 +29,12 @@ export function BottomBar({ updateList }: { updateList: () => void }) {
             </Link>
             <div>
               <div className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
-                <SettingsModal trigger={
+                {/* <SettingsModal trigger={
                   <Settings className="h-5 w-5" />
-                }/>
+                }/> */}
+                <Link href="/settings" className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
+                  <Settings className="h-5 w-5" />
+                </Link>
                 <span className="text-[10px] mt-0.5 font-medium">{t("settings")}</span>
               </div>
             </div>

@@ -5,10 +5,11 @@ import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
-import { usePostHog } from "posthog-js/react";
+import { Eye, EyeOff, Github } from "lucide-react";
+// import { usePostHog } from "posthog-js/react";
 import { useTranslations } from "next-intl";
-import { signIn } from "@/hooks/use-session";
+import { type Provider, signIn } from "@/hooks/use-session";
+import { Button } from "./ui/button";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -18,7 +19,7 @@ export default function LoginProviders() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const posthog = usePostHog();
+  // const posthog = usePostHog();
   const t = useTranslations("register_login");
   const router = useRouter();
 
@@ -33,10 +34,9 @@ export default function LoginProviders() {
         return;
       }
 
-      const {data, error } = await signIn.email({ email, password });
+      const { error } = await signIn.email({ email, password });
 
       if (error?.message) {
-        alert(error.message);
         setError(error.message);
         return;
       }
@@ -50,6 +50,12 @@ export default function LoginProviders() {
       setLoading(false);
     }
   };
+
+  const signInWithProvider = async (provider: Provider) => {
+    await signIn.social({
+      provider,
+    });
+  }
 
   return (
     <>
@@ -113,6 +119,35 @@ export default function LoginProviders() {
           </div>
         </div>
       </form>
+      <div className="relative mt-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-sm uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with
+          </span>
+        </div>
+      </div>
+      <div>
+        <Button
+          type="button"
+          onClick={() => signInWithProvider("github")}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
+        >
+          <Github className="w-4 h-4 mr-2" />
+          Github
+        </Button>
+        {/* google */}
+        <Button
+          type="button"
+          onClick={() => signInWithProvider("google")}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
+        >
+          {/* <Google className="w-4 h-4 mr-2" /> */}
+          Google
+        </Button>
+      </div>
     </>
   );
 }
