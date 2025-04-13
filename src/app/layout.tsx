@@ -27,12 +27,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={GeistSans.variable} suppressHydrationWarning>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TRPCReactProvider>
             <NextIntlClientProvider locale={locale} messages={messages}>
               <SessionWrapper>

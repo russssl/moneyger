@@ -1,4 +1,3 @@
-"use server"
 import type React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -9,19 +8,28 @@ import PasswordSettings from "@/components/settings/password-settings"
 import AccountSettings from "@/components/settings/account-settings"
 import { Palette } from "lucide-react"
 import Sessions from "@/components/settings/sessions"
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 
 export default async function SettingsPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+  if (!session) {
+    redirect("/login")
+  }
   return (
-    <div className="flex h-screen bg-background">
-      {/* Main Content */}
+    <div className="flex justify-start h-100 bg-background w-[100vw]">
       <div className="flex-1 overflow-auto">
         <header className="p-6 border-b">
           <h1 className="text-2xl font-bold">Settings</h1>
         </header>
 
-        <div className="p-6 max-w-[2000px] mx-auto">
+        <div className="p-6 max-w-[2000px]">
+          {/* TODO: fix for smaller screens */}
           <Tabs defaultValue="account" className="mb-6">
-            <TabsList className="grid grid-cols-4 md:grid-cols-5 lg:w-[600px]">
+            <TabsList className="grid grid-cols-4 md:grid-cols-5 sm:w-100 lg:w-max">
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="appearance">Appearance</TabsTrigger>
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -34,9 +42,7 @@ export default async function SettingsPage() {
             <TabsContent value="account" className="mt-6">
               <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
                 <ProfileSettings />
-                {/* Password Settings */}
                 <PasswordSettings />
-                {/* Account Actions */}
                 <AccountSettings />
                 
               </div>
@@ -44,7 +50,6 @@ export default async function SettingsPage() {
 
             <TabsContent value="appearance" className="mt-6">
               <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-                {/* Theme Settings */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">

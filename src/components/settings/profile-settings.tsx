@@ -24,6 +24,12 @@ export default function ProfileSettings() {
     setLanguage(savedLocale);
   }, []);
   
+  useEffect(() => {
+    if (userSettings) {
+      setUsername(userSettings.username);
+      setEmail(userSettings.email);
+    }
+  }, [userSettings]);
   const saveUserSettingsMutation = api.user.updateUserSettings.useMutation();
   // const t = useTranslations("settings");
 

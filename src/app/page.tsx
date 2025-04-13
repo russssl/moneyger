@@ -7,10 +7,8 @@ import { headers } from "next/headers";
 
 
 export default async function HomePage() {
-
-  const sessionHeaders = await headers();
   const session = await auth.api.getSession({
-    headers: sessionHeaders
+    headers: await headers()
   });
   if (!session) {
     redirect("/login");

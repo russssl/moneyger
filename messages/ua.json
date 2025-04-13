@@ -137,8 +137,7 @@
     "one_uppercase": "Мінімум одна велика літера",
     "one_lowercase": "Мінімум одна мала літера",
     "one_special_character": "Мінімум один спеціальний символ",
-    "default_currency": "Валюта за замовчуванням",
-    "select_default_currency": "Виберіть валюту за замовчуванням"
+    "or_continue_with": "Або продовжити з"
   },
   "theme-toggle": {
     "theme": "Тема",

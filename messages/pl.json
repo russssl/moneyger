@@ -137,8 +137,7 @@
     "one_uppercase": "Co najmniej jedną wielką literę",
     "one_lowercase": "Co najmniej jedną małą literę",
     "one_special_character": "Co najmniej jeden znak specjalny",
-    "default_currency": "Domyślna waluta",
-    "select_default_currency": "Wybierz domyślną walutę"
+    "or_continue_with": "lub kontynuuj z"
   },
   "theme-toggle": {
     "theme": "Motyw",

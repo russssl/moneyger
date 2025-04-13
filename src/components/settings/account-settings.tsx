@@ -14,6 +14,16 @@ export default async function AccountSettings() {
     <>
       <Card>
         <CardHeader>
+          <CardTitle>Connected Accounts</CardTitle>
+          <CardDescription>Manage accounts connected to your profile.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ConnectedAccount accounts={userAccounts} provider={{ id: "github", name: "Github", icon: <GitHub /> }} />
+          <ConnectedAccount accounts={userAccounts} provider={{ id: "google", name: "Google", icon: <Google /> }} />
+        </CardContent>
+      </Card>
+      <Card className="xs:mb-6 md:mb-0">
+        <CardHeader>
           <CardTitle className="flex items-center">
             <UserCog className="h-5 w-5 mr-2" />
       Account Actions
@@ -39,7 +49,7 @@ export default async function AccountSettings() {
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline" className="mb-3">Cancel</Button>
                   <Button variant="default">Suspend Account</Button>
                 </DialogFooter>
               </DialogContent>
@@ -81,16 +91,6 @@ export default async function AccountSettings() {
               </DialogContent>
             </Dialog>
           </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Connected Accounts</CardTitle>
-          <CardDescription>Manage accounts connected to your profile.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ConnectedAccount accounts={userAccounts} provider={{ id: "github", name: "Github", icon: <GitHub /> }} />
-          <ConnectedAccount accounts={userAccounts} provider={{ id: "google", name: "Google", icon: <Google /> }} />
         </CardContent>
       </Card>
     </>

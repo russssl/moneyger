@@ -1,6 +1,10 @@
-const Google = () => {
+interface GoogleProps {
+  noBackground?: boolean;
+}
+
+const Google = ({ noBackground = false }: GoogleProps) => {
   return (
-    <div className="bg-[#1c1c1c] rounded-full p-2">
+    <div className={noBackground ? "" : "bg-[#1c1c1c] rounded-full p-2"}>
       <svg
         role="img"
         viewBox="0 0 24 24"

@@ -138,8 +138,7 @@
     "one_uppercase": "At least one uppercase letter",
     "one_lowercase": "At least one lowercase letter",
     "one_special_character": "At least one special character",
-    "default_currency": "Default Currency",
-    "select_default_currency": "Select default currency"
+    "or_continue_with": "Or continue with"
   },
   "theme-toggle": {
     "theme": "Theme",
