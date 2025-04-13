@@ -93,7 +93,8 @@
     "transactions_title": "Transactions",
     "add_transaction": "Add new transaction",
     "transaction_description": "Here you can add a new transaction",
-    "no_wallet_warning": "You don't have any wallets yet. Please create a new wallet first."
+    "no_wallet_warning": "You don't have any wallets yet. Please create a new wallet first.",
+    "same_wallet_warning": "You cannot transfer money to the same wallet"
   },
   "categories": {
     "categories": "Categories",
@@ -137,13 +138,23 @@
     "one_uppercase": "At least one uppercase letter",
     "one_lowercase": "At least one lowercase letter",
     "one_special_character": "At least one special character",
-    "default_currency": "Default Currency",
-    "select_default_currency": "Select default currency"
+    "or_continue_with": "Or continue with"
   },
   "theme-toggle": {
     "theme": "Theme",
     "dark": "Dark",
     "light": "Light",
     "system": "System"
+  },
+  "currency-select": {
+    "currency": "Currency",
+    "select_currency": "Select currency",
+    "us_dollar": "US Dollar",
+    "euro": "Euro",
+    "pound_sterling": "British Pound",
+    "japanese_yen": "Japanese Yen",
+    "polish_zloty": "Polish Zloty",
+    "ukrainian_hryvnia": "Ukrainian Hryvnia",
+    "czech_koruna": "Czech Koruna"
   }
 }

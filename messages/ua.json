@@ -93,7 +93,8 @@
     "transactions_title": "Транзакції",
     "add_transaction": "Додати транзакцію",
     "transaction_description": "Додати нову транзакцію",
-    "no_wallet_warning": "Немає гаманця для вибору. Спочатку створіть гаманець."
+    "no_wallet_warning": "Немає гаманця для вибору. Спочатку створіть гаманець.",
+    "same_wallet_warning": "Ви не можете переказати гроші на той самий гаманець"
   },
   "categories": {
     "categories": "Категорії",
@@ -136,13 +137,23 @@
     "one_uppercase": "Мінімум одна велика літера",
     "one_lowercase": "Мінімум одна мала літера",
     "one_special_character": "Мінімум один спеціальний символ",
-    "default_currency": "Валюта за замовчуванням",
-    "select_default_currency": "Виберіть валюту за замовчуванням"
+    "or_continue_with": "Або продовжити з"
   },
   "theme-toggle": {
     "theme": "Тема",
     "dark": "Темна",
     "light": "Світла",
     "system": "Системна"
+  },
+  "currency-select": {
+    "currency": "Валюта",
+    "select_currency": "Виберіть валюту",
+    "us_dollar": "Долар США",
+    "euro": "Євро",
+    "pound_sterling": "Фунт стерлінгів",
+    "japanese_yen": "Японська єна",
+    "ukrainian_hryvnia": "Гривня",
+    "polish_zloty": "Польський злотий",
+    "czech_koruna": "Чеська крона"
   }
 }

@@ -57,7 +57,7 @@ const CredenzaTrigger = ({ className, children, ...props }: CredenzaProps) => {
   )
 }
 
-const CredenzaClose = ({ className, children, ...props }: CredenzaProps) => {
+const CredenzaClose = ({ className, children, ...props }: CredenzaProps & { disableClose?: boolean }) => {
   const isDesktop = !useIsMobile()
   const CredenzaClose = isDesktop ? DialogClose : DrawerClose
 

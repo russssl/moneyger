@@ -1,36 +1,39 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { type ReactNode } from "react";
 import { LoadingSpinner } from "@/components/ui/loading";
 import { BottomBar } from "@/components/bottom-bar";
-
+import { useAuthSession } from "@/hooks/use-session";
 
 export default function SessionWrapper({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const { data: session, isPending } = useAuthSession();
 
-  if (status === "loading") {
+  const reload = () => {
+    window.location.reload();
+  };
+
+  if (isPending) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen overflow-x-hidden">
         <LoadingSpinner />
       </div>
-    )
-  }
-  
-  function reload() {
-    window.location.reload();
+    );
   }
 
-  return session ? (
-    <SidebarProvider>
-      <AppSidebar session={session} className="hidden md:flex"/>
-      {children}
-      <div className="md:hidden">
-        <BottomBar updateList={reload}/>
-      </div>
-    </SidebarProvider>
-  ) : (
-    <>{children}</>
+  return (
+    <div className="overflow-x-hidden">
+      {session ? (
+        <SidebarProvider>
+          <AppSidebar session={session} className="hidden md:flex" />
+          <div className="pb-12">{children}</div> {/* Add padding to prevent overlap */}
+          <div className="md:hidden fixed bottom-0 left-0 w-full">
+            <BottomBar updateList={reload} />
+          </div>
+        </SidebarProvider>
+      ) : (
+        <div className="pb-12">{children}</div> // Add padding for consistency
+      )}
+    </div>
   );
 }

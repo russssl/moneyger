@@ -1,6 +1,6 @@
 export type Currency = {
   code: string;
-  name: string;
+  name_code: string;
   symbol: string;
   placedBeforeNumber?: boolean;
 }
@@ -13,41 +13,41 @@ export function currencies(currencyCode?: string | null): Currency[] | Currency 
   const data: Currency[] = [
     {
       code: "USD",
-      name: "US Dollar",
+      name_code: "us_dollar",
       symbol: "$",
       placedBeforeNumber: true,
     },
     {
       code: "EUR",
-      name: "Euro",
+      name_code: "euro",
       symbol: "€",
       placedBeforeNumber: true,
     },
     {
       code: "GBP",
-      name: "British Pound",
+      name_code: "pound_sterling",
       symbol: "£",
       placedBeforeNumber: true,
     },
     {
       code: "JPY",
-      name: "Japanese Yen",
+      name_code: "japanese_yen",
       symbol: "¥",
       placedBeforeNumber: true,
     },
     {
       code: "PLN",
-      name: "Polish Zloty",
+      name_code: "polish_zloty",
       symbol: "zł",
     },
     {
       code: "CZK",
-      name: "Czech Koruna",
+      name_code: "czech_koruna",
       symbol: "Kč",
     },
     {
       code: "UAH",
-      name: "Ukrainian Hryvnia",
+      name_code: "ukrainian_hryvnia",
       symbol: "₴",
       placedBeforeNumber: true,
     },

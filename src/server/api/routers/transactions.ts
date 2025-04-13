@@ -175,7 +175,6 @@ export const transactionsRouter = createTRPCRouter({
         eq(transactions.id, transaction.id),
       ).returning().execute();
 
-      console.log(deleted);
       return deleted;
     }),
   

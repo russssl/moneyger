@@ -11,12 +11,8 @@ import { getFormattedWallets } from "../services/wallets";
 export const walletRouter = createTRPCRouter({
   getWallets: protectedProcedure
     .query(async ({ ctx }) => {
-      const loggedInUser = ctx.session.user;
-      if (!loggedInUser) {
-        throw new Error("User not logged in");
-      }
       const res_wallets = await ctx.db.query.wallets.findMany({
-        where: eq(wallets.userId, loggedInUser.id),
+        where: eq(wallets.userId, ctx.session.user.id),
       });
 
       return await getFormattedWallets(res_wallets);
@@ -27,16 +23,12 @@ export const walletRouter = createTRPCRouter({
       id: z.string().nullable(),
     }))
     .query(async ({ ctx, input }) => {
-      const loggedInUser = ctx.session.user;
-      if (!loggedInUser) {
-        throw new Error("User not logged in");
-      }
       if (!input.id) {
         throw new Error("Wallet id not provided");
       }
       const res_wallet = await ctx.db.query.wallets.findFirst({
         where: and(
-          eq(wallets.userId, loggedInUser.id),
+          eq(wallets.userId, ctx.session.user.id),
           eq(wallets.id, input.id),
         ),
         with: {
@@ -113,11 +105,10 @@ export const walletRouter = createTRPCRouter({
       id: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const loggedInUser = ctx.session.user;
       await ctx.db.transaction(async (tx) => {
         const wallet = await tx.query.wallets.findFirst({
           where: and(
-            eq(wallets.userId, loggedInUser.id),
+            eq(wallets.userId, ctx.session.user.id),
             eq(wallets.id, input.id),
           ),
         });

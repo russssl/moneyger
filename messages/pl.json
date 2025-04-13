@@ -93,7 +93,8 @@
     "transactions_title": "Transakcje",
     "add_transaction": "Dodaj nową transakcję",
     "transaction_description": "Tutaj możesz dodać nową transakcję",
-    "no_wallet_warning": "Nie masz jeszcze żadnych portfeli. Dodaj nowy portfel, aby móc dodawać transakcje."
+    "no_wallet_warning": "Nie masz jeszcze żadnych portfeli. Dodaj nowy portfel, aby móc dodawać transakcje.",
+    "same_wallet_warning": "Nie możesz przelać pieniędzy na ten sam portfel. Wybierz inny portfel docelowy."
   },
   "categories": {
     "categories": "Kategorie",
@@ -136,13 +137,23 @@
     "one_uppercase": "Co najmniej jedną wielką literę",
     "one_lowercase": "Co najmniej jedną małą literę",
     "one_special_character": "Co najmniej jeden znak specjalny",
-    "default_currency": "Domyślna waluta",
-    "select_default_currency": "Wybierz domyślną walutę"
+    "or_continue_with": "lub kontynuuj z"
   },
   "theme-toggle": {
     "theme": "Motyw",
     "dark": "Ciemny",
     "light": "Jasny",
     "system": "Systemowy"
+  },
+  "currency-select": {
+    "currency": "Waluta",
+    "select_currency": "Wybierz walutę",
+    "us_dollar": "Dolar amerykański",
+    "euro": "Euro",
+    "polish_zloty": "Złoty polski",
+    "ukrainian_hryvnia": "Hrywna ukraińska",
+    "pound_sterling": "Funt szterling",
+    "japanese_yen": "Jen japoński",
+    "czech_koruna": "Korona czeska"
   }
 }

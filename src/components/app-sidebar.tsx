@@ -1,7 +1,6 @@
 "use client"
 import * as React from "react"
 import { SquareTerminal } from "lucide-react"
-import type { Session } from "next-auth"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import AppLogo from "@/components/app-logo"
@@ -12,6 +11,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { type Session } from "@/hooks/use-session";
 
 const data = {
   navMain: [

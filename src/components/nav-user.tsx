@@ -1,7 +1,6 @@
 "use client"
-import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun } from "lucide-react"
+import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun, Settings } from "lucide-react"
 import { useTheme, } from "next-themes"
-import type { Session } from "next-auth"
 import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -12,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { signOut } from "next-auth/react";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -20,8 +18,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { LoadingSpinner } from "./ui/loading"
-import SettingsModal from "./user/settings-modal"
 import { useTranslations } from "next-intl"
+import { type Session, signOut } from "@/hooks/use-session";
 function CurrentThemeIcon() {
   const {theme} = useTheme()
   return (
@@ -62,14 +60,14 @@ export function NavUser({
               <Avatar className="h-8 w-8 rounded-lg">
                 {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
                 <AvatarFallback className="rounded-full border-dashed border-3">
-                  {session?.user?.name?.[0] ?? ""}{session?.user?.surname?.[0] ?? ""}
+                  {session?.user?.name?.[0] ?? ""}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{
                   session ? 
                     <>
-                      {session.user.name} {session.user?.surname ?? ""}
+                      {session.user.name} {session.user.surname}
                     </> 
                     : <LoadingSpinner/> }</span>
               </div>
@@ -86,7 +84,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarFallback className="rounded-lg">
-                    {session?.user?.name?.[0] ?? ""}{session?.user?.surname?.[0] ?? ""}
+                    {session?.user?.name?.[0] ?? ""}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -107,7 +105,10 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <SettingsModal />
+              <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
+                <Settings />
+                {t("settings")}
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />
                 {t("billing")}
@@ -122,11 +123,10 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({redirectTo: "/login", redirect: true})}>
+            <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />
               {t("logout")}
             </DropdownMenuItem>
-            {/* <ThemeToggle /> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

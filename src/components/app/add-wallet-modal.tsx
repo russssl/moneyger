@@ -9,23 +9,13 @@ import {
 } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectGroup,
-  SelectContent,
-  SelectItem,
-  SelectLabel,
-} from "../ui/select";
 import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
 import LoadingButton from "../loading-button";
 import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading";
 import { Input } from "../ui/input";
-import { currencies } from "@/hooks/currencies";
 import { useTranslations } from "next-intl";
+import CurrencySelect from "../currency-select";
 
 export default function AddNewWalletModal({
   className,
@@ -40,7 +30,6 @@ export default function AddNewWalletModal({
   id?: string | null;
   onSave: (wallet: any) => void;
 }) {
-  const { data: session } = useSession();
   const [currency, setCurrency] = useState("");
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
@@ -48,7 +37,6 @@ export default function AddNewWalletModal({
   const t = useTranslations("finances");
   const tService = useTranslations("service");
   const tGeneral = useTranslations("general");
-  const currencyOptions = currencies();
   const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
     { id: id || null },
     {
@@ -76,9 +64,6 @@ export default function AddNewWalletModal({
     setWalletName(res.name || "")
   }, [res]);
 
-  if (!session) {
-    return null;
-  }
 
   const saveWalletMutation = api.wallets.updateWallet.useMutation();
 
@@ -137,36 +122,15 @@ export default function AddNewWalletModal({
                   />
                 </div>
                 <div className="mb-4">
-                  <Label className="mb-1">{tGeneral("currency")}</Label>
-                  {currencyOptions.length > 0 ? (
-                    <Select
-                      onValueChange={(v) => {
-                        if (!v) {
-                          return;
-                        }
-                        setCurrency(v);
-                      }}
-                      value={currency}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={tGeneral("select_currency")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>{tGeneral("currency")}</SelectLabel>
-                          {currencyOptions.map((currency) => (
-                            <SelectItem key={currency.code} value={currency.code}>
-                              {currency.name} ({currency.code})
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="flex justify-center">
-                      <LoadingSpinner />
-                    </div>
-                  )}
+                  <CurrencySelect
+                    selectedCurrency={currency}
+                    setSelectedCurrency={(value) => {
+                      if (!value) {
+                        return;
+                      }
+                      setCurrency(value);
+                    }}
+                  />
                 </div>
                 <CredenzaFooter>
                   <div className="flex justify-end mt-3">

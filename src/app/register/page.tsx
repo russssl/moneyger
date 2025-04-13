@@ -1,7 +1,8 @@
 import { type Metadata } from "next";
 import RegisterForm from "./register-form";
-import { auth } from "@/server/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Register",
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Component() {
-  const loggedInUser = await auth();
+  const loggedInUser = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   if (loggedInUser) {
     // redirect to home page

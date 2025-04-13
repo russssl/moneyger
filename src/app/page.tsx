@@ -1,15 +1,19 @@
 import { TransactionList } from "@/components/app/transaction-list";
 import WalletsAndCards from "@/components/app/wallets";
-import { auth } from "@/server/auth";
-import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+
 
 export default async function HomePage() {
-  const session = await auth();
-  const t = await getTranslations("HomePage");
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
   if (!session) {
     redirect("/login");
   }
+  const t = await getTranslations("HomePage");
   return (
     <div className="flex justify-center pb-24 md:pb-0">
       <div className="max-w-3xl w-full px-4 md:px-6">
