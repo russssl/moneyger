@@ -5,8 +5,6 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  surname: text("surname").notNull(),
-  username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull(),
   image: text("image"),

@@ -67,7 +67,7 @@ export function NavUser({
                 <span className="truncate font-semibold">{
                   session ? 
                     <>
-                      {session.user.name} {session.user.surname}
+                      {session.user.name}
                     </> 
                     : <LoadingSpinner/> }</span>
               </div>
@@ -90,7 +90,7 @@ export function NavUser({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {session ? 
-                      session.user.name + " " + session.user.surname
+                      session.user.name
                       : <LoadingSpinner></LoadingSpinner>}
                   </span>
                 </div>

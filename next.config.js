@@ -1,10 +1,4 @@
-/**
- * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
- * for Docker builds.
- */
 import "./src/env.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { config as dotenvConfig } from "dotenv";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin();
@@ -37,7 +31,8 @@ const config = {
     ignoreDuringBuilds: true,
   },
   // This is required to support PostHog trailing slash API requests
-  skipTrailingSlashRedirect: true, 
+  skipTrailingSlashRedirect: true,
+
 };
 
 export default withNextIntl(config);

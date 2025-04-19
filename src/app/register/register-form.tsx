@@ -19,8 +19,6 @@ import PasswordInput from "@/components/password-input";
 export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [name, setName] = useState("")
-  const [surname, setSurname] = useState("")
-  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
@@ -52,7 +50,7 @@ export default function RegisterForm() {
     setIsSubmitting(true)
     await signUp.email(
       {
-        name, email, password: password.toString(), username, surname,
+        name, email, password: password.toString(),
         callbackURL: "/",
         fetchOptions: {
           onResponse: () => {
@@ -103,20 +101,6 @@ export default function RegisterForm() {
                 </Label>
                 <Input id="name" placeholder={t("first_name")} onChange={(e) => setName(e.target.value)}/>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">
-                  {t("last_name")}
-                  <span className="text-destructive ms-1">*</span>
-                </Label>
-                <Input id="lastName" placeholder={t("last_name")} onChange={(e) => setSurname(e.target.value)}/>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="username">
-                {t("username")}
-                <span className="text-destructive ms-1">*</span>
-              </Label>
-              <Input id="username" placeholder={t("username")} onChange={(e) => setUsername(e.target.value)}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">

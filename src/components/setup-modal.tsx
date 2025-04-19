@@ -39,7 +39,7 @@ export default function SetupModal() {
       return;
     }
     createUserSettingsMutation.mutate({
-      currency: data.currency,
+      currency: data.currency
     });
 
     if (language) {
@@ -58,7 +58,8 @@ export default function SetupModal() {
         <Credenza open>
           <CredenzaContent>
             <CredenzaHeader>
-              <CredenzaTitle>finish_setup_title</CredenzaTitle>
+              <CredenzaTitle>finish_setup_title</CredenzaTitle> 
+              {/* TODO: fix */}
               <CredenzaDescription>
                 finish_setup_description {JSON.stringify(data)}
               </CredenzaDescription>

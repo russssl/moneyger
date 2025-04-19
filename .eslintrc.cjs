@@ -67,6 +67,7 @@ const config = {
         ]
       }
     ]
-  }
+  },
+  "ignorePatterns": ["public/service-worker.js"]
 }
 module.exports = config;

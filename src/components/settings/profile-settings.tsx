@@ -11,7 +11,6 @@ import { api } from "@/trpc/react";
 
 export default function ProfileSettings() {
   const { data: userSettings } = api.user.getUserSettings.useQuery();
-  const [username, setUsername] = useState(userSettings?.username ?? "");
   const [email, setEmail] = useState(userSettings?.email ?? "");
   
   const [language, setLanguage] = useState<string | undefined>("en");
@@ -26,7 +25,6 @@ export default function ProfileSettings() {
   
   useEffect(() => {
     if (userSettings) {
-      setUsername(userSettings.username);
       setEmail(userSettings.email);
     }
   }, [userSettings]);
@@ -35,7 +33,6 @@ export default function ProfileSettings() {
 
   const saveBasicSettings = () => {
     saveUserSettingsMutation.mutate({
-      username,
       email,
     });
     // Since language is now in state you can safely compare and update.
@@ -60,10 +57,6 @@ export default function ProfileSettings() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
-          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />

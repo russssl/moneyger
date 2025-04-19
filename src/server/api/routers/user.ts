@@ -29,7 +29,6 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const user = ctx.session.user;
       const userId = user.id;
-
       const existingSettings = await ctx.db.query.userSettings.findFirst({
         where: eq(userSettings.userId, userId),
       });
@@ -38,12 +37,16 @@ export const userRouter = createTRPCRouter({
         return existingSettings;
       }
 
-      const newUserSettings = await ctx.db.insert(userSettings).values({
+      await ctx.db.insert(userSettings).values({
         userId,
         currency: input.currency,
-      }).returning().execute();
+      }).execute();
 
-      return newUserSettings[0] ?? null;
+      const newUserSettings = await ctx.db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, userId),
+      });
+
+      return newUserSettings ?? null;
     }),
   
   getUserSettings: protectedProcedure
@@ -62,13 +65,12 @@ export const userRouter = createTRPCRouter({
         return null;
       }
 
-      return { ...userSettingsData, username: userData.username, email: userData.email };
+      return { ...userSettingsData, email: userData.email };
     }),
 
 
   updateUserSettings: protectedProcedure.input(z.object({
     currency: z.string().optional(),
-    username: z.string().optional(),
     email: z.string().optional(),
   }))
     .mutation(async ({ ctx, input }) => {
@@ -86,12 +88,6 @@ export const userRouter = createTRPCRouter({
         await ctx.db.update(userSettings).set({
           currency: input.currency ,
         }).where(eq(userSettings.userId, userId)).execute();
-      }
-
-      if (input.username) {
-        await ctx.db.update(users).set({
-          username: input.username,
-        }).where(eq(users.id, userId)).execute();
       }
 
       if (input.email) {

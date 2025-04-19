@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
-import { type Metadata } from "next";
+import type{ Viewport, Metadata } from "next";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import SessionWrapper from "./SessionWrapper";
@@ -11,11 +11,27 @@ import { Toaster } from "@/components/ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import PersistentModals from "@/components/persistent-modals";
+import ServiceWorkerRegistration from "@/components/service-worker-registration";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+}
 
 export const metadata: Metadata = {
-  title: "Manager",
-  description: "Manage your life",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: "Moneyger",
+  description: "Manage your money with Moneyger",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: "Moneyger",
+    statusBarStyle: "default",
+    capable: true,
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default async function RootLayout({
@@ -35,6 +51,7 @@ export default async function RootLayout({
                   <PersistentModals />
                   {children}
                   <Toaster />
+                  <ServiceWorkerRegistration />
                 </PostHogProvider>
               </SessionWrapper>
             </NextIntlClientProvider>
