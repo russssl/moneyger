@@ -41,7 +41,7 @@ const chartConfig = {
 
 export default function ExpenseStatsCard({className}: {className?: string | undefined}) {
 
-  const [date, setDate] = useState<DateRange | undefined>();
+  const [,setDate] = useState<DateRange | undefined>();
   return (
     <Card className={className}>
       <CardHeader>

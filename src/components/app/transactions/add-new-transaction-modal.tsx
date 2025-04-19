@@ -1,11 +1,11 @@
 import {
-  Credenza,
-  CredenzaBody,
-  CredenzaContent,
-  CredenzaDescription,
-  CredenzaFooter,
-  CredenzaHeader,
-  CredenzaTitle,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
 } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,15 +119,15 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
   }
 
   return (
-    <Credenza open={open} onOpenChange={onOpenChange}>
-      <CredenzaContent>
-        <CredenzaHeader>
-          <CredenzaTitle>{t("add_transaction")}</CredenzaTitle>
-          <CredenzaDescription>
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle>{t("add_transaction")}</ModalTitle>
+          <ModalDescription>
             {t("transaction_description")}
-          </CredenzaDescription>
-        </CredenzaHeader>
-        <CredenzaBody>
+          </ModalDescription>
+        </ModalHeader>
+        <ModalBody>
           <div className="grid gap-3">
             {wallets.length === 0 && (
               <div className="p-4 bg-red-100 text-red-800 rounded-lg">
@@ -237,16 +237,16 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
               <AutogrowingTextarea placeholder={tGeneral("notes_description")}/>
             </div>
           </div>
-        </CredenzaBody>
-        <CredenzaFooter>
+        </ModalBody>
+        <ModalFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {tService("cancel")}
           </Button>
           <Button onClick={() => addTransaction()} disabled={!canSave} variant="success">
             {tService("save")}
           </Button>
-        </CredenzaFooter>
-      </CredenzaContent>
-    </Credenza>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

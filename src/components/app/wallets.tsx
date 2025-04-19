@@ -23,7 +23,6 @@ type WalletsRes = {
   name: string | null;
   balance: number | null;
   currency: string | null;
-  type: "wallet";
 }
 
 export default function Wallets({className}: {className?: string | undefined}) {
@@ -75,16 +74,18 @@ export default function Wallets({className}: {className?: string | undefined}) {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center mb-4">
+            <div className="flex justify-center mb-4 min-h-[120px] items-center">
               <LoadingSpinner />
             </div>
           ) : items.length === 0 ? (
-            <NoItems
-              icon={Wallet}
-              title={t("no_wallets")}
-              description={t("no_wallets_desc")}
-              size="md"
-            />
+            <div className="min-h-[120px] flex items-center justify-center">
+              <NoItems
+                icon={Wallet}
+                title={t("no_wallets")}
+                description={t("no_wallets_desc")}
+                size="md"
+              />
+            </div>
           ) : (
             items.map(item => (
               <FinanceItem key={item.id} item={item} onEdit={openModal} onDelete={deleteWallet}/>
@@ -109,7 +110,6 @@ type FinanceItemProps = {
     name: string | null;
     balance?: number | null;
     currency?: string | null;
-    type: "wallet";
   };
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;

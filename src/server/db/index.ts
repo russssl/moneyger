@@ -20,7 +20,7 @@ if (!env) {
 
 let db: NeonHttpDatabase<typeof schema> | NodePgDatabase<typeof schema>;
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "development" || env.FORCE_PG_POOL) {
   const pool = new Pool({
     connectionString: env.DATABASE_URL,
   });

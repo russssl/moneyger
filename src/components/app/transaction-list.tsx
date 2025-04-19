@@ -57,10 +57,8 @@ export function TransactionList() {
         </CardHeader>
         <CardContent>
           {isLoading ? 
-            <div className="p-6 text-center text-muted-foreground flex justify-center items-center">
-              <div>
-                <LoadingSpinner className="w-6 h-6" />
-              </div>
+            <div className="p-6 text-center text-muted-foreground flex justify-center items-center min-h-[220px]">
+              <LoadingSpinner className="w-6 h-6" />
             </div> : 
             transactions.length > 0 ? (
               <Table>
@@ -104,7 +102,7 @@ export function TransactionList() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="p-6 text-center text-muted-foreground">
+              <div className="p-6 text-center text-muted-foreground min-h-[220px]">
                 <NoItems title="No transactions found" icon={Banknote} />
               </div>
             )}

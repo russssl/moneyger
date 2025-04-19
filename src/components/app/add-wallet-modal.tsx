@@ -1,11 +1,11 @@
 "use client";
 import {
-  Credenza,
-  CredenzaBody,
-  CredenzaContent,
-  CredenzaFooter,
-  CredenzaHeader,
-  CredenzaTitle,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
 } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
@@ -86,12 +86,12 @@ export default function AddNewWalletModal({
   };
   return (
     <div className={className}>
-      <Credenza open={open} onOpenChange={handleOpenChange}>
-        <CredenzaContent>
-          <CredenzaHeader>
-            <CredenzaTitle>{id ? tService("edit") : tService("add")} {tGeneral("wallet")}</CredenzaTitle>
-          </CredenzaHeader>
-          <CredenzaBody>
+      <Modal open={open} onOpenChange={handleOpenChange}>
+        <ModalContent>
+          <ModalHeader>
+            <ModalTitle>{id ? tService("edit") : tService("add")} {tGeneral("wallet")}</ModalTitle>
+          </ModalHeader>
+          <ModalBody>
             {id && !res ? (
               <div className="flex justify-center">
                 <LoadingSpinner />
@@ -132,7 +132,7 @@ export default function AddNewWalletModal({
                     }}
                   />
                 </div>
-                <CredenzaFooter>
+                <ModalFooter>
                   <div className="flex justify-end mt-3">
                     <Button
                       type="button"
@@ -150,12 +150,12 @@ export default function AddNewWalletModal({
                       {tService("save")}
                     </LoadingButton>
                   </div>
-                </CredenzaFooter>
+                </ModalFooter>
               </form>
             )}
-          </CredenzaBody>
-        </CredenzaContent>
-      </Credenza>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

@@ -93,14 +93,12 @@ export default function RegisterForm() {
           }
 
           <form className="space-y-4" onSubmit={register}>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">
-                  {t("first_name")}
-                  <span className="text-destructive ms-1">*</span>
-                </Label>
-                <Input id="name" placeholder={t("first_name")} onChange={(e) => setName(e.target.value)}/>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">
+                {t("name")}
+                <span className="text-destructive ms-1">*</span>
+              </Label>
+              <Input id="name" placeholder={t("first_name")} onChange={(e) => setName(e.target.value)}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">

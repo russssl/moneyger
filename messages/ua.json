@@ -127,7 +127,7 @@
     "register": "Зареєструватися",
     "register_modal_description": "Зареєструйтеся, щоб розпочати використання нашого сервісу",
     "already_have_account": "Вже є обліковий запис?",
-    "first_name": "Ім'я",
+    "name": "Ім'я",
     "passwords_do_not_match": "Паролі не співпадають",
     "last_name": "Прізвище",
     "username": "Ім'я користувача",

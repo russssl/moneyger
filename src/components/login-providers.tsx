@@ -5,7 +5,7 @@ import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Github } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 // import { usePostHog } from "posthog-js/react";
 import { useTranslations } from "next-intl";
 import { type Provider, signIn } from "@/hooks/use-session";

@@ -127,7 +127,7 @@
     "register": "Zarejestruj się",
     "register_modal_description": "Utwórz konto, aby korzystać z aplikacji",
     "already_have_account": "Masz już konto?",
-    "first_name": "Imię",
+    "name": "Imię",
     "passwords_do_not_match": "Hasła są różne",
     "last_name": "Nazwisko",
     "username": "Nazwa użytkownika",

@@ -129,7 +129,7 @@
     "register": "Register",
     "register_modal_description": "Create an account to get started",
     "already_have_account": "Already have an account?",
-    "first_name": "First Name",
+    "name": "Name",
     "last_name": "Last Name",
     "username": "Username",
     "email": "Email",

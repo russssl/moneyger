@@ -1,13 +1,13 @@
 "use client";
 import {
-  Credenza,
-  CredenzaBody,
-  CredenzaClose,
-  CredenzaContent,
-  CredenzaDescription,
-  CredenzaFooter,
-  CredenzaHeader,
-  CredenzaTitle,
+  Modal,
+  ModalBody,
+  ModalClose,
+  ModalContent,
+  ModalDescription,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
 } from "@/components/modal";
 import { useState, useEffect } from "react";
 import { api } from "@/trpc/react";
@@ -46,25 +46,21 @@ export default function SetupModal() {
       document.cookie = `locale=${language}; path=/; max-age=31536000`;
       window.location.reload();
     }
-
-    // close modal
-    
   }
 
   const serviceTranslations = useTranslations("service");
   return (
     <>
       {open && (
-        <Credenza open>
-          <CredenzaContent>
-            <CredenzaHeader>
-              <CredenzaTitle>finish_setup_title</CredenzaTitle> 
-              {/* TODO: fix */}
-              <CredenzaDescription>
-                finish_setup_description {JSON.stringify(data)}
-              </CredenzaDescription>
-            </CredenzaHeader>
-            <CredenzaBody>
+        <Modal open>
+          <ModalContent>
+            <ModalHeader>
+              <ModalTitle>title</ModalTitle>
+              <ModalDescription>
+                description
+              </ModalDescription>
+            </ModalHeader>
+            <ModalBody>
               <div className="flex flex-col gap-4">
                 <CurrencySelect
                   selectedCurrency={userAdditionalData?.currency}
@@ -77,9 +73,9 @@ export default function SetupModal() {
                   setLanguage={(languageCode) => setLanguage(languageCode ?? undefined)}
                 />
               </div>
-            </CredenzaBody>
-            <CredenzaFooter>
-              <CredenzaClose asChild>
+            </ModalBody>
+            <ModalFooter>
+              <ModalClose asChild>
                 <div className="flex flex-col justify-end w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                   <LoadingButton
                     variant="success"
@@ -92,11 +88,11 @@ export default function SetupModal() {
                     {serviceTranslations("save")}
                   </LoadingButton>
                 </div>
-              </CredenzaClose>
-            </CredenzaFooter>
-          </CredenzaContent>
-        </Credenza>
+              </ModalClose>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
     </>
-  );
+  )
 }

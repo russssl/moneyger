@@ -29,94 +29,94 @@ interface BaseProps {
   children: React.ReactNode
 }
 
-interface RootCredenzaProps extends BaseProps {
+interface RootModalProps extends BaseProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
-interface CredenzaProps extends BaseProps {
+interface ModalSectionProps extends BaseProps {
   className?: string
   asChild?: true
 }
 
-const Credenza = ({ children, ...props }: RootCredenzaProps) => {
+const Modal = ({ children, ...props }: RootModalProps) => {
   const isDesktop = !useIsMobile()
-  const Credenza = isDesktop ? Dialog : Drawer
+  const ModalComponent = isDesktop ? Dialog : Drawer
 
-  return <Credenza {...props}>{children}</Credenza>
+  return <ModalComponent {...props}>{children}</ModalComponent>
 }
 
-const CredenzaTrigger = ({ className, children, ...props }: CredenzaProps) => {
+const ModalTrigger = ({ className, children, ...props }: ModalSectionProps) => {
   const isDesktop = !useIsMobile()
-  const CredenzaTrigger = isDesktop ? DialogTrigger : DrawerTrigger
+  const ModalTriggerComponent = isDesktop ? DialogTrigger : DrawerTrigger
 
   return (
-    <CredenzaTrigger className={className} {...props}>
+    <ModalTriggerComponent className={className} {...props}>
       {children}
-    </CredenzaTrigger>
+    </ModalTriggerComponent>
   )
 }
 
-const CredenzaClose = ({ className, children, ...props }: CredenzaProps & { disableClose?: boolean }) => {
+const ModalClose = ({ className, children, ...props }: ModalSectionProps & { disableClose?: boolean }) => {
   const isDesktop = !useIsMobile()
-  const CredenzaClose = isDesktop ? DialogClose : DrawerClose
+  const ModalCloseComponent = isDesktop ? DialogClose : DrawerClose
 
   return (
-    <CredenzaClose className={className} {...props}>
+    <ModalCloseComponent className={className} {...props}>
       {children}
-    </CredenzaClose>
+    </ModalCloseComponent>
   )
 }
 
-const CredenzaContent = ({ className, children, ...props }: CredenzaProps) => {
+const ModalContent = ({ className, children, ...props }: ModalSectionProps) => {
   const isDesktop = !useIsMobile()
-  const CredenzaContent = isDesktop ? DialogContent : DrawerContent
+  const ModalContentComponent = isDesktop ? DialogContent : DrawerContent
 
   return (
-    <CredenzaContent className={className} {...props}>
+    <ModalContentComponent className={className} {...props}>
       {children}
-    </CredenzaContent>
+    </ModalContentComponent>
   )
 }
 
-const CredenzaDescription = ({
+const ModalDescription = ({
   className,
   children,
   ...props
-}: CredenzaProps) => {
+}: ModalSectionProps) => {
   const isDesktop = !useIsMobile()
-  const CredenzaDescription = isDesktop ? DialogDescription : DrawerDescription
+  const ModalDescriptionComponent = isDesktop ? DialogDescription : DrawerDescription
 
   return (
-    <CredenzaDescription className={className} {...props}>
+    <ModalDescriptionComponent className={className} {...props}>
       {children}
-    </CredenzaDescription>
+    </ModalDescriptionComponent>
   )
 }
 
-const CredenzaHeader = ({ className, children, ...props }: CredenzaProps) => {
+const ModalHeader = ({ className, children, ...props }: ModalSectionProps) => {
   const isDesktop = !useIsMobile()
-  const CredenzaHeader = isDesktop ? DialogHeader : DrawerHeader
+  const ModalHeaderComponent = isDesktop ? DialogHeader : DrawerHeader
 
   return (
-    <CredenzaHeader className={className} {...props}>
+    <ModalHeaderComponent className={className} {...props}>
       {children}
-    </CredenzaHeader>
+    </ModalHeaderComponent>
   )
 }
 
-const CredenzaTitle = ({ className, children, ...props }: CredenzaProps) => {
+const ModalTitle = ({ className, children, ...props }: ModalSectionProps) => {
   const isDesktop = !useIsMobile()
-  const CredenzaTitle = isDesktop ? DialogTitle : DrawerTitle
+  const ModalTitleComponent = isDesktop ? DialogTitle : DrawerTitle
 
   return (
-    <CredenzaTitle className={className} {...props}>
+    <ModalTitleComponent className={className} {...props}>
       {children}
-    </CredenzaTitle>
+    </ModalTitleComponent>
   )
 }
 
-const CredenzaBody = ({ className, children, ...props }: CredenzaProps) => {
+const ModalBody = ({ className, children, ...props }: ModalSectionProps) => {
   return (
     <div className={cn("px-4 md:px-0", className)} {...props}>
       {children}
@@ -124,25 +124,25 @@ const CredenzaBody = ({ className, children, ...props }: CredenzaProps) => {
   )
 }
 
-const CredenzaFooter = ({ className, children, ...props }: CredenzaProps) => {
+const ModalFooter = ({ className, children, ...props }: ModalSectionProps) => {
   const isDesktop = !useIsMobile()
-  const CredenzaFooter = isDesktop ? DialogFooter : DrawerFooter
+  const ModalFooterComponent = isDesktop ? DialogFooter : DrawerFooter
 
   return (
-    <CredenzaFooter className={className} {...props}>
+    <ModalFooterComponent className={className} {...props}>
       {children}
-    </CredenzaFooter>
+    </ModalFooterComponent>
   )
 }
 
 export {
-  Credenza,
-  CredenzaTrigger,
-  CredenzaClose,
-  CredenzaContent,
-  CredenzaDescription,
-  CredenzaHeader,
-  CredenzaTitle,
-  CredenzaBody,
-  CredenzaFooter,
+  Modal,
+  ModalTrigger,
+  ModalClose,
+  ModalContent,
+  ModalDescription,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter,
 }
