@@ -6,14 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import LoadingButton from "@/components/loading-button";
 import { LanguageSelect } from "../language-select";
-// import { useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { api } from "@/trpc/react";
 
-export default function ProfileSettings() {
+export default function ProfileSettings({...props}) {
   const { data: userSettings } = api.user.getUserSettings.useQuery();
   const [email, setEmail] = useState(userSettings?.email ?? "");
   
   const [language, setLanguage] = useState<string | undefined>("en");
+
+  const t = useTranslations("settings");
 
   useEffect(() => {
     const savedLocale = document.cookie
@@ -47,18 +49,18 @@ export default function ProfileSettings() {
   }
 
   return (
-    <Card>
+    <Card {...props} className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center">
           <User className="h-5 w-5 mr-2" />
-          Profile
+          {t("profile")}
         </CardTitle>
-        <CardDescription>Update your personal information.</CardDescription>
+        <CardDescription>{t("profile_description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
@@ -80,7 +82,7 @@ export default function ProfileSettings() {
           loading={saveUserSettingsMutation.isPending}
           disabled={false}
         >
-          Save Changes
+          {t("save_changes")}
         </LoadingButton>
       </CardFooter>
     </Card>
