@@ -22,7 +22,8 @@ export default async function SettingsPage({
   if (!session) {
     redirect("/login")
   }
-  const grid = "grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-6 px-3 mt-4 gap-3"
+
+  const categoryGroupStyle = "flex flex-wrap gap-6 p-4 w-full"
   // eslint-disable-next-line @typescript-eslint/await-thenable
   searchParams = await searchParams;
   const selectedCategory = searchParams?.category || "account";
@@ -33,9 +34,9 @@ export default async function SettingsPage({
         <header className="p-6 border-b">
           <h1 className="text-2xl font-bold">{t("settings")}</h1>
         </header>
-        <SettingsSelect className="mt-4 md:ms-3"/>
+        <SettingsSelect className="mt-4 px-3"/>
         {selectedCategory === "account" && (
-          <div className={grid}>
+          <div className={categoryGroupStyle}>
             <ProfileSettings />
             <PasswordSettings />
             <AccountSettings className="sm:mb-4"/>
@@ -43,7 +44,7 @@ export default async function SettingsPage({
         )}
         {
           selectedCategory === "appearance" && (
-            <div className={grid}>
+            <div className={categoryGroupStyle}>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
