@@ -8,11 +8,11 @@ import { api } from "@/trpc/server"
 import ConnectedAccount from "./account/connected-account"
 import GitHub from "../icons/github"
 import Google from "../icons/google"
-export default async function AccountSettings() {
+export default async function AccountSettings({...props}) {
   const userAccounts = await api.user.getUserAccounts();
   return (
     <>
-      <Card>
+      <Card {...props} className="w-full sm:max-w-md">
         <CardHeader>
           <CardTitle>Connected Accounts</CardTitle>
           <CardDescription>Manage accounts connected to your profile.</CardDescription>
@@ -22,7 +22,7 @@ export default async function AccountSettings() {
           <ConnectedAccount accounts={userAccounts} provider={{ id: "google", name: "Google", icon: <Google /> }} />
         </CardContent>
       </Card>
-      <Card className="xs:mb-6 md:mb-0">
+      <Card {...props} className="w-full sm:max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center">
             <UserCog className="h-5 w-5 mr-2" />

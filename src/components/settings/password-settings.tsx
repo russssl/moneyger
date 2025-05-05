@@ -10,7 +10,7 @@ import { ErrorAlert } from "../error-alert"
 import { checkStrength, getStrengthText, getStrengthColor } from "@/hooks/passwordUtil"
 import { useTranslations } from "next-intl"
 
-export default function PasswordSettings() {
+export default function PasswordSettings({...props}) {
   const [oldPassword, setOldPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [error, setError] = useState("")
@@ -27,7 +27,7 @@ export default function PasswordSettings() {
 
   const strength = checkStrength(newPassword);
   const t = useTranslations("register_login");
-
+  const settingsT = useTranslations("settings");
   const strengthScore = useMemo(() => {
     return strength.filter((req) => req.met).length;
   }, [strength]);
@@ -54,28 +54,28 @@ export default function PasswordSettings() {
   
 
   return (
-    <Card>
+    <Card {...props} className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Key className="h-5 w-5 mr-2" />
-          Password
+          {settingsT("password")}
         </CardTitle>
-        <CardDescription>Update your password.</CardDescription>
+        <CardDescription>{settingsT("password_description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ErrorAlert error={error} />
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="current-password">Current Password</Label>
-            <PasswordInput password={oldPassword} setPassword={setOldPassword} placeholder="Current Password" />
+            <Label htmlFor="current-password">{settingsT("current_password")}</Label>
+            <PasswordInput password={oldPassword} setPassword={setOldPassword} placeholder={settingsT("current_password")} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="new-password">New Password</Label>
-            <PasswordInput password={newPassword} setPassword={setNewPassword} placeholder="New Password" />
+            <Label htmlFor="new-password">{settingsT("new_password")}</Label>
+            <PasswordInput password={newPassword} setPassword={setNewPassword} placeholder={settingsT("new_password")} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm New Password</Label>
-            <PasswordInput password={confirmPassword} setPassword={setConfirmPassword} placeholder="Confirm Password" />
+            <Label htmlFor="confirm-password">{settingsT("confirm_new_password")}</Label>
+            <PasswordInput password={confirmPassword} setPassword={setConfirmPassword} placeholder={settingsT("confirm_new_password")} />
           </div>
           <div
             className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border"
@@ -130,7 +130,7 @@ export default function PasswordSettings() {
           toastText="Password updated successfully"
           loading={updatePasswordMutation.isPending}
           disabled={!passwordsMatch || updatePasswordMutation.isPending || !oldPassword || !newPassword}
-        >Update Password
+        >{settingsT("update_password")}
         </LoadingButton>
       </CardFooter>
     </Card>

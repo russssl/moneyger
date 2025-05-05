@@ -40,13 +40,12 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 
 export function AppSidebar({ session, ...props }: AppSidebarProps) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...props} variant="inset">
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* later use it for "other" */}
         {/* <NavProjects projects={data.projects} /> */}
       </SidebarContent>
       <SidebarFooter>

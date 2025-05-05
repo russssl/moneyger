@@ -1,5 +1,5 @@
 "use client";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { type ReactNode } from "react";
 import { LoadingSpinner } from "@/components/ui/loading";
@@ -26,7 +26,9 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
       {session ? (
         <SidebarProvider>
           <AppSidebar session={session} className="hidden md:flex" />
-          <div className="pb-12">{children}</div> {/* Add padding to prevent overlap */}
+          <SidebarInset>
+            <div className="pb-12">{children}</div>
+          </SidebarInset>
           <div className="md:hidden fixed bottom-0 left-0 w-full">
             <BottomBar updateList={reload} />
           </div>
