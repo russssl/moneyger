@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-export interface ISVGProps extends React.SVGProps<SVGSVGElement> {
+export interface SVGProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
   className?: string;
 }
@@ -8,13 +8,14 @@ export const LoadingSpinner = ({
   size = 24,
   className,
   ...props
-}: ISVGProps) => {
+}: SVGProps) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
       {...props}
+      aria-hidden="true"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
