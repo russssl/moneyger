@@ -155,5 +155,9 @@
     "pound_sterling": "Funt szterling",
     "japanese_yen": "Jen japoński",
     "czech_koruna": "Korona czeska"
+  },
+  "setup-modal": {
+    "title": "Ustawienia początkowe",
+    "description": "Ustaw język i walutę, aby rozpocząć"
   }
 }

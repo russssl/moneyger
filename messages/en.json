@@ -156,5 +156,9 @@
     "polish_zloty": "Polish Zloty",
     "ukrainian_hryvnia": "Ukrainian Hryvnia",
     "czech_koruna": "Czech Koruna"
+  },
+  "setup-modal": {
+    "title": "Initial Setup",
+    "description": "Set up your account"
   }
 }

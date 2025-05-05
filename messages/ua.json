@@ -155,5 +155,9 @@
     "ukrainian_hryvnia": "Гривня",
     "polish_zloty": "Польський злотий",
     "czech_koruna": "Чеська крона"
+  },
+  "setup-modal": {
+    "title": "Налаштування",
+    "description": "Виберіть свої налаштування"
   }
 }
