@@ -6,6 +6,7 @@ import { transactions } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
 import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
+import { type Transaction } from "@/server/db/transaction";
 import { getCurrentExchangeRate } from "../services/wallets";
 
 export const transactionsRouter = createTRPCRouter({
@@ -14,7 +15,7 @@ export const transactionsRouter = createTRPCRouter({
       walletId: z.string().optional(),
       transaction_date: z.date().optional(),
     }).optional())
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }): Promise<Partial<Transaction>[]> => {
       const { walletId, transaction_date } = input || {};
       const res_transactions = await ctx.db.query.transactions.findMany({
         where: and(
@@ -40,224 +41,158 @@ export const transactionsRouter = createTRPCRouter({
     .input(z.object({
       id: z.string()
     }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx, input }): Promise<Partial<Transaction>> => {
       const res_transaction = await ctx.db.query.transactions.findFirst({
         where: (transaction) => input.id ? and(
           eq(transaction.userId, ctx.session.user.id),
           eq(transaction.id, input?.id),
           not(eq(transaction.type, "adjustment"))
-        ) : and(
-          eq(transaction.userId, ctx.session.user.id),
-          not(eq(transaction.type, "adjustment"))
-        ),
-        orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
+        ) : undefined,
       });
-
       if (!res_transaction) {
         throw new Error("Transaction not found");
       }
-      return {
-        amount: res_transaction.amount,
-        transaction_date: res_transaction.transaction_date,
-        description: res_transaction.description,
-        category: res_transaction.category,
-        created_at: res_transaction.created_at,
-        note: res_transaction.note,
-        type: res_transaction.type,
-        id: res_transaction.id,
-      };
+      return res_transaction;
     }),
-  
-  updateTransaction: protectedProcedure
+
+  createTransaction: protectedProcedure
     .input(z.object({
-      id: z.string().optional(),
-      amount: z.number(),
-      transaction_date: z.date(),
       walletId: z.string(),
+      toWalletId: z.string().optional(),
+      amount: z.number(),
+      type: z.enum(["income", "expense", "transfer"]),
+      transaction_date: z.date(),
       description: z.string(),
       category: z.string(),
-      note: z.string().optional(),
-      type: z.enum(["income", "expense", "adjustment", "transfer"]),
-    })).mutation(async ({ ctx, input }) => {
-      const wallet = await ctx.db.query.wallets.findFirst({
-        where: and(
-          eq(wallets.userId, ctx.session.user.id),
-          eq(wallets.id, input.walletId),
-        ),
-      });
-
-      if (!wallet) {
-        throw new Error("Wallet not found");
-      }
-
-      let res_transaction;
-      if (input.id) {
-        const transaction = await ctx.db.query.transactions.findFirst({
-          where: and(
-            eq(transactions.userId, ctx.session.user.id),
-            eq(transactions.id, input.id),
-          ),
+    }))
+    .mutation(async ({ ctx, input }): Promise<Transaction> => {
+      const res = await ctx.db.transaction(async (tx) => {
+        const wallet = await tx.query.wallets.findFirst({
+          where: eq(wallets.id, input.walletId),
         });
+        if (!wallet) {
+          throw new Error("Wallet not found");
+        }
+  
+        const res_transaction = await tx.insert(transactions).values({
+          userId: ctx.session.user.id,
+          walletId: input.walletId,
+          amount: input.amount,
+          transaction_date: input.transaction_date,
+          description: input.description,
+          category: input.category,
+          type: input.type,
+        }).returning().execute().then((res) => res[0]);
+        
+        if (input.type !== "transfer") {
+          const balance = input.type === "income" ? wallet.balance + input.amount : wallet.balance - input.amount; 
+          await tx.update(wallets).set({
+            balance,
+          }).where(eq(wallets.id, input.walletId));
+        } else {
+          if (!input.toWalletId) {
+            throw new Error("To wallet ID is required");
+          }
+          const [sourceWallet, destinationWallet] = await Promise.all([
+            tx.query.wallets.findFirst({
+              where: eq(wallets.id, input.walletId),
+            }),
+            tx.query.wallets.findFirst({
+              where: eq(wallets.id, input.toWalletId),
+            }),
+          ]);
+          if (!sourceWallet || !destinationWallet) {
+            throw new Error("Wallet not found");
+          }
+          if (!sourceWallet.currency || !destinationWallet.currency) {
+            throw new Error("Currency not found");
+          }
+          let newSourceBalance; let newDestinationBalance;
+          if (sourceWallet.currency !== destinationWallet.currency) {
+            const exchangeRate = await getCurrentExchangeRate(sourceWallet.currency, destinationWallet.currency, ctx);
+            newSourceBalance = sourceWallet.balance - input.amount;
+            newDestinationBalance = destinationWallet.balance + input.amount * exchangeRate;
+          } else {
+            newSourceBalance = sourceWallet.balance - input.amount;
+            newDestinationBalance = destinationWallet.balance + input.amount;
+          }
+          await Promise.all([
+            tx.update(wallets).set({
+              balance: newSourceBalance,
+            }).where(eq(wallets.id, input.walletId)),
+            tx.update(wallets).set({
+              balance: newDestinationBalance,
+            }).where(eq(wallets.id, input.toWalletId)),
+          ]);
+        }
+        
+        if (!res_transaction) {
+          throw new Error("Transaction not created");
+        }
+        return res_transaction;
+      });
+      return res;
+    }),
 
+  deleteTransaction: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .mutation(async ({ ctx, input }): Promise<void> => {
+      await ctx.db.transaction(async (tx) => {
+        const transaction = await tx.query.transactions.findFirst({
+          where: eq(transactions.id, input.id),
+        });
         if (!transaction) {
           throw new Error("Transaction not found");
         }
 
-        res_transaction = await ctx.db.update(transactions).set({
-          amount: input.amount,
-          walletId: input.walletId,
-          transaction_date: input.transaction_date,
-          description: input.description,
-          category: input.category,
-          note: input.note,
-          type: input.type,
-        }).where(
-          and(
-            eq(transactions.userId, ctx.session.user.id),
-            eq(transactions.id, input.id),
-          ),
-        ).returning().execute();
-      } else {
-        res_transaction = await ctx.db.insert(transactions).values({
-          userId: ctx.session.user.id,
-          walletId: input.walletId,
-          amount: input.amount,
-          transaction_date: input.transaction_date,
-          description: input.description,
-          category: input.category,
-          note: input.note,
-          type: input.type,
-        }).returning().execute();
-      }
+        const wallet = await tx.query.wallets.findFirst({
+          where: eq(wallets.id, transaction.walletId),
+        });
+        if (!wallet) {
+          throw new Error("Wallet not found");
+        }
 
-      if (input.type === "adjustment") {
-        return;
-      }
+        await tx.update(wallets).set({
+          balance: wallet.balance - transaction.amount,
+        }).where(eq(wallets.id, transaction.walletId));
 
-      if (!res_transaction || res_transaction.length === 0) {
-        throw new Error("Transaction not found");
-      }
-
-      return ctx.db.query.transactions.findFirst({
-        where: and(
-          eq(transactions.userId, ctx.session.user.id),
-          eq(transactions.id, res_transaction?.[0]?.id ?? ""),
-        ),
-        with: {
-          wallet: {
-            columns: {
-              currency: true,
-              name: true,
-            },
-          },
-        },
+        await tx.delete(transactions).where(eq(transactions.id, input.id));
       });
     }),
 
-  removeTransaction: protectedProcedure
+  updateTransaction: protectedProcedure
     .input(z.object({
       id: z.string(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-
-      const transaction = await ctx.db.query.transactions.findFirst({
-        where: and(
-          eq(transactions.userId, ctx.session.user.id),
-          eq(transactions.id, input.id),
-        ),
-      });
-
-      if (!transaction) {
-        throw new Error("Transaction not found");
-      }
-
-      const deleted = await ctx.db.delete(transactions).where(
-        eq(transactions.id, transaction.id),
-      ).returning().execute();
-
-      return deleted;
-    }),
-  
-  transferFunds: protectedProcedure
-    .input(z.object({
-      fromWalletId: z.string(),
-      toWalletId: z.string(),
       amount: z.number(),
+      transaction_date: z.date(),
+      description: z.string(),
+      category: z.string(),
     }))
-    .mutation(async ({ ctx, input }) => {
-      const { fromWalletId, toWalletId, amount } = input;
+    .mutation(async ({ ctx, input }): Promise<Transaction> => {
+      const transaction = await ctx.db.transaction(async (tx) => {
+        const transaction = await tx.query.transactions.findFirst({
+          where: eq(transactions.id, input.id),
+        });
+        if (!transaction) {
+          throw new Error("Transaction not found");
+        }
 
-      const fromWallet = await ctx.db.query.wallets.findFirst({
-        where: and(
-          eq(wallets.userId, ctx.session.user.id),
-          eq(wallets.id, fromWalletId),
-        ),
+        const res = await tx.update(transactions).set({
+          amount: input.amount,
+          transaction_date: input.transaction_date,
+          description: input.description,
+          category: input.category,
+        }).where(eq(transactions.id, input.id)).returning().execute().then((res) => res[0]);
+
+        if (!res) {
+          throw new Error("Transaction not updated");
+        }
+
+        return res;
       });
-
-      if (!fromWallet) {
-        throw new Error("Source wallet not found");
-      }
-
-      const toWallet = await ctx.db.query.wallets.findFirst({
-        where: and(
-          eq(wallets.userId, ctx.session.user.id),
-          eq(wallets.id, toWalletId),
-        ),
-      });
-
-      if (!toWallet) {
-        throw new Error("Destination wallet not found");
-      }
-
-      const originalCurrency = fromWallet.currency; const newCurrency = toWallet.currency;
-
-      if (!originalCurrency || !newCurrency) {
-        // theoretically will never happen
-        throw new Error("missing currencies")
-      }
-      let convertedAmount = amount;
-    
-      // If currencies are different, apply exchange rate
-      if (originalCurrency !== newCurrency) {
-        const exchangeRate = await getCurrentExchangeRate(originalCurrency, newCurrency, ctx);
-        convertedAmount = amount * exchangeRate;
-      }
-  
-      await ctx.db.transaction(async (tx) => {
-        await tx.insert(transactions).values({
-          userId: ctx.session.user.id,
-          walletId: fromWalletId,
-          amount: amount,
-          transaction_date: new Date(),
-          category: "transfer",
-          type: "expense",
-        }).execute();
-
-        await tx.insert(transactions).values({
-          userId: ctx.session.user.id,
-          walletId: toWalletId,
-          amount: convertedAmount,
-          transaction_date: new Date(),
-          category: "transfer",
-          type: "income",
-        }).execute();
-      });
-
-      return { success: true };
+      return transaction;
     }),
-    
-  getCurrentExchangeRate: protectedProcedure
-    .input(z.object({
-      from: z.string().uuid(),
-      to: z.string().uuid(),
-    }))
-    .query(async ({ ctx, input }) => {
-      const { from, to } = input;
-      const fromCurrency = await ctx.db.select({currency: wallets.currency}).from(wallets).where(eq(wallets.id, from)).execute().then((res) => res[0]?.currency);
-      const toCurrency = await ctx.db.select({currency: wallets.currency}).from(wallets).where(eq(wallets.id, to)).execute().then((res) => res[0]?.currency);
-      if (!fromCurrency || !toCurrency) {
-        throw new Error("Wallet not found");
-      }
-      return await getCurrentExchangeRate(fromCurrency, toCurrency, ctx);
-    }),
+
 });

@@ -22,8 +22,8 @@ export const userRouter = createTRPCRouter({
       return user ?? null;
     }),
 
-  createUserSettings: protectedProcedure.
-    input(z.object({
+  createUserSettings: protectedProcedure
+    .input(z.object({
       currency: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
@@ -32,7 +32,6 @@ export const userRouter = createTRPCRouter({
       const existingSettings = await ctx.db.query.userSettings.findFirst({
         where: eq(userSettings.userId, userId),
       });
-
       if (existingSettings) {
         return existingSettings;
       }

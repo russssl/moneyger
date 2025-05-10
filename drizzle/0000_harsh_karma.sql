@@ -29,14 +29,11 @@ CREATE TABLE "session" (
 CREATE TABLE "user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
-	"surname" text NOT NULL,
-	"username" text NOT NULL,
 	"email" text NOT NULL,
 	"email_verified" boolean NOT NULL,
 	"image" text,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
-	CONSTRAINT "user_username_unique" UNIQUE("username"),
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -58,9 +55,9 @@ CREATE TABLE "wallet" (
 	"id" varchar(255) PRIMARY KEY NOT NULL,
 	"user_id" varchar(255) NOT NULL,
 	"name" varchar(255),
+	"balance" integer DEFAULT 0 NOT NULL,
 	"description" varchar(255),
 	"icon_name" varchar(255),
-	"is_card" boolean DEFAULT false,
 	"currency" varchar(255),
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
@@ -70,7 +67,7 @@ CREATE TABLE "transaction" (
 	"id" varchar(255) PRIMARY KEY NOT NULL,
 	"user_id" varchar(255) NOT NULL,
 	"wallet_id" varchar(255) NOT NULL,
-	"amount" integer,
+	"amount" integer NOT NULL,
 	"transaction_date" timestamp,
 	"description" varchar(255),
 	"note" varchar(255),

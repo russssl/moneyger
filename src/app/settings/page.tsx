@@ -23,7 +23,9 @@ export default async function SettingsPage({
     redirect("/login")
   }
 
-  const categoryGroupStyle = "flex flex-wrap gap-6 p-4 w-full"
+  const categoryGroupStyle =
+  "grid gap-4 px-4 py-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]";
+
   // eslint-disable-next-line @typescript-eslint/await-thenable
   searchParams = await searchParams;
   const selectedCategory = searchParams?.category || "account";

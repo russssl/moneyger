@@ -14,7 +14,7 @@ export const transactions = pgTable("transaction", {
   walletId: varchar("wallet_id", { length: 255 })
     .notNull()
     .references(() => wallets.id),
-  amount: integer("amount"),
+  amount: integer("amount").notNull(),
   transaction_date: timestamp("transaction_date"),
   description: varchar("description", { length: 255 }),
   note: varchar("note", { length: 255 }),
