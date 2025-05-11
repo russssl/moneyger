@@ -36,16 +36,15 @@ export const userRouter = createTRPCRouter({
         return existingSettings;
       }
 
-      await ctx.db.insert(userSettings).values({
+      const newUserSettings = await ctx.db.insert(userSettings).values({
         userId,
         currency: input.currency,
-      }).execute();
+      }).returning().execute();
 
-      const newUserSettings = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, userId),
-      });
-
-      return newUserSettings ?? null;
+      if (!newUserSettings) {
+        throw new Error("User settings not created");
+      }
+      return newUserSettings;
     }),
   
   getUserSettings: protectedProcedure

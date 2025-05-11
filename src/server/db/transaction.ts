@@ -31,3 +31,7 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
+export type TransactionWithWallet = Transaction & { wallet: {
+  name: string | null;
+  currency: string | null;
+} };

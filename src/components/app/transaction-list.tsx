@@ -2,10 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { NoItems } from "./no-items"
-import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, TrashIcon } from "lucide-react"
+import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, TrashIcon, PlusCircle } from "lucide-react"
 import { useEffect, useState } from "react"
-import { type Transaction } from "@/server/db/transaction"
-import { type Wallet } from "@/server/db/wallet"
+import { type TransactionWithWallet } from "@/server/db/transaction"
 import { api } from "@/trpc/react"
 import { Button } from "../ui/button"
 import AddNewTransactionModal from "./transactions/add-new-transaction-modal"
@@ -15,7 +14,6 @@ import { LoadingSpinner } from "../ui/loading"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 
-type TransactionWithWallet = Transaction & { wallet: Wallet };
 
 export function TransactionList() {
   const [transactions, setTransactions] = useState<TransactionWithWallet[]>([])
@@ -23,7 +21,7 @@ export function TransactionList() {
   const [isPending, setIsPending] = useState(false)
 
   const { data: transactionsData, isLoading } = api.transactions.getTransactions.useQuery()
-  const removeTransactionMutation = api.transactions.removeTransaction.useMutation()
+  const removeTransactionMutation = api.transactions.deleteTransaction.useMutation()
   
   const t = useTranslations("finances")
   const tGeneral = useTranslations("general")
@@ -34,7 +32,7 @@ export function TransactionList() {
 
   useEffect(() => {
     if (transactionsData) {
-      setTransactions(transactionsData as TransactionWithWallet[])
+      setTransactions(transactionsData)
     }
   }, [transactionsData])
 
@@ -107,6 +105,7 @@ export function TransactionList() {
               </div>
             )}
           <Button onClick={() => setIsModalOpen(true)} className="w-full mt-4">
+            <PlusCircle className="w-4 h-4 mr-2" />
             {t("add_transaction")}
           </Button>
         </CardContent>

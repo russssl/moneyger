@@ -51,7 +51,7 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
   const [toCurrencyCode, setToCurrencyCode] = useState<string | null>(null);
   const [sameDestinationWallet, setSameDestinationWallet] = useState<boolean>(false);
 
-  const updateTransactionMutation = api.transactions.updateTransaction.useMutation();
+  const createTransactionMutation = api.transactions.createTransaction.useMutation();
   const canSave = selectedFirstWallet && date && amount !== 0 && sameDestinationWallet === false;
   
   const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open,});
@@ -97,7 +97,7 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
       return;
     }
 
-    updateTransactionMutation.mutate({
+    createTransactionMutation.mutate({
       walletId: selectedFirstWallet,
       amount: amount,
       transaction_date: date,

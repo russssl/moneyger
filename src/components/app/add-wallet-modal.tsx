@@ -33,6 +33,10 @@ export default function AddNewWalletModal({
   const [currency, setCurrency] = useState("");
   const [walletName, setWalletName] = useState("");
   const [initialBalance, setInitialBalance] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const saveWalletMutation = api.wallets.createWallet.useMutation();
+  const updateWalletMutation = api.wallets.updateWallet.useMutation();
 
   const t = useTranslations("finances");
   const tService = useTranslations("service");
@@ -52,37 +56,56 @@ export default function AddNewWalletModal({
     setWalletName("");
     setCurrency("");
     setInitialBalance(null);
-  }
-  , [open]);
+  }  , [open]);
   
+  useEffect(() => {
+    if (saveWalletMutation.isPending || updateWalletMutation.isPending) {
+      setSaving(true);
+    } else {
+      setSaving(false);
+    }
+  }, [saveWalletMutation.isPending, updateWalletMutation.isPending]);
+
   useEffect(() => {
     if (!res) {
       return;
     }
     setCurrency(res.currency || "");
-    setInitialBalance(res.initialBalance);
+    setInitialBalance(res.balance);
     setWalletName(res.name || "")
   }, [res]);
 
-
-  const saveWalletMutation = api.wallets.updateWallet.useMutation();
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveWalletMutation.mutate(
-      {
-        name: walletName,
-        initialBalance: initialBalance || undefined,
-        currency,
-        id: id || undefined,
-      },
-      {
-        onSuccess: (result) => {
-          onSave(result);
-          onOpenChange(false);
+    if (id) {
+      updateWalletMutation.mutate(
+        {
+          id,
+          name: walletName,
+          currency,
         },
-      }
-    );
+        {
+          onSuccess: (result) => {
+            onSave(result);
+            onOpenChange(false);
+          },
+        }
+      );
+    } else {
+      saveWalletMutation.mutate(
+        {
+          name: walletName,
+          initialBalance: initialBalance || undefined,
+          currency,
+        },
+        {
+          onSuccess: (result) => {
+            onSave(result);
+            onOpenChange(false);
+          },
+        }
+      );
+    }
   };
   return (
     <div className={className}>
@@ -142,7 +165,7 @@ export default function AddNewWalletModal({
                       {tService("cancel")}
                     </Button>
                     <LoadingButton
-                      loading={saveWalletMutation.isPending}
+                      loading={saving}
                       type="submit"
                       disabled={isDataLoading || !walletName || !currency}
                       variant="success"

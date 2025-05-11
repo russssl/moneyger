@@ -9,33 +9,19 @@ import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading"
 import { NoItems } from "./no-items"
 import { useTranslations } from "next-intl"
-
-type Wallet = {
-  id: number;
-  name?: string;
-  balance: number;
-  currency: string;
-  type: "wallet"; // remove this
-};
-// get this type from drizzle-orm
-type WalletsRes = {
-  id: string;
-  name: string | null;
-  balance: number | null;
-  currency: string | null;
-}
+import { type Wallet as WalletType } from "@/server/db/wallet"
 
 export default function Wallets({className}: {className?: string | undefined}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [items, setItems] = useState<WalletsRes[]>([]);
+  const [items, setItems] = useState<WalletType[]>([]);
   const { data: wallets, isLoading } = api.wallets.getWallets.useQuery();
   const t = useTranslations("finances");
 
   const deleteMutation = api.wallets.deleteWallet.useMutation();
   useEffect(() => {
     if (wallets) {
-      setItems(wallets as WalletsRes[]);
+      setItems(wallets);
     }
   }, [wallets]);
 
@@ -50,16 +36,16 @@ export default function Wallets({className}: {className?: string | undefined}) {
     setSelectedId(null);
   };
 
-  const saveWallets = (newItem: any) => {
+  const saveWallets = (newItem: WalletType) => {
     setItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === newItem[0].id);
+      const existingItem = prevItems.find(item => item.id === newItem.id);
       if (existingItem) {
         const existingIndex = prevItems.indexOf(existingItem);
         const updatedItems = [...prevItems];
-        updatedItems[existingIndex] = newItem[0];
+        updatedItems[existingIndex] = newItem;
         return updatedItems;
       } else {
-        return [...prevItems, newItem[0]];
+        return [...prevItems, newItem];
       }
     });
     setSelectedId(null);
@@ -99,7 +85,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} id={selectedId} onSave={(wallets: WalletsRes) => saveWallets(wallets)}/>
+      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} id={selectedId} onSave={(wallet: WalletType) => saveWallets(wallet)}/>
     </div>
   );
 }

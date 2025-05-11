@@ -2,7 +2,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { transactions } from "@/server/db/transaction";
+import { transactions, type TransactionWithWallet } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
 import { and, eq, not } from "drizzle-orm";
 import { z } from "zod";
@@ -15,7 +15,7 @@ export const transactionsRouter = createTRPCRouter({
       walletId: z.string().optional(),
       transaction_date: z.date().optional(),
     }).optional())
-    .query(async ({ ctx, input }): Promise<Partial<Transaction>[]> => {
+    .query(async ({ ctx, input }): Promise<TransactionWithWallet[]> => {
       const { walletId, transaction_date } = input || {};
       const res_transactions = await ctx.db.query.transactions.findMany({
         where: and(
@@ -65,7 +65,7 @@ export const transactionsRouter = createTRPCRouter({
       description: z.string(),
       category: z.string(),
     }))
-    .mutation(async ({ ctx, input }): Promise<Transaction> => {
+    .mutation(async ({ ctx, input }): Promise<TransactionWithWallet> => {
       const res = await ctx.db.transaction(async (tx) => {
         const wallet = await tx.query.wallets.findFirst({
           where: eq(wallets.id, input.walletId),
@@ -74,7 +74,7 @@ export const transactionsRouter = createTRPCRouter({
           throw new Error("Wallet not found");
         }
   
-        const res_transaction = await tx.insert(transactions).values({
+        const createdTransaction = await tx.insert(transactions).values({
           userId: ctx.session.user.id,
           walletId: input.walletId,
           amount: input.amount,
@@ -82,8 +82,27 @@ export const transactionsRouter = createTRPCRouter({
           description: input.description,
           category: input.category,
           type: input.type,
-        }).returning().execute().then((res) => res[0]);
-        
+        }).returning({ id: transactions.id }).execute().then((res) => res[0]);
+
+        if (!createdTransaction?.id) {
+          throw new Error("Transaction not created");
+        }
+
+        const res_transaction = await tx.query.transactions.findFirst({
+          where: eq(transactions.id, createdTransaction.id),
+          with: {
+            wallet: {
+              columns: {
+                name: true,
+                currency: true,
+              },
+            },
+          },
+        });
+
+        if (!res_transaction) {
+          throw new Error("Transaction not created");
+        }
         if (input.type !== "transfer") {
           const balance = input.type === "income" ? wallet.balance + input.amount : wallet.balance - input.amount; 
           await tx.update(wallets).set({
@@ -134,34 +153,6 @@ export const transactionsRouter = createTRPCRouter({
       return res;
     }),
 
-  deleteTransaction: protectedProcedure
-    .input(z.object({
-      id: z.string(),
-    }))
-    .mutation(async ({ ctx, input }): Promise<void> => {
-      await ctx.db.transaction(async (tx) => {
-        const transaction = await tx.query.transactions.findFirst({
-          where: eq(transactions.id, input.id),
-        });
-        if (!transaction) {
-          throw new Error("Transaction not found");
-        }
-
-        const wallet = await tx.query.wallets.findFirst({
-          where: eq(wallets.id, transaction.walletId),
-        });
-        if (!wallet) {
-          throw new Error("Wallet not found");
-        }
-
-        await tx.update(wallets).set({
-          balance: wallet.balance - transaction.amount,
-        }).where(eq(wallets.id, transaction.walletId));
-
-        await tx.delete(transactions).where(eq(transactions.id, input.id));
-      });
-    }),
-
   updateTransaction: protectedProcedure
     .input(z.object({
       id: z.string(),
@@ -195,4 +186,39 @@ export const transactionsRouter = createTRPCRouter({
       return transaction;
     }),
 
+  deleteTransaction: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+    }))
+    .mutation(async ({ ctx, input }): Promise<void> => {
+      await ctx.db.transaction(async (tx) => {
+        const transaction = await tx.query.transactions.findFirst({
+          where: eq(transactions.id, input.id),
+        });
+        if (!transaction) {
+          throw new Error("Transaction not found");
+        }
+
+        const wallet = await tx.query.wallets.findFirst({
+          where: eq(wallets.id, transaction.walletId),
+        });
+        if (!wallet) {
+          throw new Error("Wallet not found");
+        }
+        await tx.update(wallets).set({
+          balance: transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount,
+        }).where(eq(wallets.id, transaction.walletId));
+
+        await tx.delete(transactions).where(eq(transactions.id, input.id));
+      });
+    }),
+
+  getCurrentExchangeRate: protectedProcedure
+    .input(z.object({
+      from: z.string(),
+      to: z.string(),
+    }))
+    .query(async ({ ctx, input }): Promise<number> => {
+      return await getCurrentExchangeRate(input.from, input.to, ctx);
+    }),
 });

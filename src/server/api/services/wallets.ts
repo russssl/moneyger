@@ -103,49 +103,70 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
 }
 
 async function updateCurrenciesExchangeRate(api: any, ctx: any, currencyToRetrieve: string | null = null) {
+  // Supported base currencies
+  const supportedCurrencies = ["USD", "EUR", "GBP", "JPY"];
 
-  if (await api.getQuota() < 10) {
-    throw new Error("Rate limit exceeded");
-  }
+  // If a specific currency is requested, only update that one
+  const currenciesToCheck = currencyToRetrieve ? [currencyToRetrieve] : supportedCurrencies;
 
-  const currenciesToUpdate : Array<SelectCurrencyExchangeRate> = await ctx.db.select({
+  // Get current rates from DB for these currencies
+  const dbRates: Array<SelectCurrencyExchangeRate> = await ctx.db.select({
     baseCurrency: currencyExchangeRates.baseCurrency,
     createdAt: currencyExchangeRates.createdAt,
   })
     .from(currencyExchangeRates)
-    .where(
-      and(
-        ...[
-          inArray(currencyExchangeRates.baseCurrency, ["USD", "EUR", "GBP", "JPY"]),
-          lt(currencyExchangeRates.createdAt, DateTime.now().minus({ days: 1 }).toISODate())
-        ]
-      )
-    )
-    .execute()
-  
-  let currencyStrings: string[] = []
-  if (currenciesToUpdate.length > 0) {
-    currencyStrings = currenciesToUpdate.map(c => c.baseCurrency)
-  } else {
-    currencyStrings = ["USD", "EUR", "GBP", "JPY"]
-  }
-  const res = await Promise.all(currencyStrings.map(async (currency) => {
-    const exchangeRate = await api.getExchangeRate(currency);
-    
-    if (!exchangeRate) {
-      throw new Error("Exchange rate not found");
+    .where(inArray(currencyExchangeRates.baseCurrency, currenciesToCheck))
+    .execute();
+
+  // Determine which currencies need updating (missing or outdated)
+  const outdatedOrMissing = currenciesToCheck.filter((currency) => {
+    const dbEntry = dbRates.find((r) => r.baseCurrency === currency);
+    if (!dbEntry) return true;
+    if (!dbEntry.createdAt) return true;
+    return dbEntry.createdAt < DateTime.now().minus({ days: 1 }).toISODate();
+  });
+
+  // If nothing to update, return the requested currency from DB if needed
+  if (outdatedOrMissing.length === 0) {
+    if (currencyToRetrieve) {
+      return dbRates.find((rate) => rate.baseCurrency === currencyToRetrieve);
     }
-    
+    return;
+  }
+
+  // Check quota once before making API calls
+  const quota = await api.getQuota();
+  if (typeof quota === "object" && quota?.requests_left !== undefined) {
+    if (quota?.requests_left < outdatedOrMissing.length) {
+      throw new Error("Rate limit exceeded");
+    }
+  } else if (typeof quota === "number" && quota < outdatedOrMissing.length) {
+    throw new Error("Rate limit exceeded");
+  }
+
+  // Fetch and store new rates only for outdated/missing currencies
+  const res = await Promise.all(outdatedOrMissing.map(async (currency) => {
+    const exchangeRate = await api.getExchangeRate(currency);
+    if (!exchangeRate?.conversion_rates) {
+      throw new Error(`Exchange rate not found for ${currency}`);
+    }
     return {
       baseCurrency: currency,
       rates: exchangeRate.conversion_rates,
       createdAt: new Date(),
-    }
+    };
   }));
 
-  await ctx.db.insert(currencyExchangeRates).values(res).execute();
+  if (res.length > 0) {
+    await ctx.db.insert(currencyExchangeRates).values(res).execute();
+  }
 
+  // Return the requested currency if needed
   if (currencyToRetrieve) {
-    return res.find((rate) => rate.baseCurrency === currencyToRetrieve);
+    // Prefer the just-fetched one, fallback to DB
+    return (
+      res.find((rate) => rate.baseCurrency === currencyToRetrieve) ||
+      dbRates.find((rate) => rate.baseCurrency === currencyToRetrieve)
+    );
   }
 }
