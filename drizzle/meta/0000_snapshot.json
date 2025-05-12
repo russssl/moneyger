@@ -1,5 +1,5 @@
 {
-  "id": "cf020b23-c62f-4980-a674-bf026f2d1365",
+  "id": "da5d8e17-2a42-4f3a-8b82-a9f8fb5b8151",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -367,7 +367,7 @@
         },
         "balance": {
           "name": "balance",
-          "type": "integer",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": true,
           "default": 0
@@ -451,7 +451,7 @@
         },
         "amount": {
           "name": "amount",
-          "type": "integer",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": true
         },

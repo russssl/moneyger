@@ -1,4 +1,4 @@
-import { integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, varchar, doublePrecision } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { relations } from "drizzle-orm";
 import { transactions } from "./transaction";
@@ -14,7 +14,7 @@ export const wallets = pgTable("wallet", {
     .notNull()
     .references(() => user.id),
   name: varchar("name", { length: 255 }),
-  balance: integer("balance").default(0).notNull(),
+  balance: doublePrecision("balance").default(0).notNull(),
   description: varchar("description", { length: 255 }),
   iconName: varchar("icon_name", { length: 255 }),
   currency: varchar("currency", { length: 255 }),

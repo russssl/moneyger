@@ -15,10 +15,9 @@ import CurrencySelect from "./currency-select";
 import LoadingButton from "./loading-button";
 import { useTranslations } from "next-intl";
 import { LanguageSelect } from "./language-select";
-import type { InsertUserSettings } from "@/server/db/userSettings"; // adjust path as needed
 
 export default function SetupModal() {
-  const [data, setData] = useState<Partial<InsertUserSettings>>({});
+  const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [language, setLanguage] = useState<string | undefined>(undefined);
 
@@ -30,16 +29,18 @@ export default function SetupModal() {
 
   useEffect(() => {
     if (userAdditionalData) {
-      setData(userAdditionalData);
-      setOpen(!userAdditionalData.currency);
+      if (userAdditionalData.currency !== undefined) {
+        setCurrency(userAdditionalData.currency);
+      }
+      setOpen(userAdditionalData.currency === undefined);
     }
   }, [userAdditionalData]);
 
   function saveSettings() {
-    if (!data.currency) return;
+    if (!currency) return;
 
     createUserSettingsMutation.mutate(
-      { currency: data.currency },
+      { currency },
       {
         onSuccess: () => {
           setOpen(false);
@@ -68,9 +69,9 @@ export default function SetupModal() {
             <ModalBody>
               <div className="flex flex-col gap-4">
                 <CurrencySelect
-                  selectedCurrency={data.currency}
+                  selectedCurrency={currency}
                   setSelectedCurrency={(currency) =>
-                    setData({ ...data, currency: currency ?? undefined })
+                    setCurrency(currency ?? undefined)
                   }
                 />
                 <LanguageSelect
@@ -87,7 +88,7 @@ export default function SetupModal() {
                   <LoadingButton
                     variant="success"
                     loading={createUserSettingsMutation.isPending}
-                    disabled={createUserSettingsMutation.isPending || !data.currency}
+                    disabled={createUserSettingsMutation.isPending || !currency}
                     onClick={saveSettings}
                   >
                     {serviceTranslations("save")}

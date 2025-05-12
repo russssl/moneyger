@@ -60,16 +60,22 @@
     "cancel": "Anuluj"
   },
   "settings": {
+    "save_changes": "Zapisz zmiany",
     "settings": "Ustawienia",
-    "settings_description": "Tutaj możesz zmienić swoje ustawienia",
-    "username": "Nazwa użytkownika",
+    "profile": "Profil",
+    "profile_description": "Zaktualizuj swoje dane osobowe",
     "email": "Email",
     "language": "Język",
     "select_language": "Wybierz język",
     "english": "Angielski",
-    "polish": "Polski",
     "ukrainian": "Ukraiński",
-    "currency": "Waluta"
+    "polish": "Polski",
+    "password": "Hasło",
+    "password_description": "Zmień swoje hasło",
+    "current_password": "Obecne hasło",
+    "new_password": "Nowe hasło",
+    "confirm_new_password": "Potwierdź nowe hasło",
+    "update_password": "Zaktualizuj hasło"
   },
   "navbar": {
     "upgrade_to_pro": "Przejdź na Pro",

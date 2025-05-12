@@ -99,6 +99,7 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
 
     createTransactionMutation.mutate({
       walletId: selectedFirstWallet,
+      toWalletId: transactionType === "transfer" ? selectedSecondWallet : undefined,
       amount: amount,
       transaction_date: date,
       description: description,

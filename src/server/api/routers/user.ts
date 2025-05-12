@@ -5,7 +5,7 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { account, type SelectAccount, user as users} from "@/server/db/user";
-import { userSettings } from "@/server/db/userSettings";
+import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
 import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
@@ -26,7 +26,7 @@ export const userRouter = createTRPCRouter({
     .input(z.object({
       currency: z.string(),
     }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }): Promise<SelectUserSettings | null> => {
       const user = ctx.session.user;
       const userId = user.id;
       const existingSettings = await ctx.db.query.userSettings.findFirst({
@@ -36,15 +36,18 @@ export const userRouter = createTRPCRouter({
         return existingSettings;
       }
 
-      const newUserSettings = await ctx.db.insert(userSettings).values({
+      const inserted = await ctx.db.insert(userSettings).values({
         userId,
         currency: input.currency,
-      }).returning().execute();
+      }).returning({
+        userId: userSettings.userId,
+        currency: userSettings.currency,
+      }).execute();
 
-      if (!newUserSettings) {
+      if (!inserted || inserted.length === 0) {
         throw new Error("User settings not created");
       }
-      return newUserSettings;
+      return inserted?.[0] ?? null;
     }),
   
   getUserSettings: protectedProcedure
@@ -179,7 +182,7 @@ export const userRouter = createTRPCRouter({
     }),
 
   getUserAdditionalData: protectedProcedure
-    .query(async ({ ctx }) => {
+    .query(async ({ ctx }): Promise<{ currency: string | undefined }> => {
       const user = ctx.session.user;
       const userId = user.id;
 
@@ -187,6 +190,7 @@ export const userRouter = createTRPCRouter({
         where: eq(userSettings.userId, userId),
       });
 
-      return { currency: userSettingsData?.currency ?? null };
+      const currency = userSettingsData?.currency ?? undefined;
+      return { currency: currency === null ? undefined : currency };
     }),
 });
