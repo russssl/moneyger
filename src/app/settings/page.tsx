@@ -1,7 +1,4 @@
 import type React from "react"
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
 import SettingsSelect from "@/components/settings/settings-select"
 import ProfileSettings from "@/components/settings/profile-settings"
 import PasswordSettings from "@/components/settings/password-settings"
@@ -16,13 +13,6 @@ export default async function SettingsPage({
 }: {
   searchParams: { category?: string }
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-  if (!session) {
-    redirect("/login")
-  }
-
   const categoryGroupStyle =
   "grid gap-4 px-4 py-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]";
 
