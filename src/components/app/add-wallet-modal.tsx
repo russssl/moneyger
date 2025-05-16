@@ -1,184 +1,86 @@
-"use client";
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
-} from "@/components/modal";
+import { useState } from "react";
+import { Modal, ModalContent, ModalHeader } from "@/components/modal";
 import { Button } from "@/components/ui/button";
-import { Label } from "../ui/label";
-import React, { useState, useEffect } from "react";
-import LoadingButton from "../loading-button";
-import { api } from "@/trpc/react";
-import { LoadingSpinner } from "../ui/loading";
-import { Input } from "../ui/input";
-import { useTranslations } from "next-intl";
-import CurrencySelect from "../currency-select";
+import { Input } from "@/components/ui/input";
 
-export default function AddNewWalletModal({
-  className,
-  open,
-  onOpenChange,
-  id,
-  onSave,
-}: {
-  className?: string | undefined;
+interface WalletFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  id?: string | null;
   onSave: (wallet: any) => void;
-}) {
-  const [currency, setCurrency] = useState("");
-  const [walletName, setWalletName] = useState("");
-  const [initialBalance, setInitialBalance] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
+  isEditing?: boolean;
+  id?: string;
+  walletName?: string;
+  currency?: string;
+  initialBalance?: number;
+  createWallet: { mutateAsync: (payload: any) => Promise<any> };
+  updateWallet: { mutateAsync: (payload: any) => Promise<any> };
+}
 
-  const saveWalletMutation = api.wallets.createWallet.useMutation();
-  const updateWalletMutation = api.wallets.updateWallet.useMutation();
+export default function AddNewWalletModal({
+  open,
+  onOpenChange,
+  onSave,
+  isEditing = false,
+  id,
+  walletName: initialName = "",
+  currency: initialCurrency = "",
+  initialBalance,
+  createWallet,
+  updateWallet,
+}: WalletFormModalProps) {
+  const [walletName, setWalletName] = useState(initialName);
+  const [currency, setCurrency] = useState(initialCurrency);
+  const [balance, setBalance] = useState(initialBalance ?? 0);
 
-  const t = useTranslations("finances");
-  const tService = useTranslations("service");
-  const tGeneral = useTranslations("general");
-  const { data: res, isLoading: isDataLoading } = api.wallets.getWalletById.useQuery(
-    { id: id || null },
-    {
-      enabled: open && !!id,
-    }
-  );
-
-  const handleOpenChange = (open: boolean) => {
-    onOpenChange(open);
-  };
-
-  useEffect(() => {
-    setWalletName("");
-    setCurrency("");
-    setInitialBalance(null);
-  }  , [open]);
-  
-  useEffect(() => {
-    if (saveWalletMutation.isPending || updateWalletMutation.isPending) {
-      setSaving(true);
-    } else {
-      setSaving(false);
-    }
-  }, [saveWalletMutation.isPending, updateWalletMutation.isPending]);
-
-  useEffect(() => {
-    if (!res) {
-      return;
-    }
-    setCurrency(res.currency || "");
-    setInitialBalance(res.balance);
-    setWalletName(res.name || "")
-  }, [res]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (id) {
-      updateWalletMutation.mutate(
-        {
-          id,
-          name: walletName,
-          currency,
-        },
-        {
-          onSuccess: (result) => {
-            onSave(result);
-            onOpenChange(false);
-          },
-        }
-      );
-    } else {
-      saveWalletMutation.mutate(
-        {
-          name: walletName,
-          initialBalance: initialBalance || undefined,
-          currency,
-        },
-        {
-          onSuccess: (result) => {
-            onSave(result);
-            onOpenChange(false);
-          },
-        }
-      );
+
+    const payload = {
+      name: walletName,
+      currency,
+      ...(isEditing ? {} : { initialBalance: balance || undefined }),
+    };
+
+    try {
+      const result = isEditing
+        ? await updateWallet.mutateAsync({ ...payload, id })
+        : await createWallet.mutateAsync(payload);
+
+      onSave(result);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error saving wallet:", error);
     }
   };
+
   return (
-    <div className={className}>
-      <Modal open={open} onOpenChange={handleOpenChange}>
-        <ModalContent>
-          <ModalHeader>
-            <ModalTitle>{id ? tService("edit") : tService("add")} {tGeneral("wallet")}</ModalTitle>
-          </ModalHeader>
-          <ModalBody>
-            {id && !res ? (
-              <div className="flex justify-center">
-                <LoadingSpinner />
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <Label>{t("wallet_name")}</Label>
-                  <Input
-                    placeholder="Main Wallet"
-                    className="mt-1"
-                    value={walletName}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setWalletName(e.target.value)
-                    }
-                  />
-                </div>
-                <div className="mb-4">
-                  <Label>{t("wallet_initial_balance")}</Label>
-                  <Input
-                    placeholder="5000"
-                    className="mt-1"
-                    type="number"
-                    value={initialBalance?.toString() || ""}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setInitialBalance(parseFloat(e.target.value))
-                    }
-                  />
-                </div>
-                <div className="mb-4">
-                  <CurrencySelect
-                    selectedCurrency={currency}
-                    setSelectedCurrency={(value) => {
-                      if (!value) {
-                        return;
-                      }
-                      setCurrency(value);
-                    }}
-                  />
-                </div>
-                <ModalFooter>
-                  <div className="flex justify-end mt-3">
-                    <Button
-                      type="button"
-                      className="me-3"
-                      onClick={() => onOpenChange(false)}
-                    >
-                      {tService("cancel")}
-                    </Button>
-                    <LoadingButton
-                      loading={saving}
-                      type="submit"
-                      disabled={isDataLoading || !walletName || !currency}
-                      variant="success"
-                    >
-                      {tService("save")}
-                    </LoadingButton>
-                  </div>
-                </ModalFooter>
-              </form>
-            )}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </div>
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <ModalContent>
+        <ModalHeader>{isEditing ? "Edit Wallet" : "Create Wallet"}</ModalHeader>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Input
+            placeholder="Wallet Name"
+            value={walletName}
+            onChange={(e) => setWalletName(e.target.value)}
+            required
+          />
+          <Input
+            placeholder="Currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            required
+          />
+          {!isEditing && (
+            <Input
+              placeholder="Initial Balance"
+              type="number"
+              value={balance}
+              onChange={(e) => setBalance(parseFloat(e.target.value))}
+            />
+          )}
+          <Button type="submit">{isEditing ? "Update" : "Create"}</Button>
+        </form>
+      </ModalContent>
+    </Modal>
   );
 }

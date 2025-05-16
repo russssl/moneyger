@@ -1,224 +1,241 @@
 import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalDescription,
-  ModalFooter,
-  ModalHeader,
-  ModalTitle,
+  Modal, ModalBody, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle,
 } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DatePicker from "@/components/date-picker";
-import { useState } from "react";
+import { useReducer, useEffect } from "react";
 import AutogrowingTextarea from "@/components/autogrowing-textarea";
 import { api } from "@/trpc/react";
-import { useEffect } from "react";
-import {currencies, type Currency} from "@/hooks/currencies";
+import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations } from "next-intl";
+
 type TransactionType = "income" | "expense" | "transfer";
 
 interface AddNewTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (transaction: any) => void;
-  defaultTab?: "income" | "expense" | "transfer";
+  defaultTab?: TransactionType;
 }
 
-export default function AddNewTransactionModal({ open, onOpenChange, onSave, defaultTab = "expense" }: AddNewTransactionModalProps) {
+type State = {
+  date?: Date;
+  transactionType: TransactionType;
+  amount: number;
+  description: string;
+  selectedFirstWallet?: string;
+  selectedSecondWallet?: string;
+  selectedCategory?: string;
+};
 
-  const t = useTranslations("finances")
-  const tService = useTranslations("service")
-  const tGeneral = useTranslations("general")
-  const tCategory = useTranslations("categories")
+type Action =
+  | { type: "reset"; payload: TransactionType }
+  | { type: "set"; field: keyof State; value: any };
 
-  const [date, setDate] = useState<Date>();
-  const [transactionType, setTransactionType] = useState<TransactionType>(defaultTab);
-  const [amount, setAmount] = useState<number>(0);
-  const [wallets, setWallets] = useState<any[]>([]);
+const initialState = (defaultTab: TransactionType): State => ({
+  date: undefined,
+  transactionType: defaultTab,
+  amount: 0,
+  description: "",
+  selectedFirstWallet: undefined,
+  selectedSecondWallet: undefined,
+  selectedCategory: undefined,
+});
 
-  const [selectedFirstWallet, setSelectedWallet] = useState<string>();
-  const [selectedSecondWallet, setSelectedSecondWallet] = useState<string>();
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+  case "reset":
+    return initialState(action.payload);
+  case "set":
+    return { ...state, [action.field]: action.value };
+  default:
+    return state;
+  }
+}
 
-  const [selectedCategory, setSelectedCategory] = useState<string>();
-  const [currencyData, setCurrencyData] = useState<Currency | undefined>(undefined);
-  const [description, setDescription] = useState<string>("");
-  const [exchangeRate, setExchangeRate] = useState<number>(1);
-  const [toCurrencyCode, setToCurrencyCode] = useState<string | null>(null);
-  const [sameDestinationWallet, setSameDestinationWallet] = useState<boolean>(false);
+export default function AddNewTransactionModal({
+  open,
+  onOpenChange,
+  onSave,
+  defaultTab = "expense",
+}: AddNewTransactionModalProps) {
+  const t = useTranslations("finances");
+  const tService = useTranslations("service");
+  const tGeneral = useTranslations("general");
+  const tCategory = useTranslations("categories");
 
-  const createTransactionMutation = api.transactions.createTransaction.useMutation();
-  const canSave = selectedFirstWallet && date && amount !== 0 && sameDestinationWallet === false;
-  
-  const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open,});
+  const [state, dispatch] = useReducer(reducer, initialState(defaultTab));
+  const {
+    date,
+    transactionType,
+    amount,
+    description,
+    selectedFirstWallet,
+    selectedSecondWallet,
+    selectedCategory,
+  } = state;
 
-  const currencyConversionRateQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
-  const {data: currency_conversion_res} = api.transactions.getCurrentExchangeRate.useQuery({
-    from: selectedFirstWallet!,
-    to: selectedSecondWallet!,
-  }, { enabled: currencyConversionRateQueryEnabled });
+  const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open });
+  const createTransaction = api.transactions.createTransaction.useMutation();
 
-  useEffect(() => {
-    if (walletsData) {
-      setWallets(walletsData);
-    }
-  }, [walletsData]);
-  
-  useEffect(() => {
-    if (selectedFirstWallet && selectedSecondWallet) {
-      setSameDestinationWallet(selectedFirstWallet === selectedSecondWallet);
-    }
-  }, [selectedFirstWallet, selectedSecondWallet]);
+  const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
+  const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;
 
-  useEffect(() => {
-    if (currency_conversion_res) {
-      setExchangeRate(currency_conversion_res);
-      const walletCurrency: string = wallets.find((wallet) => wallet.id === selectedSecondWallet)?.currency || "";
-      setToCurrencyCode(walletCurrency)
-    }
-  }, [currency_conversion_res, selectedSecondWallet, wallets]);
+  const wallets = walletsData ?? [];
+  const firstWallet = wallets.find((w) => w.id === selectedFirstWallet);
+  const secondWallet = wallets.find((w) => w.id === selectedSecondWallet);
+
+  const currencyData: Currency | undefined = firstWallet?.currency ? currencies(firstWallet.currency) : undefined;
+  const toCurrencyCode = secondWallet?.currency;
+
+  const currencyQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
+  const { data: exchangeRate = 1 } = api.transactions.getCurrentExchangeRate.useQuery(
+    { from: selectedFirstWallet!, to: selectedSecondWallet! },
+    { enabled: currencyQueryEnabled }
+  );
 
   useEffect(() => {
     if (!open) {
-      setSelectedWallet(undefined);
-      setCurrencyData(undefined);
-      setAmount(0);
-      setDate(undefined);
-      setDescription("");
+      dispatch({ type: "reset", payload: defaultTab });
     }
-  }, [open]);
+  }, [open, defaultTab]);
 
-  function addTransaction() {
-    if (!selectedFirstWallet || !date) {
-      return;
-    }
+  const addTransaction = () => {
+    if (!selectedFirstWallet || !date) return;
 
-    createTransactionMutation.mutate({
-      walletId: selectedFirstWallet,
-      toWalletId: transactionType === "transfer" ? selectedSecondWallet : undefined,
-      amount: amount,
-      transaction_date: date,
-      description: description,
-      category: transactionType === "transfer" ? "Transfer" : (selectedCategory ?? "other"),
-      type: transactionType,
-    }, {
-      onSuccess: (result) => {
-        onSave(result);
-        onOpenChange(false);
+    createTransaction.mutate(
+      {
+        walletId: selectedFirstWallet,
+        toWalletId: transactionType === "transfer" ? selectedSecondWallet : undefined,
+        amount,
+        transaction_date: date,
+        description,
+        category: transactionType === "transfer" ? "Transfer" : selectedCategory ?? "other",
+        type: transactionType,
       },
-    });
-  }
-
-  function selectWalletAndSetCurrency(walletId: string) {
-    setSelectedWallet(walletId);
-    const curr: string | null = wallets.find((wallet) => wallet.id === walletId).currency;
-    setCurrencyData(currencies(curr));
-  }
+      {
+        onSuccess: (result) => {
+          onSave(result);
+          onOpenChange(false);
+        },
+      }
+    );
+  };
 
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
         <ModalHeader>
           <ModalTitle>{t("add_transaction")}</ModalTitle>
-          <ModalDescription>
-            {t("transaction_description")}
-          </ModalDescription>
+          <ModalDescription>{t("transaction_description")}</ModalDescription>
         </ModalHeader>
         <ModalBody>
           <div className="grid gap-3">
             {wallets.length === 0 && (
-              <div className="p-4 bg-red-100 text-red-800 rounded-lg">
-                {t("no_wallet_warning")}
-              </div>
+              <div className="p-4 bg-red-100 text-red-800 rounded-lg">{t("no_wallet_warning")}</div>
             )}
-            <TransactionTypeSelect value={transactionType} setValue={setTransactionType} />
+
+            <TransactionTypeSelect
+              value={transactionType}
+              setValue={(value) => dispatch({ type: "set", field: "transactionType", value })}
+            />
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="date">{tGeneral("date")}</Label>
-                <DatePicker value={date} onChange={setDate} placeholder={tGeneral("select_date")}/>
+                <Label>{tGeneral("date")}</Label>
+                <DatePicker
+                  value={date}
+                  onChange={(value) => dispatch({ type: "set", field: "date", value })}
+                  placeholder={tGeneral("select_date")}
+                />
               </div>
               <div>
-                <Label htmlFor="amount">{tGeneral("amount")}</Label>
-                <AddonInput 
+                <Label>{tGeneral("amount")}</Label>
+                <AddonInput
                   value={amount}
-                  setValue={(value) => setAmount(Number(value))}
+                  setValue={(value) => dispatch({ type: "set", field: "amount", value: Number(value) })}
                   addonText={currencyData?.symbol}
                   type="number"
                   placeholder={tGeneral("enter_amount")}
                 />
               </div>
             </div>
-            {wallets.length > 0 ? <div>
-              <Label htmlFor="wallet">
-                {transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
-              </Label>
-              <Select onValueChange={(value) => selectWalletAndSetCurrency(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={tGeneral("select_wallet")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {wallets.map((wallet) => (
-                    <SelectItem key={wallet.id} value={wallet.id}>
-                      {wallet.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> : null }
-            
-            {exchangeRate !== 1 && transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && (
-              <div className="mt-2 p-2 bg-blue-50 rounded-md">
-                <p className="text-sm text-blue-700 font-medium">
-                  {"1 " + currencyData?.code + " = " + exchangeRate + " " + toCurrencyCode}
+
+            {wallets.length > 0 && (
+              <div>
+                <Label>
+                  {transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
+                </Label>
+                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={tGeneral("select_wallet")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wallets.map((wallet) => (
+                      <SelectItem key={wallet.id} value={wallet.id}>
+                        {wallet.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && exchangeRate !== 1 && (
+              <div className="mt-2 p-2 bg-blue-50 rounded-md text-blue-700 text-sm font-medium">
+                <p>
+                  1 {currencyData?.code} = {exchangeRate} {toCurrencyCode}
                 </p>
-                {amount !== 0 && (
-                  <p className="text-sm text-blue-700 font-medium">
-                    { "You will receive " + (amount * exchangeRate).toFixed(2) + " " + toCurrencyCode }
+                {amount > 0 && (
+                  <p>
+                    {t("you_will_receive")}: {(amount * exchangeRate).toFixed(2)} {toCurrencyCode}
                   </p>
                 )}
               </div>
             )}
 
-            {wallets.length > 0 && transactionType == "transfer" ? <div>
-              <Label htmlFor="wallet">{tGeneral("to_wallet")}</Label>
-              <Select onValueChange={(value) => setSelectedSecondWallet(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={tGeneral("select_wallet")} />
-                </SelectTrigger>
-                <SelectContent>
-                  {wallets.map((wallet) => (
-                    <SelectItem key={wallet.id} value={wallet.id}>
-                      {wallet.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> : null}
-
-            {transactionType === "transfer" && sameDestinationWallet && (
-              <div className="p-2 bg-yellow-50 text-yellow-800 rounded-md">
-                <p className="text-sm font-medium">
-                  {t("same_wallet_warning")}
-                </p>
+            {transactionType === "transfer" && (
+              <div>
+                <Label>{tGeneral("to_wallet")}</Label>
+                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={tGeneral("select_wallet")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wallets.map((wallet) => (
+                      <SelectItem key={wallet.id} value={wallet.id}>
+                        {wallet.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
+
+            {sameWallet && transactionType === "transfer" && (
+              <div className="p-2 bg-yellow-50 text-yellow-800 rounded-md text-sm font-medium">
+                {t("same_wallet_warning")}
+              </div>
+            )}
+
             <div>
-              <Label htmlFor="description">{tGeneral("description")}</Label>
-              <Input 
-                id="description" 
+              <Label>{tGeneral("description")}</Label>
+              <Input
                 placeholder={tGeneral("enter_description")}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => dispatch({ type: "set", field: "description", value: e.target.value })}
               />
             </div>
+
             {transactionType !== "transfer" && (
               <div>
-                <Label htmlFor="category">{tGeneral("category")}</Label>
-                <Select onValueChange={(value) => setSelectedCategory(value)}>
+                <Label>{tGeneral("category")}</Label>
+                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
                   <SelectTrigger>
                     <SelectValue placeholder={tGeneral("select_category")} />
                   </SelectTrigger>
@@ -234,8 +251,8 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
             )}
 
             <div>
-              <Label htmlFor="notes">{tGeneral("notes")}</Label>
-              <AutogrowingTextarea placeholder={tGeneral("notes_description")}/>
+              <Label>{tGeneral("notes")}</Label>
+              <AutogrowingTextarea placeholder={tGeneral("notes_description")} />
             </div>
           </div>
         </ModalBody>
@@ -243,7 +260,7 @@ export default function AddNewTransactionModal({ open, onOpenChange, onSave, def
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {tService("cancel")}
           </Button>
-          <Button onClick={() => addTransaction()} disabled={!canSave} variant="success">
+          <Button onClick={addTransaction} disabled={!canSave} variant="success">
             {tService("save")}
           </Button>
         </ModalFooter>
