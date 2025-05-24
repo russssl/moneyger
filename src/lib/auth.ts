@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-
 import db from "@/server/db";
+import { sendResetPasswordEmail } from "@/server/api/services/emails";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -15,6 +15,13 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({user, url, token}, request) => {
+      await sendResetPasswordEmail(
+        user.email,
+        token,
+        user.name ?? user.email.split("@")[0]  // Fallback to email prefix if firstName is not available
+      );
+    },
   },
   socialProviders: {
     github: {

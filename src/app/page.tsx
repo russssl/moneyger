@@ -1,23 +1,6 @@
-import { TransactionList } from "@/components/app/transaction-list";
-import WalletsAndCards from "@/components/app/wallets";
-import { auth } from "@/lib/auth";
-import { getTranslations } from "next-intl/server";
-import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-
-export default async function HomePage() {
-  const session = await auth.api.getSession({
-    headers: await headers()
-  });
-
-  const t = await getTranslations("HomePage");
-  return (
-    <div className="ms-4">
-      <h1 className="text-3xl ms-2 mt-4 mb-4 font-bold">
-        {t("welcome_message", { name: session?.user.name })}
-      </h1>
-      <WalletsAndCards className="mb-3"/>
-      <TransactionList />
-    </div>
-  );
+export default async function Main() {
+  redirect("/dashboard");
+  return null;
 }

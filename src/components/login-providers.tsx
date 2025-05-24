@@ -12,6 +12,7 @@ import { type Provider, signIn } from "@/hooks/use-session";
 import { Button } from "./ui/button";
 import GitHub from "./icons/github";
 import Google from "./icons/google";
+import Link from "next/link";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -114,9 +115,9 @@ export default function LoginProviders() {
             {t("login")}
           </LoadingButton>
           <div className="text-center mt-3">
-            <a href="/password-reset" className="text-blue-500">
+            <Link href="/reset-password" className="text-blue-500 ml-2">
               {t("forgot_password")}
-            </a>
+            </Link>
           </div>
         </div>
       </form>

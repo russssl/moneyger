@@ -28,6 +28,7 @@ function CurrentThemeIcon() {
     </div>
   )
 }
+import { redirect } from "next/navigation"
 
 function useSetTheme() {
   const { theme, setTheme } = useTheme()
@@ -123,7 +124,13 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>
+            <DropdownMenuItem onClick={() => signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  redirect("/login")
+                }
+              }
+            })}>
               <LogOut />
               {t("logout")}
             </DropdownMenuItem>

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Modal, ModalContent, ModalHeader } from "@/components/modal";
+import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "../ui/label";
 
 interface WalletFormModalProps {
   open: boolean;
@@ -56,14 +57,18 @@ export default function AddNewWalletModal({
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
-        <ModalHeader>{isEditing ? "Edit Wallet" : "Create Wallet"}</ModalHeader>
+        <ModalHeader>
+          <ModalTitle>{isEditing ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
+        </ModalHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Label htmlFor="wallet-name">Wallet Name</Label>
           <Input
             placeholder="Wallet Name"
             value={walletName}
             onChange={(e) => setWalletName(e.target.value)}
             required
           />
+          <Label htmlFor="currency">Currency</Label>
           <Input
             placeholder="Currency"
             value={currency}
@@ -71,12 +76,15 @@ export default function AddNewWalletModal({
             required
           />
           {!isEditing && (
-            <Input
-              placeholder="Initial Balance"
-              type="number"
-              value={balance}
-              onChange={(e) => setBalance(parseFloat(e.target.value))}
-            />
+            <>
+              <Label htmlFor="initial-balance">Initial Balance</Label>
+              <Input
+                placeholder="Initial Balance"
+                type="number"
+                value={balance}
+                onChange={(e) => setBalance(parseFloat(e.target.value))}
+              />
+            </>
           )}
           <Button type="submit">{isEditing ? "Update" : "Create"}</Button>
         </form>
