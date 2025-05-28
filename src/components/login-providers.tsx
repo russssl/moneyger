@@ -121,7 +121,7 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
           </div>
         </div>
       </form>
-      {providers.length > 0 && (
+      {providers && providers.length > 0 && (
         <div className="relative mt-6">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
@@ -134,7 +134,7 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
         </div>
       )}
       <div>
-        {providers.includes("github") && (
+        {providers && providers.includes("github") && (
           <Button
             type="button"
             onClick={() => signInWithProvider("github")}
@@ -144,7 +144,7 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
           Github
           </Button>
         )}
-        {providers.includes("google") && (
+        {providers && providers.includes("google") && (
           <Button
             type="button"
             onClick={() => signInWithProvider("google")}

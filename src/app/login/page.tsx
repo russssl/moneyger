@@ -15,7 +15,7 @@ export default async function Page() {
   const t = await getTranslations("register_login");
   const availableProviders: Provider[] = await api.globalConfig.getGlobalConfig();
   return (
-    <div className="flex items-center justify-center min-h-screen w-full">
+    <div className="fixed inset-0 flex items-center justify-center min-h-screen w-full overflow-hidden">
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex justify-between">
