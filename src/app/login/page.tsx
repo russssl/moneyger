@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Login",
   description: "Login to your account",
 };
+
 export default async function Page() {
   const t = await getTranslations("register_login");
   const availableProviders: Provider[] = await api.globalConfig.getGlobalConfig();

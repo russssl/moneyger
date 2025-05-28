@@ -16,11 +16,12 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async ({user, url, token}, request) => {
+    sendResetPassword: async ({user, url, token}) => {
       await sendResetPasswordEmail(
         user.email,
         token,
-        user.name ?? user.email.split("@")[0]  // Fallback to email prefix if firstName is not available
+        user.name ?? user.email.split("@")[0],
+        url
       );
     },
   },

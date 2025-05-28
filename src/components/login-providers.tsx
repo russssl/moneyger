@@ -115,7 +115,7 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
             {t("login")}
           </LoadingButton>
           <div className="text-center mt-3">
-            <Link href="/reset-password" className="text-blue-500 ml-2">
+            <Link href="/forgot-password" className="text-blue-500 ml-2">
               {t("forgot_password")}
             </Link>
           </div>

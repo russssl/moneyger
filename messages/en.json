@@ -136,6 +136,7 @@
     "register_modal_description": "Create an account to get started",
     "already_have_account": "Already have an account?",
     "name": "Name",
+    "first_name": "First Name",
     "last_name": "Last Name",
     "username": "Username",
     "email": "Email",

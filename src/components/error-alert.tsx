@@ -7,7 +7,7 @@ interface ErrorAlertProps {
 }
 
 export function ErrorAlert({ error, className }: ErrorAlertProps) {
-  if (!error) return null
+  if (!error) return <></>
 
   return (
     <Alert variant="destructive" className={className}>

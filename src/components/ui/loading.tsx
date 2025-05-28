@@ -1,4 +1,7 @@
+"use client"
 import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react"
+
 export interface SVGProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
   className?: string;
@@ -9,6 +12,16 @@ export const LoadingSpinner = ({
   className,
   ...props
 }: SVGProps) => {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return null
+  }
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

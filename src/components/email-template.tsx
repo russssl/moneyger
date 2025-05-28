@@ -1,9 +1,5 @@
 import * as React from "react";
 
-interface EmailTemplateProps {
-  firstName: string;
-}
-
 const containerStyle = {
   maxWidth: "600px",
   margin: "0 auto",
@@ -55,35 +51,41 @@ const footerStyle = {
   paddingTop: "16px",
 };
 
-export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
-  firstName,
-}) => (
-  <div style={containerStyle}>
-    <h1 style={headerStyle}>Welcome, {firstName}!</h1>
-  </div>
-);
-
 export const ResetPasswordEmailTemplate: React.FC<Readonly<{
   firstName: string;
-  code: string;
+  token: string;
+  url: string;
 }>> = ({
   firstName,
-  code,
+  token,
+  url,
 }) => (
   <div style={containerStyle}>
     <h1 style={headerStyle}>Reset Your Password</h1>
     <p>Hello {firstName},</p>
-    <p>You recently requested to reset your password. Enter this code to continue:</p>
+    <p>You recently requested to reset your password. Click the button below to reset your password:</p>
     
     <div style={codeContainerStyle}>
-      <span style={codeStyle}>{code}</span>
+      <a 
+        href={url}
+        style={{
+          ...codeStyle,
+          textDecoration: "none",
+          display: "inline-block",
+          padding: "12px 24px",
+          backgroundColor: "#2563eb",
+          color: "white",
+          borderRadius: "6px",
+        }}
+      >
+        Reset Password
+      </a>
     </div>
 
     <p><strong>Important Security Notice:</strong></p>
     <ul style={securityListStyle}>
       <li>If you did not request this password reset, please ignore this email.</li>
-      <li>Never share this code with anyone, including our support team.</li>
-      <li>The code will expire in 30 minutes.</li>
+      <li>This link will expire in 30 minutes.</li>
       <li>We will never ask for your password via email or phone.</li>
     </ul>
 

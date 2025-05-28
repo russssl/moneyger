@@ -1,19 +1,24 @@
 "use client";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/ui/loading";
 import { BottomBar } from "@/components/bottom-bar";
 import { useAuthSession } from "@/hooks/use-session";
 
 export default function SessionWrapper({ children }: { children: ReactNode }) {
   const { data: session, isPending } = useAuthSession();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const reload = () => {
     window.location.reload();
   };
 
-  if (isPending) {
+  if (!mounted || isPending) {
     return (
       <div className="flex justify-center items-center h-screen overflow-x-hidden">
         <LoadingSpinner />
@@ -34,7 +39,7 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
           </div>
         </SidebarProvider>
       ) : (
-        <div className="pb-12">{children}</div> // Add padding for consistency
+        <div className="pb-12">{children}</div>
       )}
     </div>
   );

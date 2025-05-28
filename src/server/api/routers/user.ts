@@ -4,11 +4,9 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { PasswordReset, passwordReset } from "@/server/db/passwordReset";
 import { account, type SelectAccount, user as users} from "@/server/db/user";
 import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
-import { and, eq, gte, ne } from "drizzle-orm";
-import { DateTime } from "luxon";
+import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
 export const userRouter = createTRPCRouter({
@@ -206,32 +204,5 @@ export const userRouter = createTRPCRouter({
 
       const currency = userSettingsData?.currency ?? undefined;
       return { currency: currency === null ? undefined : currency };
-    }),
-  
-  checkCode: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      code: z.string(),
-    }))
-    .query(async ({ ctx, input }): Promise<boolean> => {
-      const res_user = await ctx.db.query.user.findFirst({
-        where: eq(users.email, input.email),
-      });
-
-      if (!res_user) {
-        throw new Error("User not found");
-      }
-
-      const existingCode: PasswordReset | undefined = await ctx.db.query.passwordReset.findFirst({
-        where: and(
-          eq(passwordReset.userId, res_user.id),
-          gte(passwordReset.expiresAt, DateTime.now().minus({ minutes: 30 }).toJSDate())
-        ),
-      });
-      if (!existingCode) {
-        throw new Error("No valid reset code found for this user");
-      }
-
-      return existingCode.token === input.code;
     }),
 });
