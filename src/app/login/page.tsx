@@ -4,6 +4,8 @@ import Link from "next/link"
 import { type Metadata } from "next";
 import {ThemeToggle} from "@/components/theme-toggle";
 import { getTranslations } from "next-intl/server";
+import { type Provider } from "@/hooks/use-session";
+import { api } from "@/trpc/server"
 
 export const metadata: Metadata = {
   title: "Login",
@@ -11,6 +13,7 @@ export const metadata: Metadata = {
 };
 export default async function Page() {
   const t = await getTranslations("register_login");
+  const availableProviders: Provider[] = await api.globalConfig.getGlobalConfig();
   return (
     <div className="flex items-center justify-center min-h-screen w-full">
       <Card className="w-full max-w-md mx-auto">
@@ -22,7 +25,7 @@ export default async function Page() {
           <CardDescription>{t("login_modal_description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginProviders />
+          <LoginProviders providers={availableProviders} />
         </CardContent>
         <CardFooter className="text-sm text-center text-gray-500 flex flex-col space-y-2">
           <div>

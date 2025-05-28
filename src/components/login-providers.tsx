@@ -16,7 +16,7 @@ import Link from "next/link";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
-export default function LoginProviders() {
+export default function LoginProviders({ providers }: { providers: Provider[] }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -121,33 +121,39 @@ export default function LoginProviders() {
           </div>
         </div>
       </form>
-      <div className="relative mt-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
+      {providers.length > 0 && (
+        <div className="relative mt-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-sm uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              {t("or_continue_with")}
+            </span>
+          </div>
         </div>
-        <div className="relative flex justify-center text-sm uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            {t("or_continue_with")}
-          </span>
-        </div>
-      </div>
+      )}
       <div>
-        <Button
-          type="button"
-          onClick={() => signInWithProvider("github")}
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
-        >
-          <GitHub noBackground/>
+        {providers.includes("github") && (
+          <Button
+            type="button"
+            onClick={() => signInWithProvider("github")}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
+          >
+            <GitHub noBackground/>
           Github
-        </Button>
-        <Button
-          type="button"
-          onClick={() => signInWithProvider("google")}
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
-        >
-          <Google noBackground/>
+          </Button>
+        )}
+        {providers.includes("google") && (
+          <Button
+            type="button"
+            onClick={() => signInWithProvider("google")}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
+          >
+            <Google noBackground/>
           Google
-        </Button>
+          </Button>
+        )}
       </div>
     </>
   );

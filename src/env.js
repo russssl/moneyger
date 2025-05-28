@@ -21,8 +21,10 @@ export const env = !process.env.CI ? createEnv({
     REDIS_KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
     REDIS_KV_REST_API_TOKEN: z.string().optional(),
     REDIS_KV_REST_API_URL: z.string().optional(),
-    GITHUB_CLIENT_ID: z.string(),
-    GITHUB_CLIENT_SECRET: z.string(),
+    GITHUB_CLIENT_ID: z.string().optional(),
+    GITHUB_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
   },
 
   /**
@@ -48,6 +50,8 @@ export const env = !process.env.CI ? createEnv({
     REDIS_KV_REST_API_URL: process.env.REDIS_KV_REST_API_URL,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

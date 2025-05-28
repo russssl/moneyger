@@ -7,7 +7,7 @@ const { useSession, signIn, signOut, signUp, getSession, forgetPassword } = crea
 });
 
 export type Session = ReturnType<typeof createAuthClient>["$Infer"]["Session"];
-export type Provider = "github" | "google" | "facebook" | "twitter";
+export type Provider = "github" | "google";
 
 export const useAuthSession = (): { data: Session | null; isPending: boolean; error: Error | null } => {
   return useSession();

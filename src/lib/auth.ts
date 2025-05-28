@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "@/server/db";
 import { sendResetPasswordEmail } from "@/server/api/services/emails";
+import { env } from "@/env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -24,13 +25,17 @@ export const auth = betterAuth({
     },
   },
   socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    },
-    google: { 
-      clientId: process.env.GOOGLE_CLIENT_ID!, 
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!, 
-    }, 
+    ...(env?.GITHUB_CLIENT_ID && env?.GITHUB_CLIENT_SECRET ? {
+      github: {
+        clientId: env.GITHUB_CLIENT_ID,
+        clientSecret: env.GITHUB_CLIENT_SECRET,
+      },
+    } : {}),
+    ...(env?.GOOGLE_CLIENT_ID && env?.GOOGLE_CLIENT_SECRET ? {
+      google: { 
+        clientId: env.GOOGLE_CLIENT_ID, 
+        clientSecret: env.GOOGLE_CLIENT_SECRET, 
+      },
+    } : {}),
   },
 });
