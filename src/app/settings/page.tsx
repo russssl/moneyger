@@ -8,11 +8,12 @@ import { Label } from "@/components/ui/label"
 import { Palette } from "lucide-react"
 import {ThemeSwitch} from "@/components/theme-toggle"
 import {getTranslations} from "next-intl/server";
-export default async function SettingsPage({
-  searchParams,
-}: {
-  searchParams: { category?: string }
-}) {
+export default async function SettingsPage(
+  props: {
+    searchParams: Promise<{ category?: string }>
+  }
+) {
+  const searchParams = await props.searchParams;
   const categoryGroupStyle =
   "grid gap-4 px-4 py-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]";
 

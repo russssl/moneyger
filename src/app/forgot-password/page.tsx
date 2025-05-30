@@ -7,6 +7,8 @@ export const metadata: Metadata = {
 export default async function ForgotPasswordPage() {
 
   return (
-    <SendResetPasswordEmailForm />
+    <div className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden">
+      <SendResetPasswordEmailForm />
+    </div>
   )
 }

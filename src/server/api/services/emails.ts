@@ -3,7 +3,6 @@ import { Resend } from "resend";
 
 export async function sendResetPasswordEmail(
   email: string,
-  token: string,
   firstName: string,
   url: string
 ) {
@@ -16,7 +15,6 @@ export async function sendResetPasswordEmail(
       subject: "Reset Your Password",
       react: ResetPasswordEmailTemplate({
         firstName,
-        token,
         url,
       }),
     });

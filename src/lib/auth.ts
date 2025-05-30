@@ -3,11 +3,15 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "@/server/db";
 import { sendResetPasswordEmail } from "@/server/api/services/emails";
 import { env } from "@/env";
+import { haveIBeenPwned } from "better-auth/plugins"
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  plugins: [haveIBeenPwned({
+    customPasswordCompromisedMessage: "password_compromised",
+  })],
   account: {
     accountLinking: {
       enabled: true,
@@ -16,10 +20,9 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async ({user, url, token}) => {
+    sendResetPassword: async ({user, url}) => {
       await sendResetPasswordEmail(
         user.email,
-        token,
         user.name ?? user.email.split("@")[0],
         url
       );

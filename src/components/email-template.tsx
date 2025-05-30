@@ -57,7 +57,6 @@ export const ResetPasswordEmailTemplate: React.FC<Readonly<{
   url: string;
 }>> = ({
   firstName,
-  token,
   url,
 }) => (
   <div style={containerStyle}>

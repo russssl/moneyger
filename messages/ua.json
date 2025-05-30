@@ -137,7 +137,8 @@
     "one_uppercase": "Мінімум одна велика літера",
     "one_lowercase": "Мінімум одна мала літера",
     "one_special_character": "Мінімум один спеціальний символ",
-    "or_continue_with": "Або продовжити з"
+    "or_continue_with": "Або продовжити з",
+    "password_compromised": "Пароль був скомпрометований. Будь ласка, виберіть інший пароль."
   },
   "theme-toggle": {
     "theme": "Тема",

@@ -8,12 +8,15 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {ErrorAlert} from "@/components/error-alert";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation"
 
 export default function ResetPasswordForm({ token }: { token: string }) {
+  const router = useRouter()
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast();
   const handleSubmit = async () => {
     try {
       setIsLoading(true)
@@ -26,10 +29,11 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         return;
       }
       toast({
-        title: "Reset link sent to your email",
-        description: "Please check your email for the reset link",
+        title: "Password reset successfully",
+        description: "You can now login with your new password",
         variant: "success",
       })
+      router.push("/login")
     } catch (error) {
       console.error(error)
       setError("An error occurred while resetting your password")
@@ -39,7 +43,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">

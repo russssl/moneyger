@@ -41,8 +41,11 @@ export default function RegisterForm() {
             setIsSubmitting(true);
           },
           onError: (ctx) => {
-            console.error("Error", ctx.error.message);
-            setError(ctx.error.message);
+            if (ctx.error.code === "PASSWORD_COMPROMISED") {
+              setError(t("password_compromised"));
+            } else {
+              setError(ctx.error.message);
+            }
           },
           onSuccess: async () => {
             router.push("/");
@@ -79,7 +82,7 @@ export default function RegisterForm() {
                 {t("name")}
                 <span className="text-destructive ms-1">*</span>
               </Label>
-              <Input id="name" placeholder={t("first_name")} onChange={(e) => setName(e.target.value)}/>
+              <Input id="name" placeholder={t("name")} onChange={(e) => setName(e.target.value)}/>
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">
@@ -89,7 +92,6 @@ export default function RegisterForm() {
               <Input id="email" type="email" onChange={(e) => setEmail(e.target.value)}/>
             </div>
             <PasswordsInput setPassword={setPassword}/>
-            {password}
             <LoadingButton loading={isSubmitting} className="w-full" disabled={isSubmitting} variant="success" type="submit">
               {t("register")}
             </LoadingButton>

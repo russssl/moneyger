@@ -10,24 +10,33 @@ import Link from "next/link"
 import { useState } from "react"
 import { forgetPassword } from "@/hooks/use-session"
 import { ErrorAlert } from "@/components/error-alert"
-import { toast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+
 export default function SendResetPasswordEmailForm() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   const handleSubmit = async () => {
     try {
+      // Basic email validation
+      if (!email?.includes("@")) {
+        setError("Please enter a valid email address")
+        return
+      }
+
       setIsLoading(true)
+      setError(null) // Clear previous errors
       const { error } = await forgetPassword({
         email,
         redirectTo: "/reset-password",
       })
       if (error) {
         setError(error?.message ?? "An error occurred while sending the reset link")
-        return;
+        return
       }
       toast({
         title: "Reset link sent to your email",
@@ -53,7 +62,10 @@ export default function SendResetPasswordEmailForm() {
         </CardHeader>
         <CardContent>
           <ErrorAlert error={error} className="mb-4"/>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={async (e) => {
+            e.preventDefault()
+            await handleSubmit()
+          }}>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="email">Email</Label>
@@ -73,7 +85,7 @@ export default function SendResetPasswordEmailForm() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <LoadingButton loading={isLoading} className="w-full" type="submit" onClick={handleSubmit}>
+            <LoadingButton loading={isLoading} className="w-full" type="submit">
               Send Reset Link
             </LoadingButton>
           </form>
