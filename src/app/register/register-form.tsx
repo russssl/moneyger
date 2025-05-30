@@ -89,7 +89,7 @@ export default function RegisterForm() {
                 {t("email")}
                 <span className="text-destructive">*</span>
               </Label>
-              <Input id="email" type="email" onChange={(e) => setEmail(e.target.value)}/>
+              <Input id="email" type="email" onChange={(e) => setEmail(e.target.value)} placeholder={t("email")}/>
             </div>
             <PasswordsInput setPassword={setPassword}/>
             <LoadingButton loading={isSubmitting} className="w-full" disabled={isSubmitting} variant="success" type="submit">

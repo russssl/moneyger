@@ -1,7 +1,7 @@
 import db from "@/server/db";
-import { type Transaction, transactions as transactionsSchema} from "@/server/db/schema";
-import { and, eq, inArray, lt } from "drizzle-orm";
-import { env } from "process";
+import { type Transaction, transactions as transactionsSchema} from "@/server/db/transaction";
+import { eq, inArray } from "drizzle-orm";
+import { env } from "@/env";
 import { currencyExchangeRates, type SelectCurrencyExchangeRate } from "@/server/db/currencyExchangeRate";
 import { DateTime } from "luxon";
 

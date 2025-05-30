@@ -5,7 +5,7 @@ import { type Metadata } from "next";
 import {ThemeToggle} from "@/components/theme-toggle";
 import { getTranslations } from "next-intl/server";
 import { type Provider } from "@/hooks/use-session";
-import { api } from "@/trpc/server"
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const t = await getTranslations("register_login");
-  const availableProviders: Provider[] = await api.globalConfig.getGlobalConfig();
+  const availableProviders = Object.keys(auth.options.socialProviders) as Provider[];
   return (
     <div className="fixed inset-0 flex items-center justify-center min-h-screen w-full overflow-hidden">
       <Card className="w-full max-w-md mx-auto">
