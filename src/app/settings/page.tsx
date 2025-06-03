@@ -13,12 +13,11 @@ export default async function SettingsPage(
     searchParams: Promise<{ category?: string }>
   }
 ) {
-  const searchParams = await props.searchParams;
   const categoryGroupStyle =
   "grid gap-4 px-4 py-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]";
 
   // eslint-disable-next-line @typescript-eslint/await-thenable
-  searchParams = await searchParams;
+  const searchParams = await props.searchParams;
   const selectedCategory = searchParams?.category || "account";
   const t = await getTranslations("settings");
   return (

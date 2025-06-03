@@ -7,6 +7,10 @@
     "build": "bun run next build",
     "check": "bun run next lint && bun run tsc --noEmit",
     "db:generate": "bun run drizzle-kit generate",
+    "db:start": "bun run docker compose up -d -f docker-compose.dev.yml",
+    "db:stop": "bun run docker compose down",
+    "db:restart": "bun run db:stop && bun run db:start",
+    "db:reset": "bun run docker compose down -v",
     "db:migrate": "bun run drizzle-kit migrate",
     "db:push": "bun run drizzle-kit push",
     "db:studio": "bun run drizzle-kit studio",
@@ -49,7 +53,6 @@
     "@types/next-pwa": "^5.6.9",
     "@types/pg": "^8.11.11",
     "@upstash/redis": "^1.34.4",
-    "@vercel/speed-insights": "^1.2.0",
     "bcrypt": "^5.1.1",
     "better-auth": "^1.2.4",
     "class-variance-authority": "^0.7.1",
@@ -70,7 +73,6 @@
     "nodemailer": "^6.10.0",
     "pg": "8.14.1",
     "postgres": "^3.4.4",
-    "posthog-js": "^1.205.0",
     "react": "^18.3.1",
     "react-aria-components": "^1.5.0",
     "react-day-picker": "8.10.1",
@@ -85,7 +87,6 @@
     "tailwindcss-animate": "^1.0.7",
     "ua-parser-js": "^2.0.3",
     "vaul": "^1.1.1",
-    "vercel": "^41.2.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -106,10 +107,7 @@
     "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.3",
-    "typescript": "^5.5.3"
-  },
-  "ct3aMetadata": {
-    "initVersion": "7.38.1"
+    "typescript": "^5.8.3"
   },
   "packageManager": "bun@1.2.14"
 }

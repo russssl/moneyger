@@ -60,16 +60,23 @@
     "cancel": "Відмінити"
   },
   "settings": {
+    "save_changes": "Зберегти зміни",
     "settings": "Налаштування",
-    "settings_description": "Тут ви можете змінити налаштування свого облікового запису",
-    "username": "Ім'я користувача",
+    "profile": "Профіль",
+    "profile_description": "Оновіть свою персональну інформацію",
     "email": "Електронна пошта",
     "language": "Мова",
     "select_language": "Виберіть мову",
     "english": "Англійська",
-    "polish": "Польська",
     "ukrainian": "Українська",
-    "currency": "Валюта"
+    "polish": "Польська",
+    "password": "Пароль",
+    "password_description": "Змініть своє пароль",
+    "current_password": "Поточний пароль",
+    "new_password": "Новий пароль",
+    "confirm_new_password": "Підтвердіть новий пароль",
+    "update_password": "Оновити пароль",
+    "username": "Ім'я користувача"
   },
   "navbar": {
     "upgrade_to_pro": "Оновити до Pro",

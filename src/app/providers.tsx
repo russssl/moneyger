@@ -1,11 +1,12 @@
 // app/providers.tsx
 "use client"
 
+import { env } from "@/env"
 import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
 import { type ReactNode, useEffect, memo } from "react"
 
-const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
+const POSTHOG_KEY = null; // no posthog for now
 
 function PostHogProviderComponent({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -16,7 +17,7 @@ function PostHogProviderComponent({ children }: { children: ReactNode }) {
         api_host: "/ingest",
         ui_host: "https://eu.posthog.com",
         loaded: () => {
-          if (process.env.NODE_ENV === "development") {
+          if (env.NODE_ENV === "development") {
             console.log(
               "%c[PostHog]%c Loaded successfully",
               "color: #f7a501; font-weight: bold;",

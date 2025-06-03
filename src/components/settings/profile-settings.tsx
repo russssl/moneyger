@@ -8,11 +8,13 @@ import LoadingButton from "@/components/loading-button";
 import { LanguageSelect } from "../language-select";
 import { useTranslations } from "next-intl";
 import { api } from "@/trpc/react";
+import { updateUser } from "@/hooks/use-session";
+import { type SelectUserSettings } from "@/server/db/userSettings";
 
 export default function ProfileSettings({...props}) {
-  const { data: userSettings } = api.user.getUserSettings.useQuery();
+  const { data: userSettings } = api.user.getUserSettings.useQuery() as { data: SelectUserSettings & { username: string | null, email: string | null } | null };
   const [email, setEmail] = useState(userSettings?.email ?? "");
-  
+  const [username, setUsername] = useState(userSettings?.username ?? "");
   const [language, setLanguage] = useState<string | undefined>("en");
 
   const t = useTranslations("settings");
@@ -27,17 +29,22 @@ export default function ProfileSettings({...props}) {
   
   useEffect(() => {
     if (userSettings) {
-      setEmail(userSettings.email);
+      setEmail(userSettings?.email ?? "");
+      setUsername(userSettings.username ?? "");
     }
   }, [userSettings]);
   const saveUserSettingsMutation = api.user.updateUserSettings.useMutation();
   // const t = useTranslations("settings");
 
-  const saveBasicSettings = () => {
+  const saveBasicSettings = async () => {
     saveUserSettingsMutation.mutate({
       email,
     });
-    // Since language is now in state you can safely compare and update.
+    if (username) {
+      await updateUser({
+        username,
+      });
+    }
     const currentLocale = document.cookie
       .split("; ")
       .find(row => row.startsWith("locale="))
@@ -64,6 +71,10 @@ export default function ProfileSettings({...props}) {
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="username">{t("username")}</Label>
+            <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("username")}/>
+          </div>
+          <div className="space-y-2">
             <LanguageSelect
               language={language} 
               setLanguage={(lang) => lang ? setLanguage(lang) : setLanguage("")}
@@ -75,8 +86,8 @@ export default function ProfileSettings({...props}) {
         <LoadingButton
           variant="default"
           className="w-full sm:w-auto"
-          onClick={() => {
-            saveBasicSettings();
+          onClick={async () => {
+            await saveBasicSettings();
           }}
           toastText="Settings saved successfully"
           loading={saveUserSettingsMutation.isPending}

@@ -15,11 +15,13 @@ import CurrencySelect from "./currency-select";
 import LoadingButton from "./loading-button";
 import { useTranslations } from "next-intl";
 import { LanguageSelect } from "./language-select";
+import { ErrorAlert } from "./error-alert";
 
 export default function SetupModal() {
   const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [language, setLanguage] = useState<string | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const { data: userAdditionalData } = api.user.getUserAdditionalData.useQuery();
   const createUserSettingsMutation = api.user.createUserSettings.useMutation();
@@ -46,6 +48,7 @@ export default function SetupModal() {
           setOpen(false);
         },
         onError: (error) => {
+          setError(error.message);
           console.error("Error saving user settings:", error);
         },
       }
@@ -68,6 +71,7 @@ export default function SetupModal() {
             </ModalHeader>
             <ModalBody>
               <div className="flex flex-col gap-4">
+                {error && <ErrorAlert error={error} className="mb-4" />}
                 <CurrencySelect
                   selectedCurrency={currency}
                   setSelectedCurrency={(currency) =>

@@ -1,9 +1,8 @@
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields } from "better-auth/client/plugins";
-import type { auth } from "@/lib/auth";
+import { usernameClient } from "better-auth/client/plugins";
 
-const { useSession, signIn, signOut, signUp, getSession, forgetPassword, resetPassword } = createAuthClient({
-  plugins: [inferAdditionalFields<typeof auth>()],
+const { useSession, signIn, signOut, signUp, getSession, forgetPassword, resetPassword, updateUser } = createAuthClient({
+  plugins: [usernameClient()],
 });
 
 export type Session = ReturnType<typeof createAuthClient>["$Infer"]["Session"];
@@ -13,4 +12,4 @@ export const useAuthSession = (): { data: Session | null; isPending: boolean; er
   return useSession();
 };
 
-export { signIn, signOut, signUp, getSession, forgetPassword, resetPassword };
+export { signIn, signOut, signUp, getSession, forgetPassword, resetPassword, updateUser };

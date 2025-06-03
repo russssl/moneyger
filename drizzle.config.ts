@@ -2,14 +2,11 @@ import { type Config } from "drizzle-kit";
 
 import { env } from "@/env";
 
-if (!env) {
-  throw new Error("Environment variables not found");
-}
 export default {
   schema: "./src/server/db/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: env.DATABASE_URL,
   },
   tablesFilter: ["manager_v2_*"],
 } satisfies Config;

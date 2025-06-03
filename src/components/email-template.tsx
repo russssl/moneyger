@@ -53,7 +53,6 @@ const footerStyle = {
 
 export const ResetPasswordEmailTemplate: React.FC<Readonly<{
   firstName: string;
-  token: string;
   url: string;
 }>> = ({
   firstName,

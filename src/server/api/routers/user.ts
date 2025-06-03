@@ -54,7 +54,6 @@ export const userRouter = createTRPCRouter({
           }
           
           const result = inserted[0] ?? null;
-          console.log("Returning result:", result);
           return result;
         });
       } catch (error) {
@@ -77,8 +76,7 @@ export const userRouter = createTRPCRouter({
       if (!userSettingsData || !userData) {
         return null;
       }
-
-      return { ...userSettingsData, email: userData.email };
+      return { ...userSettingsData, email: userData.email, username: userData.displayUsername };
     }),
 
 
