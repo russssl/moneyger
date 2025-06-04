@@ -9,10 +9,9 @@ import { LanguageSelect } from "../language-select";
 import { useTranslations } from "next-intl";
 import { api } from "@/trpc/react";
 import { updateUser } from "@/hooks/use-session";
-import { type SelectUserSettings } from "@/server/db/userSettings";
 
 export default function ProfileSettings({...props}) {
-  const { data: userSettings } = api.user.getUserSettings.useQuery() as { data: SelectUserSettings & { username: string | null, email: string | null } | null };
+  const { data: userSettings } = api.user.getUserSettings.useQuery()
   const [email, setEmail] = useState(userSettings?.email ?? "");
   const [username, setUsername] = useState(userSettings?.username ?? "");
   const [language, setLanguage] = useState<string | undefined>("en");
@@ -34,7 +33,6 @@ export default function ProfileSettings({...props}) {
     }
   }, [userSettings]);
   const saveUserSettingsMutation = api.user.updateUserSettings.useMutation();
-  // const t = useTranslations("settings");
 
   const saveBasicSettings = async () => {
     saveUserSettingsMutation.mutate({
