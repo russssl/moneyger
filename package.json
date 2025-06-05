@@ -9,7 +9,7 @@
     "db:generate": "bun run drizzle-kit generate",
     "db:start": "docker-compose -f docker-compose.dev.yml up -d",
     "db:stop": "docker-compose -f docker-compose.dev.yml down",
-    "db:restart": "bun run db:stop && bun run db:start",
+    "db:restart": "docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d",
     "db:reset": "docker-compose -f docker-compose.dev.yml down -v",
     "db:migrate": "bun run drizzle-kit migrate",
     "db:push": "bun run drizzle-kit push",
