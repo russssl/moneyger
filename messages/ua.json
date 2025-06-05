@@ -76,7 +76,9 @@
     "new_password": "Новий пароль",
     "confirm_new_password": "Підтвердіть новий пароль",
     "update_password": "Оновити пароль",
-    "username": "Ім'я користувача"
+    "username": "Ім'я користувача",
+    "connected_accounts": "Підключені облікові записи",
+    "connected_accounts_description": "Керуйте підключеними обліковими записами."
   },
   "navbar": {
     "upgrade_to_pro": "Оновити до Pro",

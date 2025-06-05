@@ -76,7 +76,9 @@
     "new_password": "Nowe hasło",
     "confirm_new_password": "Potwierdź nowe hasło",
     "update_password": "Zaktualizuj hasło",
-    "username": "Nazwa użytkownika"
+    "username": "Nazwa użytkownika",
+    "connected_accounts": "Połączone konta",
+    "connected_accounts_description": "Zarządzaj połączonymi kontami."
   },
   "navbar": {
     "upgrade_to_pro": "Przejdź na Pro",

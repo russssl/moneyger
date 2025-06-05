@@ -3,15 +3,16 @@ import ConnectedAccount from "./account/connected-account"
 import GitHub from "../icons/github"
 import Google from "../icons/google"
 import { api } from "@/trpc/server"
+import { getTranslations } from "next-intl/server";
 
 export default async function ConnectedAccountSettings({...props}) {
-  
+  const t = await getTranslations("settings");
   const userAccounts = await api.user.getUserAccounts();
   return (
     <Card {...props} className="sm:max-w-md">
       <CardHeader>
-        <CardTitle>Connected Accounts</CardTitle>
-        <CardDescription>Manage accounts connected to your profile.</CardDescription>
+        <CardTitle>{t("connected_accounts")}</CardTitle>
+        <CardDescription>{t("connected_accounts_description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <ConnectedAccount accounts={userAccounts} provider={{ id: "github", name: "Github", icon: <GitHub /> }} />
