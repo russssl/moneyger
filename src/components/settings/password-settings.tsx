@@ -54,7 +54,7 @@ export default function PasswordSettings({...props}) {
   
 
   return (
-    <Card {...props} className="w-full sm:max-w-md">
+    <Card {...props} className="sm:max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center">
           <Key className="h-5 w-5 mr-2" />

@@ -4,25 +4,10 @@ import { UserCog, AlertTriangle } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { api } from "@/trpc/server"
-import ConnectedAccount from "./account/connected-account"
-import GitHub from "../icons/github"
-import Google from "../icons/google"
 export default async function AccountSettings({...props}) {
-  const userAccounts = await api.user.getUserAccounts();
   return (
     <>
-      <Card {...props} className="w-full sm:max-w-md">
-        <CardHeader>
-          <CardTitle>Connected Accounts</CardTitle>
-          <CardDescription>Manage accounts connected to your profile.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ConnectedAccount accounts={userAccounts} provider={{ id: "github", name: "Github", icon: <GitHub /> }} />
-          <ConnectedAccount accounts={userAccounts} provider={{ id: "google", name: "Google", icon: <Google /> }} />
-        </CardContent>
-      </Card>
-      <Card {...props} className="w-full sm:max-w-md">
+      <Card {...props} className="sm:max-w-md">
         <CardHeader>
           <CardTitle className="flex items-center">
             <UserCog className="h-5 w-5 mr-2" />
