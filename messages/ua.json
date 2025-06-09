@@ -1,6 +1,17 @@
 {
   "HomePage": {
-    "welcome_message": "Привіт, {name}!"
+    "good_morning": "Доброго ранку, {name}!",
+    "good_afternoon": "Доброго дня, {name}!",
+    "good_night": "Доброго вечора, {name}!",
+    "good_evening": "Доброго вечора, {name}!"
+  },
+  "breadcrumbs": {
+    "home": "Головна",
+    "dashboard": "Dashboard",
+    "transactions": "Транзакції",
+    "wallets": "Гаманці",
+    "categories": "Категорії",
+    "settings": "Налаштування"
   },
   "service": {
     "save": "Зберегти",

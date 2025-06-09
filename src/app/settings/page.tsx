@@ -7,24 +7,20 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Label } from "@/components/ui/label"
 import { Palette } from "lucide-react"
 import {ThemeSwitch} from "@/components/theme-toggle"
-import {getTranslations} from "next-intl/server";
 import ConnectedAccountSettings from "@/components/settings/connected-account-settings"
+import PagesHeader from "../pages-header"
+
 export default async function SettingsPage(
   props: {
     searchParams: Promise<{ category?: string }>
   }
 ) {
-  const categoryGroupStyle =
-    "grid grid-cols-[repeat(auto-fit,350px)] gap-4 p-4 justify-center md:justify-start";
-  // eslint-disable-next-line @typescript-eslint/await-thenable
+  const categoryGroupStyle = "grid grid-cols-[repeat(auto-fit,350px)] gap-4 p-4 justify-center md:justify-start";
   const searchParams = await props.searchParams;
   const selectedCategory = searchParams?.category || "account";
-  const t = await getTranslations("settings");
   return (
-    <div className="h-full bg-background">
-      <header className="p-6 border-b">
-        <h1 className="text-2xl font-bold">{t("settings")}</h1>
-      </header>
+    <div className="h-full gap-6 p-6">
+      <PagesHeader />
       <SettingsSelect className="mt-4 px-4"/>
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
@@ -48,9 +44,7 @@ export default async function SettingsPage(
               <div className="space-y-3">
                 <Label>Mode</Label>
                 <ThemeSwitch />
-                <p className="text-sm text-muted-foreground">
-                    Select a theme preference or use your system settings.
-                </p>
+                <p className="text-sm text-muted-foreground">Select a theme preference or use your system settings.</p>
               </div>
             </CardContent>
           </Card>

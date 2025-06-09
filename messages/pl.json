@@ -1,6 +1,17 @@
 {
   "HomePage": {
-    "welcome_message": "Witaj, {name}!"
+    "good_morning": "Dzień dobry, {name}!",
+    "good_afternoon": "Dobry wieczór, {name}!",
+    "good_night": "Dobry wieczór, {name}!",
+    "good_evening": "Dobry wieczór, {name}!"
+  },
+  "breadcrumbs": {
+    "home": "Strona główna",
+    "dashboard": "Dashboard",
+    "transactions": "Transakcje",
+    "wallets": "Portfele",
+    "categories": "Kategorie",
+    "settings": "Ustawienia"
   },
   "service": {
     "save": "Zapisz",

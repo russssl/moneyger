@@ -13,7 +13,7 @@ import { type Wallet as WalletType } from "@/server/db/wallet"
 
 export default function Wallets({className}: {className?: string | undefined}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [, setSelectedId] = useState<string | null>(null);
   const [items, setItems] = useState<WalletType[]>([]);
   const { data: wallets, isLoading } = api.wallets.getWallets.useQuery();
   const t = useTranslations("finances");
@@ -85,7 +85,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} id={selectedId} onSave={(wallet: WalletType) => saveWallets(wallet)}/>
+      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={(wallet: WalletType) => saveWallets(wallet)}/>
     </div>
   );
 }

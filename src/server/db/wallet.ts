@@ -1,4 +1,4 @@
-import { pgTable, timestamp, varchar, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, varchar, doublePrecision, boolean } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { relations } from "drizzle-orm";
 import { transactions } from "./transaction";
@@ -15,6 +15,8 @@ export const wallets = pgTable("wallet", {
     .references(() => user.id),
   name: varchar("name", { length: 255 }),
   balance: doublePrecision("balance").default(0).notNull(),
+  isSavingAccount: boolean("is_saving_account").default(false),
+  savingAccountGoal: doublePrecision("saving_account_goal").default(0),
   description: varchar("description", { length: 255 }),
   iconName: varchar("icon_name", { length: 255 }),
   currency: varchar("currency", { length: 255 }),

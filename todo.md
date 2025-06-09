@@ -1,0 +1,5 @@
+- [ ] add saving account flag
+- [ ] net worth (adjusted to main currency)
+- [ ] incomes (with x percent more/less than last month ?)
+- [ ] expenses (with x percent more/less than last month ?)
+- [ ] comparison in every category will be done by comparing current range with same range in before that (if we compare from 3rd to 5th of October, we will compare with 1st to 3rd of October)
