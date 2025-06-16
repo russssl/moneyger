@@ -40,6 +40,6 @@ export const env = createEnv({
     EXCHANGE_RATE_API_KEY: process.env.EXCHANGE_RATE_API_KEY,
     REDIS_URL: process.env.REDIS_URL,
   },
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation: process.env.CI === "true",
   emptyStringAsUndefined: true,
 });
