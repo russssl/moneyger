@@ -46,8 +46,8 @@ export const walletRouter = createTRPCRouter({
       from: z.string(),
       to: z.string(),
     }))
-    .query(async ({ ctx, input }) => {
-      return await getCurrentExchangeRate(input.from, input.to, ctx);
+    .query(async ({ input }) => {
+      return await getCurrentExchangeRate(input.from, input.to);
     }),
 
   createWallet: protectedProcedure

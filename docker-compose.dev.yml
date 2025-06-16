@@ -10,9 +10,18 @@ services:
       - 5432:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
-  memcached:
-    image: memcached:1.6
+  # redis 8
+  redis:
+    image: redis:8
     ports:
-      - 11211:11211
+      - 6379:6379
+  redis-insight:
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight:/data
 volumes:
   pgdata:
+  redis-insight:
