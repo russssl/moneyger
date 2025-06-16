@@ -9,7 +9,7 @@ function getWelcomeMessage() {
   if (hour < 12) return "good_morning";
   if (hour < 18) return "good_afternoon";
   if (hour < 22) return "good_evening";
-  return "good_evening";
+  return "good_evening"
 }
 
 export default async function HomePage() {

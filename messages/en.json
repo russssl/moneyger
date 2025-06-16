@@ -2,7 +2,6 @@
   "HomePage": {
     "good_morning": "Good morning, {name}!",
     "good_afternoon": "Good afternoon, {name}!",
-    "good_night": "Good night, {name}!",
     "good_evening": "Good evening, {name}!"
   },
   "breadcrumbs": {

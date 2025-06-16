@@ -2,7 +2,6 @@
   "HomePage": {
     "good_morning": "Доброго ранку, {name}!",
     "good_afternoon": "Доброго дня, {name}!",
-    "good_night": "Доброго вечора, {name}!",
     "good_evening": "Доброго вечора, {name}!"
   },
   "breadcrumbs": {
