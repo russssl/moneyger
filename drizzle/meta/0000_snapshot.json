@@ -1,5 +1,5 @@
 {
-  "id": "bbc4fde3-50e2-407c-a99b-be5e42861ee6",
+  "id": "f97783c2-0e9d-4f0c-be4f-b3bd48320888",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -237,6 +237,18 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "display_username": {
+          "name": "display_username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -248,6 +260,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
+          ]
+        },
+        "user_username_unique": {
+          "name": "user_username_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "username"
           ]
         }
       },
@@ -370,6 +389,20 @@
           "type": "double precision",
           "primaryKey": false,
           "notNull": true,
+          "default": 0
+        },
+        "is_saving_account": {
+          "name": "is_saving_account",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "saving_account_goal": {
+          "name": "saving_account_goal",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false,
           "default": 0
         },
         "description": {
@@ -521,89 +554,6 @@
           "tableTo": "wallet",
           "columnsFrom": [
             "wallet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.currency_exchange_rate": {
-      "name": "currency_exchange_rate",
-      "schema": "",
-      "columns": {
-        "base_currency": {
-          "name": "base_currency",
-          "type": "varchar(255)",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "rates": {
-          "name": "rates",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.password_reset": {
-      "name": "password_reset",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar(255)",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token": {
-          "name": "token",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "password_reset_user_id_user_id_fk": {
-          "name": "password_reset_user_id_user_id_fk",
-          "tableFrom": "password_reset",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
           ],
           "columnsTo": [
             "id"

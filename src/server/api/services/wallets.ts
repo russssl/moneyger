@@ -1,16 +1,9 @@
 import db from "@/server/db";
 import { type Transaction, transactions as transactionsSchema} from "@/server/db/transaction";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { env } from "@/env";
-import { currencyExchangeRates, type SelectCurrencyExchangeRate } from "@/server/db/currencyExchangeRate";
-import { DateTime } from "luxon";
 import { redis } from "@/server/api/cache/cache";
-import { R } from "node_modules/better-auth/dist/shared/better-auth.CYegVoq1";
 
-type ConversionRate = {
-  base_currency: string;
-  conversion_rates: Record<string, number>;
-}
 export async function calculateWalletBalance(walletId: string) {
   const transactions: Transaction[] = await db.query.transactions.findMany({
     where: eq(transactionsSchema.walletId, walletId),
