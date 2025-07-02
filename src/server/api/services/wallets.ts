@@ -1,8 +1,11 @@
 import db from "@/server/db";
-import { type Transaction, transactions as transactionsSchema} from "@/server/db/transaction";
-import { eq } from "drizzle-orm";
+import { type Transaction, transactions, transactions as transactionsSchema} from "@/server/db/transaction";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { env } from "@/env";
 import { redis } from "@/server/api/cache/cache";
+import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
+import { type Wallet, wallets } from "@/server/db/wallet";
+import { DateTime } from "luxon";
 
 export async function calculateWalletBalance(walletId: string) {
   const transactions: Transaction[] = await db.query.transactions.findMany({
@@ -21,9 +24,6 @@ export async function calculateWalletBalance(walletId: string) {
  * class to interact with exchange rate API
  */
 class CurrencyApi {
-
-  // totally optional thing to create but honestly I just felt like it
-
   url: string | undefined;
   apiKey: string | undefined;
 
@@ -100,4 +100,107 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
   }
 
   throw new Error(`Could not calculate exchange rate from ${fromCurrency} to ${toCurrency}`);
+}
+
+type WalletsStats = {
+  totalBalance: number;
+  walletsBalances: {
+    id: string;
+    name: string;
+    balance: number;
+  }[];
+}
+
+type WalletTrends = {
+  totalTrend: number;
+  walletTrends: Record<string, number>;
+}
+
+type WalletWithTransactions = Wallet & {
+  transactions: Transaction[];
+}
+
+export async function calculateTotalBalance(userId: string, userMainCurrency: string, ctx: any, startDate?: Date | null, endDate?: Date | null): Promise<WalletsStats> {
+  let totalBalance = 0;
+  const res_wallets: WalletWithTransactions[] = await ctx.db.query.wallets.findMany({
+    where: eq(wallets.userId, userId),
+    with: {
+      transactions: {
+        where: startDate ? and(
+          lte(transactions.transaction_date, endDate ?? new Date()),
+          gte(transactions.transaction_date, startDate)
+        ) : undefined,
+      },
+    },
+  });
+
+  if (!userMainCurrency) {
+    throw new Error("User main currency not found");
+  }
+
+  for (const wallet of res_wallets) {
+    // If we're calculating a past balance, we need to sum only transactions up to that point
+    const walletBalance = startDate 
+      ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
+      : wallet.balance;
+
+    const exchangeRate = await getCurrentExchangeRate(wallet.currency, userMainCurrency);
+    totalBalance += walletBalance * exchangeRate;
+  }
+
+  return {
+    totalBalance: Number(totalBalance.toFixed(2)),
+    walletsBalances: res_wallets.map((wallet) => ({
+      id: wallet.id,
+      name: wallet.name ?? "",
+      balance: startDate
+        ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
+        : wallet.balance,
+    })),
+  }
+}
+
+export async function calculateWalletTrends(
+  userId: string, 
+  userMainCurrency: string, 
+  ctx: any, 
+  days = 30
+): Promise<WalletTrends> {
+  const now = DateTime.now().startOf("day");
+  const startDate = now.minus({ days }).startOf("day").toJSDate();
+  const endDate = now.endOf("day").toJSDate();
+
+  // Get current balances (without date filter)
+  const currentBalance = await calculateTotalBalance(userId, userMainCurrency, ctx);
+  
+  // Get balances from 30 days ago
+  const pastBalance = await calculateTotalBalance(userId, userMainCurrency, ctx, startDate, endDate);
+
+  // Calculate total trend with 1 decimal place
+  const totalTrend = Number(
+    (pastBalance.totalBalance !== 0
+      ? ((currentBalance.totalBalance - pastBalance.totalBalance) / Math.abs(pastBalance.totalBalance)) * 100
+      : currentBalance.totalBalance > 0 ? 100 : 0
+    ).toFixed(1)
+  );
+
+  // Calculate individual wallet trends
+  const walletTrends = currentBalance.walletsBalances.reduce((acc, currentWallet) => {
+    const pastWallet = pastBalance.walletsBalances.find(w => w.id === currentWallet.id);
+    
+    // Calculate trend with 1 decimal place
+    const trend = Number(
+      (!pastWallet || pastWallet.balance === 0)
+        ? (currentWallet.balance > 0 ? 100 : 0)
+        : ((currentWallet.balance - pastWallet.balance) / Math.abs(pastWallet.balance)) * 100
+    ).toFixed(1);
+
+    acc[currentWallet.id] = Number(trend);
+    return acc;
+  }, {} as Record<string, number>);
+
+  return {
+    totalTrend,
+    walletTrends,
+  };
 }

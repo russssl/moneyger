@@ -3,10 +3,10 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { transactions } from "@/server/db/transaction";
-import { type Wallet, wallets } from "@/server/db/schema";
+import { userSettings, type Wallet, wallets } from "@/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { getCurrentExchangeRate } from "../services/wallets";
+import { calculateTotalBalance, getCurrentExchangeRate, calculateWalletTrends } from "../services/wallets";
 
 export const walletRouter = createTRPCRouter({
   getWallets: protectedProcedure
@@ -138,5 +138,42 @@ export const walletRouter = createTRPCRouter({
         return wallet;
       });
       return res_wallet;
+    }),
+  getFullData: protectedProcedure
+    .query(async ({ ctx }): Promise<{ 
+      totalBalance: number, 
+      wallets: Wallet[], 
+      userMainCurrency: string,
+      totalTrend: number,
+      walletTrends: Record<string, number>
+    }> => {
+      const res_wallets = await ctx.db.query.wallets.findMany({
+        where: eq(wallets.userId, ctx.session.user.id),
+        with: {
+          transactions: true,
+        },
+      });
+
+      const userMainCurrency = await ctx.db.query.userSettings.findFirst({
+        where: eq(userSettings.userId, ctx.session.user.id),
+        columns: {
+          currency: true,
+        },
+      });
+      
+      if (!userMainCurrency?.currency) {
+        throw new Error("User main currency not found");
+      }
+
+      const totalBalance = await calculateTotalBalance(ctx.session.user.id, userMainCurrency.currency, ctx);
+      const { totalTrend, walletTrends } = await calculateWalletTrends(ctx.session.user.id, userMainCurrency.currency, ctx);
+
+      return {
+        totalBalance: totalBalance.totalBalance,
+        wallets: res_wallets,
+        userMainCurrency: userMainCurrency.currency,
+        totalTrend,
+        walletTrends
+      }
     }),
 });

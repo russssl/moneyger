@@ -47,7 +47,7 @@ export default function RegisterForm() {
               setError(ctx.error.message);
             }
           },
-          onSuccess: async () => {
+          onSuccess: () => {
             router.push("/");
           },
         }});

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { QuickActions } from "./quick-actions/quick-actions";
 import PagesHeader from "../pages-header";
+import TotalBalance from "@/components/app/TotalBalance";
 
 function getWelcomeMessage() {
   const hour = new Date().getHours();
@@ -29,6 +30,9 @@ export default async function HomePage() {
           Welcome to your personal finance dashboard
         </p>
         <QuickActions className="hidden md:block" />
+        <div className="max-w-2xl">
+          <TotalBalance />
+        </div>
       </div>
     </div>
   );
