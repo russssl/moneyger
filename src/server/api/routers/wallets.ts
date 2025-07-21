@@ -162,7 +162,14 @@ export const walletRouter = createTRPCRouter({
       });
       
       if (!userMainCurrency?.currency) {
-        throw new Error("User main currency not found");
+        // settings are not created yet, return empty data
+        return {
+          totalBalance: 0,
+          wallets: [],
+          userMainCurrency: "",
+          totalTrend: 0,
+          walletTrends: {},
+        }
       }
 
       const totalBalance = await calculateTotalBalance(ctx.session.user.id, userMainCurrency.currency, ctx);

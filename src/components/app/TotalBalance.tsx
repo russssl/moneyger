@@ -45,10 +45,10 @@ export default async function TotalBalance() {
                 TEXT_SIZES.total,
                 "font-semibold"
               )}>
-                {res.totalBalance.toLocaleString("en-US", {
+                {res.totalBalance ? res.totalBalance.toLocaleString("en-US", {
                   style: "currency",
                   currency: res.userMainCurrency
-                })}
+                }) : "0"}
               </div>
               <div className={cn(
                 TEXT_SIZES.trend,
