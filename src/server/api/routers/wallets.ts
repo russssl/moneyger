@@ -144,8 +144,8 @@ export const walletRouter = createTRPCRouter({
       totalBalance: number, 
       wallets: Wallet[], 
       userMainCurrency: string,
-      totalTrend: number,
-      walletTrends: Record<string, number>
+      // totalTrend: number,
+      // walletTrends: Record<string, number>
     }> => {
       const res_wallets = await ctx.db.query.wallets.findMany({
         where: eq(wallets.userId, ctx.session.user.id),
@@ -167,20 +167,20 @@ export const walletRouter = createTRPCRouter({
           totalBalance: 0,
           wallets: [],
           userMainCurrency: "",
-          totalTrend: 0,
-          walletTrends: {},
+          // totalTrend: 0,
+          // walletTrends: {},
         }
       }
 
       const totalBalance = await calculateTotalBalance(ctx.session.user.id, userMainCurrency.currency, ctx);
-      const { totalTrend, walletTrends } = await calculateWalletTrends(ctx.session.user.id, userMainCurrency.currency, ctx);
+      // const { totalTrend, walletTrends } = await calculateWalletTrends(ctx.session.user.id, userMainCurrency.currency, ctx);
 
       return {
         totalBalance: totalBalance.totalBalance,
         wallets: res_wallets,
         userMainCurrency: userMainCurrency.currency,
-        totalTrend,
-        walletTrends
+        // totalTrend,
+        // walletTrends
       }
     }),
 });
