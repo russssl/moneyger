@@ -28,6 +28,8 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
+        env:
+          SKIP_ENV_VALIDATION: true
         with:
           context: .
           file: Dockerfile
