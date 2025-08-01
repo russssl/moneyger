@@ -4,7 +4,11 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     AUTH_SECRET: z.string(),
-    DATABASE_URL: z.string().url(),
+    // DATABASE_URL: z.string().url(),
+    POSTGRES_USER: z.string(),
+    POSTGRES_PASSWORD: z.string(),
+    POSTGRES_DB: z.string(),
+    POSTGRES_HOST: z.string(),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     REDIS_KV_URL: z.string().url().optional(),
     REDIS_KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
@@ -19,12 +23,13 @@ export const env = createEnv({
     EXCHANGE_RATE_API_KEY: z.string().optional(),
   },
   client: {
-    // NEXT_PUBLIC_APP_URL: z.string().url().optional(),
-    // NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
   },
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    DATABASE_URL: process.env.DATABASE_URL,
+    POSTGRES_USER: process.env.POSTGRES_USER,
+    POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
+    POSTGRES_DB: process.env.POSTGRES_DB,
+    POSTGRES_HOST: process.env.POSTGRES_HOST,
     NODE_ENV: process.env.NODE_ENV,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
     REDIS_KV_REST_API_READ_ONLY_TOKEN: process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,

@@ -7,6 +7,11 @@ export async function sendResetPasswordEmail(
   firstName: string,
   url: string
 ) {
+  if (!env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY is not set, skipping email sending");
+    return;
+  }
+
   const resend = new Resend(env.RESEND_API_KEY);
 
   try {
