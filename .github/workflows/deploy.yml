@@ -35,8 +35,8 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.REG_URL }}/moneyger-blog-api:latest
-            ${{ secrets.REG_URL }}/moneyger-blog-api:${{ steps.extract_sha_short.outputs.sha_short }}
+            ${{ secrets.REG_URL }}/moneyger:latest
+            ${{ secrets.REG_URL }}/moneyger:${{ steps.extract_sha_short.outputs.sha_short }}
           build-args: |
             COMMIT=${{ steps.extract_sha_short.outputs.sha_short }}
             APP_VERSION=${{ steps.extract_sha_short.outputs.sha_short }}
