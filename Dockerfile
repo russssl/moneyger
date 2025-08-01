@@ -8,6 +8,9 @@ COPY . .
 
 RUN bun install --frozen-lockfile
 
+# Set environment variables for build time
+ENV SKIP_ENV_VALIDATION=true
+
 RUN bun run build
 
 FROM oven/bun:1
