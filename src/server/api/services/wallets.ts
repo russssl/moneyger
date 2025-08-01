@@ -141,7 +141,7 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
   for (const wallet of res_wallets) {
     // If we're calculating a past balance, we need to sum only transactions up to that point
     const walletBalance = startDate 
-      ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
+      ? wallet.transactions.filter(t => t.type != "adjustment").reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
       : wallet.balance;
 
     const exchangeRate = await getCurrentExchangeRate(wallet.currency, userMainCurrency);
