@@ -14,16 +14,14 @@ import { api } from "@/trpc/react";
 import CurrencySelect from "./currency-select";
 import LoadingButton from "./loading-button";
 import { useTranslations } from "next-intl";
-import { LanguageSelect } from "./language-select";
 import { ErrorAlert } from "./error-alert";
-
+import { type UserAdditionalData } from "@/server/api/routers/user";
 export default function SetupModal() {
   const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
-  const [language, setLanguage] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const { data: userAdditionalData } = api.user.getUserAdditionalData.useQuery();
+  const { data: userAdditionalData } = api.user.getUserAdditionalData.useQuery<UserAdditionalData>();
   const createUserSettingsMutation = api.user.createUserSettings.useMutation();
 
   const t = useTranslations("setup-modal");
@@ -54,10 +52,6 @@ export default function SetupModal() {
       }
     );
 
-    if (language) {
-      document.cookie = `locale=${language}; path=/; max-age=31536000`;
-      window.location.reload();
-    }
   }
 
   return (
@@ -76,12 +70,6 @@ export default function SetupModal() {
                   selectedCurrency={currency}
                   setSelectedCurrency={(currency) =>
                     setCurrency(currency ?? undefined)
-                  }
-                />
-                <LanguageSelect
-                  language={language}
-                  setLanguage={(languageCode) =>
-                    setLanguage(languageCode ?? undefined)
                   }
                 />
               </div>

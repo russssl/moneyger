@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-export default async function Main() {
+export default function Main() {
   redirect("/dashboard");
   return null;
 }

@@ -1,8 +1,10 @@
 import db from "@/server/db";
-import { type Transaction, transactions as transactionsSchema} from "@/server/db/transaction";
-import { eq, inArray } from "drizzle-orm";
+import { type Transaction, transactions, transactions as transactionsSchema} from "@/server/db/transaction";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { env } from "@/env";
-import { currencyExchangeRates, type SelectCurrencyExchangeRate } from "@/server/db/currencyExchangeRate";
+import { redis } from "@/server/api/cache/cache";
+import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
+import { type Wallet, wallets } from "@/server/db/wallet";
 import { DateTime } from "luxon";
 
 export async function calculateWalletBalance(walletId: string) {
@@ -22,9 +24,6 @@ export async function calculateWalletBalance(walletId: string) {
  * class to interact with exchange rate API
  */
 class CurrencyApi {
-
-  // totally optional thing to create but honestly I just felt like it (@russssl)
-
   url: string | undefined;
   apiKey: string | undefined;
 
@@ -42,6 +41,9 @@ class CurrencyApi {
   }
 
   async getExchangeRate(currency: string) {
+    if ((await this.getQuota()).requests_remaining <= 20) {
+      return null;
+    }
     if (!this.url || !this.apiKey) {
       throw new Error("URL and API key are required");
     }
@@ -50,123 +52,155 @@ class CurrencyApi {
   }
 }
 
-/**
- * 
- * @param fromCurrency currency to get exchange rate for (if given is not stored in database we will use other currency and convert it)
- * @param toCurrency currency to convert to
- * @param ctx database to use/write data 
- * @returns 
- */
-export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: string, ctx: any) : Promise<number> {
-  const isOutdated = (createdAt: string | null): boolean => {
-    if (!createdAt) {
-      return true;
-    }
-    return DateTime.fromJSDate(new Date(createdAt)).diffNow("days").days > 1;
-  };
-
-  const formatRate = (rate: number): number => {
-    return Math.round(rate * 100) / 100;
-  }
-
-  // Try to get exchange rate from database first
-  const exchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
-    where: eq(currencyExchangeRates.baseCurrency, fromCurrency),
-  });
-
-  // If exchange rate exists and is not outdated, return it immediately
-  if (exchangeRate && !isOutdated(exchangeRate.createdAt as string)) {
-    const rate = (exchangeRate.rates as Record<string, number>)[toCurrency];
-    if (rate) {
-      return formatRate(rate);
-    }
-  }
-
-  // If exchange rate is outdated or not found, check API quota before calling API
+export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: string) {
+  const cache = await redis();
+  const mainCurrencies = ["USD", "EUR", "PLN", "GBP", "CHF", "JPY"];
   const api = new CurrencyApi(env.EXCHANGE_RATE_URL, env.EXCHANGE_RATE_API_KEY);
 
-  // if not found, get rate for USD and convert it
-  const usdExchangeRate = await ctx.db.query.currencyExchangeRates.findFirst({
-    where: eq(currencyExchangeRates.baseCurrency, "USD"),
-  });
+  const getData = async (currency: string) => {
+    const cacheKey = `exchange_rate:${currency}`;
+    const raw = await cache.get(cacheKey);
+    if (raw) {
+      return JSON.parse(raw);
+    }
 
-  if (!usdExchangeRate || (usdExchangeRate.createdAt && isOutdated(usdExchangeRate.createdAt as string))) {
-    await updateCurrenciesExchangeRate(api, ctx);
+    const apiData = await api.getExchangeRate(currency);
+    if (!apiData?.conversion_rates) {
+      throw new Error(`Could not fetch exchange rates for ${currency}`);
+    }
+    
+    await cache.setEx(cacheKey, 86400, JSON.stringify(apiData.conversion_rates));
+    return apiData.conversion_rates;
   }
 
-  const rates = usdExchangeRate.rates
+  if (mainCurrencies.includes(fromCurrency)) {
+    const data = await getData(fromCurrency);
+    if (!data[toCurrency]) throw new Error(`No rate for ${toCurrency} in ${fromCurrency}`);
+    return data[toCurrency];
+  }
 
-  // rates are rates from USD to other currencies (e.g. 1 USD = 0.85 EUR)
-  const dollarAmount = 1 / rates[fromCurrency];
-  const finalRate = dollarAmount * rates[toCurrency];
-  return formatRate(finalRate);
+  if (mainCurrencies.includes(toCurrency)) {
+    const data = await getData(toCurrency);
+    if (!data[fromCurrency]) throw new Error(`No rate for ${fromCurrency} in ${toCurrency}`);
+    return 1 / data[fromCurrency];
+  }
+
+  const usdData = await getData("USD");
+  if (usdData[fromCurrency] && usdData[toCurrency]) {
+    return usdData[toCurrency] / usdData[fromCurrency];
+  }
+
+  for (const currency of mainCurrencies) {
+    if (currency === fromCurrency || currency === toCurrency) continue;
+
+    const data = await getData(currency);
+    if (data[fromCurrency] && data[toCurrency]) {
+      return data[toCurrency] / data[fromCurrency];
+    }
+  }
+
+  throw new Error(`Could not calculate exchange rate from ${fromCurrency} to ${toCurrency}`);
 }
 
-async function updateCurrenciesExchangeRate(api: any, ctx: any, currencyToRetrieve: string | null = null) {
-  // Supported base currencies
-  const supportedCurrencies = ["USD", "EUR", "GBP", "JPY"];
+type WalletsStats = {
+  totalBalance: number;
+  walletsBalances: {
+    id: string;
+    name: string;
+    balance: number;
+  }[];
+}
 
-  // If a specific currency is requested, only update that one
-  const currenciesToCheck = currencyToRetrieve ? [currencyToRetrieve] : supportedCurrencies;
+type WalletTrends = {
+  totalTrend: number;
+  walletTrends: Record<string, number>;
+}
 
-  // Get current rates from DB for these currencies
-  const dbRates: Array<SelectCurrencyExchangeRate> = await ctx.db.select({
-    baseCurrency: currencyExchangeRates.baseCurrency,
-    createdAt: currencyExchangeRates.createdAt,
-  })
-    .from(currencyExchangeRates)
-    .where(inArray(currencyExchangeRates.baseCurrency, currenciesToCheck))
-    .execute();
+type WalletWithTransactions = Wallet & {
+  transactions: Transaction[];
+}
 
-  // Determine which currencies need updating (missing or outdated)
-  const outdatedOrMissing = currenciesToCheck.filter((currency) => {
-    const dbEntry = dbRates.find((r) => r.baseCurrency === currency);
-    if (!dbEntry) return true;
-    if (!dbEntry.createdAt) return true;
-    return dbEntry.createdAt < DateTime.now().minus({ days: 1 }).toISODate();
+export async function calculateTotalBalance(userId: string, userMainCurrency: string, ctx: any, startDate?: Date | null, endDate?: Date | null): Promise<WalletsStats> {
+  let totalBalance = 0;
+  const res_wallets: WalletWithTransactions[] = await ctx.db.query.wallets.findMany({
+    where: eq(wallets.userId, userId),
+    with: {
+      transactions: {
+        where: startDate ? and(
+          lte(transactions.transaction_date, endDate ?? new Date()),
+          gte(transactions.transaction_date, startDate)
+        ) : undefined,
+      },
+    },
   });
 
-  // If nothing to update, return the requested currency from DB if needed
-  if (outdatedOrMissing.length === 0) {
-    if (currencyToRetrieve) {
-      return dbRates.find((rate) => rate.baseCurrency === currencyToRetrieve);
-    }
-    return;
+  if (!userMainCurrency) {
+    throw new Error("User main currency not found");
   }
 
-  // Check quota once before making API calls
-  const quota = await api.getQuota();
-  if (typeof quota === "object" && quota?.requests_left !== undefined) {
-    if (quota?.requests_left < outdatedOrMissing.length) {
-      throw new Error("Rate limit exceeded");
-    }
-  } else if (typeof quota === "number" && quota < outdatedOrMissing.length) {
-    throw new Error("Rate limit exceeded");
+  for (const wallet of res_wallets) {
+    // If we're calculating a past balance, we need to sum only transactions up to that point
+    const walletBalance = startDate 
+      ? wallet.transactions.filter(t => t.type != "adjustment").reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
+      : wallet.balance;
+
+    const exchangeRate = await getCurrentExchangeRate(wallet.currency, userMainCurrency);
+    totalBalance += walletBalance * exchangeRate;
   }
 
-  // Fetch and store new rates only for outdated/missing currencies
-  const res = await Promise.all(outdatedOrMissing.map(async (currency) => {
-    const exchangeRate = await api.getExchangeRate(currency);
-    if (!exchangeRate?.conversion_rates) {
-      throw new Error(`Exchange rate not found for ${currency}`);
-    }
-    return {
-      baseCurrency: currency,
-      rates: exchangeRate.conversion_rates,
-      createdAt: new Date(),
-    };
-  }));
-
-  if (res.length > 0) {
-    await ctx.db.insert(currencyExchangeRates).values(res).execute();
+  return {
+    totalBalance: Number(totalBalance.toFixed(2)),
+    walletsBalances: res_wallets.map((wallet) => ({
+      id: wallet.id,
+      name: wallet.name ?? "",
+      balance: startDate
+        ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
+        : wallet.balance,
+    })),
   }
+}
 
-  // Return the requested currency if needed
-  if (currencyToRetrieve) {
-    // Prefer the just-fetched one, fallback to DB
-    return (
-      res.find((rate) => rate.baseCurrency === currencyToRetrieve) ||
-      dbRates.find((rate) => rate.baseCurrency === currencyToRetrieve)
-    );
-  }
+export async function calculateWalletTrends(
+  userId: string, 
+  userMainCurrency: string, 
+  ctx: any, 
+  days = 30
+): Promise<WalletTrends> {
+  const now = DateTime.now().startOf("day");
+  const startDate = now.minus({ days }).startOf("day").toJSDate();
+  const endDate = now.endOf("day").toJSDate();
+
+  // Get current balances (without date filter)
+  const currentBalance = await calculateTotalBalance(userId, userMainCurrency, ctx);
+  
+  // Get balances from 30 days ago
+  const pastBalance = await calculateTotalBalance(userId, userMainCurrency, ctx, startDate, endDate);
+
+  // Calculate total trend with 1 decimal place
+  const totalTrend = Number(
+    (pastBalance.totalBalance !== 0
+      ? ((currentBalance.totalBalance - pastBalance.totalBalance) / Math.abs(pastBalance.totalBalance)) * 100
+      : currentBalance.totalBalance > 0 ? 100 : 0
+    ).toFixed(1)
+  );
+
+  // Calculate individual wallet trends
+  const walletTrends = currentBalance.walletsBalances.reduce((acc, currentWallet) => {
+    const pastWallet = pastBalance.walletsBalances.find(w => w.id === currentWallet.id);
+    
+    // Calculate trend with 1 decimal place
+    const trend = Number(
+      (!pastWallet || pastWallet.balance === 0)
+        ? (currentWallet.balance > 0 ? 100 : 0)
+        : ((currentWallet.balance - pastWallet.balance) / Math.abs(pastWallet.balance)) * 100
+    ).toFixed(1);
+
+    acc[currentWallet.id] = Number(trend);
+    return acc;
+  }, {} as Record<string, number>);
+
+  return {
+    totalTrend,
+    walletTrends,
+  };
 }

@@ -17,6 +17,7 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().optional(),
     EXCHANGE_RATE_URL: z.string().optional(),
     EXCHANGE_RATE_API_KEY: z.string().optional(),
+    REDIS_URL: z.string().url(),
   },
   client: {
     // NEXT_PUBLIC_APP_URL: z.string().url().optional(),
@@ -37,7 +38,8 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EXCHANGE_RATE_URL: process.env.EXCHANGE_RATE_URL,
     EXCHANGE_RATE_API_KEY: process.env.EXCHANGE_RATE_API_KEY,
+    REDIS_URL: process.env.REDIS_URL,
   },
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation: process.env.CI === "true",
   emptyStringAsUndefined: true,
 });

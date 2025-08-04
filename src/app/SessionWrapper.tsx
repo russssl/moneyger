@@ -28,19 +28,21 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
 
   return (
     <div className="overflow-x-hidden">
-      {session ? (
-        <SidebarProvider>
-          <AppSidebar session={session} className="hidden md:flex" />
-          <SidebarInset>
-            <div className="pb-12">{children}</div>
-          </SidebarInset>
-          <div className="md:hidden fixed bottom-0 left-0 w-full">
-            <BottomBar updateList={reload} />
-          </div>
-        </SidebarProvider>
-      ) : (
-        <div className="pb-12">{children}</div>
-      )}
+      <SidebarProvider>
+        {session ? (
+          <>
+            <AppSidebar session={session} className="hidden md:flex" />
+            <SidebarInset>
+              <div className="pb-12">{children}</div>
+            </SidebarInset>
+            <div className="md:hidden fixed bottom-0 left-0 w-full">
+              <BottomBar updateList={reload} />
+            </div>
+          </>
+        ) : (
+          <div className="pb-12">{children}</div>
+        )}
+      </SidebarProvider>
     </div>
   );
 }

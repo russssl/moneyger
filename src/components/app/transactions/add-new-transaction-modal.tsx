@@ -13,6 +13,7 @@ import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -94,8 +95,8 @@ export default function AddNewTransactionModal({
   const toCurrencyCode = secondWallet?.currency;
 
   const currencyQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
-  const { data: exchangeRate = 1 } = api.transactions.getCurrentExchangeRate.useQuery(
-    { from: selectedFirstWallet!, to: selectedSecondWallet! },
+  const { data: exchangeRate = 1 } = api.wallets.getExchangeRate.useQuery(
+    { from: firstWallet?.currency ?? "", to: secondWallet?.currency ?? "" },
     { enabled: currencyQueryEnabled }
   );
 
@@ -171,18 +172,25 @@ export default function AddNewTransactionModal({
                 <Label>
                   {transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
                 </Label>
-                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tGeneral("select_wallet")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex rounded-lg shadow-xs">
+                  <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}>
+                    <SelectTrigger className={cn("shadow-none", currencyData ? "rounded-e-none" : "rounded")}>
+                      <SelectValue placeholder={tGeneral("select_wallet")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wallets.map((wallet) => (
+                        <SelectItem key={wallet.id} value={wallet.id}>
+                          {wallet.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {currencyData && (
+                    <span className="border-input bg-background text-muted-foreground inline-flex items-center rounded-e-lg border px-3 text-sm">
+                      {currencyData.symbol}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -202,18 +210,25 @@ export default function AddNewTransactionModal({
             {transactionType === "transfer" && (
               <div>
                 <Label>{tGeneral("to_wallet")}</Label>
-                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tGeneral("select_wallet")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex rounded-lg shadow-xs">
+                  <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}>
+                    <SelectTrigger className={cn("shadow-none", currencyData ? "rounded-e-none" : "rounded")}>
+                      <SelectValue placeholder={tGeneral("select_wallet")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wallets.map((wallet) => (
+                        <SelectItem key={wallet.id} value={wallet.id}>
+                          {wallet.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {toCurrencyCode && (
+                    <span className="border-input bg-background text-muted-foreground inline-flex items-center rounded-e-lg border px-3 text-sm">
+                      {currencies(toCurrencyCode)?.symbol}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 

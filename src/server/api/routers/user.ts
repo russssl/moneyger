@@ -9,6 +9,11 @@ import { type SelectUserSettings, userSettings } from "@/server/db/userSettings"
 import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
+export type UserAdditionalData = {
+  currency: string | undefined;
+  language?: string;
+}
+
 export const userRouter = createTRPCRouter({
 
   getUserByEmail: publicProcedure.input(z.object({
@@ -27,38 +32,30 @@ export const userRouter = createTRPCRouter({
       currency: z.string(),
     }))
     .mutation(async ({ ctx, input }): Promise<SelectUserSettings | null> => {
-      try {
-        const user = ctx.session.user;
-        const userId = user.id;
-        
-        return await ctx.db.transaction(async (tx) => {
-          const existingSettings = await tx.query.userSettings.findFirst({
-            where: eq(userSettings.userId, userId),
-          });
-          
-          if (existingSettings) {
-            return existingSettings;
-          }
-
-          await tx.insert(userSettings).values({
-            userId,
-            currency: input.currency,
-          })
-
-          const inserted = await tx.query.userSettings.findMany({
-            where: eq(userSettings.userId, userId),
-          });
-
-          if (!inserted || inserted.length === 0) {
-            throw new Error("User settings not created");
-          }
-          
-          const result = inserted[0] ?? null;
-          return result;
+      const user = ctx.session.user;
+      const userId = user.id;
+      
+      const res =  await ctx.db.transaction(async (tx) => {
+        const existingSettings = await tx.query.userSettings.findFirst({
+          where: eq(userSettings.userId, userId),
         });
-      } catch (error) {
-        throw error;
-      }
+        
+        if (existingSettings) {
+          return existingSettings;
+        }
+
+        const result = await tx.insert(userSettings).values({
+          userId,
+          currency: input.currency,
+        }).returning().execute().then((res) => res[0]);
+
+        if (!result) {
+          throw new Error("User settings not created");
+        }
+        
+        return result;
+      });
+      return res;
     }),
   
   getUserSettings: protectedProcedure
@@ -192,7 +189,7 @@ export const userRouter = createTRPCRouter({
     }),
 
   getUserAdditionalData: protectedProcedure
-    .query(async ({ ctx }): Promise<{ currency: string | undefined }> => {
+    .query(async ({ ctx }): Promise<UserAdditionalData> => {
       const user = ctx.session.user;
       const userId = user.id;
 
