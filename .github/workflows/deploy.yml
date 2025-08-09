@@ -28,13 +28,15 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
+        env:
+          SKIP_ENV_VALIDATION: true
         with:
           context: .
           file: Dockerfile
           push: true
           tags: |
-            ${{ secrets.REG_URL }}/moneyger-blog-api:latest
-            ${{ secrets.REG_URL }}/moneyger-blog-api:${{ steps.extract_sha_short.outputs.sha_short }}
+            ${{ secrets.REG_URL }}/moneyger:latest
+            ${{ secrets.REG_URL }}/moneyger:${{ steps.extract_sha_short.outputs.sha_short }}
           build-args: |
             COMMIT=${{ steps.extract_sha_short.outputs.sha_short }}
             APP_VERSION=${{ steps.extract_sha_short.outputs.sha_short }}
