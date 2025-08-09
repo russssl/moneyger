@@ -21,4 +21,4 @@ COPY --from=builder /app ./
 
 EXPOSE 4000
 
-CMD bun run migrate && bun start
+CMD bun run db:migrate && bun start
