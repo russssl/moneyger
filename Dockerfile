@@ -18,4 +18,4 @@ COPY --from=builder /app ./
 
 EXPOSE 4000
 
-CMD ["bun", "start"]
+CMD bun run migrate && bun start
