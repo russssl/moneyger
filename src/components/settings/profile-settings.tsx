@@ -11,7 +11,7 @@ import { api } from "@/trpc/react";
 import { updateUser } from "@/hooks/use-session";
 
 export default function ProfileSettings({...props}) {
-  const { data: userSettings } = api.user.getUserSettings.useQuery()
+  const { data: userSettings } = api.user.getUserData.useQuery()
   console.log("userSettings", userSettings);
   const [email, setEmail] = useState(userSettings?.email ?? "");
   const [username, setUsername] = useState(userSettings?.username ?? "");
@@ -33,7 +33,7 @@ export default function ProfileSettings({...props}) {
       setUsername(userSettings.username ?? "");
     }
   }, [userSettings]);
-  const saveUserSettingsMutation = api.user.updateUserSettings.useMutation();
+  const saveUserSettingsMutation = api.user.saveUserData.useMutation();
 
   const saveBasicSettings = async () => {
     saveUserSettingsMutation.mutate({
