@@ -59,7 +59,7 @@ CREATE TABLE "wallet" (
 	"saving_account_goal" double precision DEFAULT 0,
 	"description" varchar(255),
 	"icon_name" varchar(255),
-	"currency" varchar(255),
+	"currency" varchar(255) NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );
@@ -78,15 +78,6 @@ CREATE TABLE "transaction" (
 	"updated_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-<<<<<<<< HEAD:drizzle/0000_normal_mother_askani.sql
-========
-CREATE TABLE "currency_exchange_rate" (
-	"base_currency" varchar(255) PRIMARY KEY NOT NULL,
-	"rates" jsonb NOT NULL,
-	"created_at" date DEFAULT now()
-);
---> statement-breakpoint
->>>>>>>> main:drizzle/0000_polite_young_avengers.sql
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wallet" ADD CONSTRAINT "wallet_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

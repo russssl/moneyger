@@ -3,10 +3,11 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { transactions } from "@/server/db/transaction";
-import { userSettings, type Wallet, wallets } from "@/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { calculateTotalBalance, getCurrentExchangeRate, calculateWalletTrends } from "../services/wallets";
+import { calculateTotalBalance, getCurrentExchangeRate } from "../services/wallets";
+import { type Wallet, wallets } from "@/server/db/wallet";
+import { user } from "@/server/db/user";
 
 export const walletRouter = createTRPCRouter({
   getWallets: protectedProcedure
@@ -154,13 +155,13 @@ export const walletRouter = createTRPCRouter({
         },
       });
 
-      const userMainCurrency = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, ctx.session.user.id),
+      const userMainCurrency = await ctx.db.query.user.findFirst({
+        where: eq(user.id, ctx.session.user.id),
         columns: {
           currency: true,
         },
       });
-      
+
       if (!userMainCurrency?.currency) {
         // settings are not created yet, return empty data
         return {
