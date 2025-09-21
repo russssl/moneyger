@@ -11,7 +11,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import PersistentModals from "@/components/persistent-modals";
-import ServiceWorkerRegistration from "@/components/service-worker-registration";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -51,7 +50,6 @@ export default async function RootLayout({
                   <PersistentModals />
                   {children}
                   <Toaster />
-                  <ServiceWorkerRegistration />
                 </PostHogProvider>
               </SessionWrapper>
             </NextIntlClientProvider>

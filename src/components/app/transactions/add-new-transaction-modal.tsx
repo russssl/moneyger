@@ -140,7 +140,14 @@ export default function AddNewTransactionModal({
     };
 
     const pressedKey = event.key.toLowerCase();
-    if (keyToType[pressedKey]) {
+    // Only trigger if the event target is not an input, textarea, or contenteditable element
+    const target = event.target as HTMLElement;
+    const isInputLike =
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable;
+
+    if (!isInputLike && keyToType[pressedKey]) {
       setTransactionType(keyToType[pressedKey]);
     }
   };

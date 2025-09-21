@@ -1,11 +1,12 @@
 "use client";
-import { useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 import { api } from "@/trpc/react";
 import CurrencySelect from "../currency-select";
+import { LoadingSpinner } from "../ui/loading";
 interface WalletFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +30,7 @@ type WalletFormAction =
   | { type: "SET_WALLET_NAME"; payload: string }
   | { type: "SET_CURRENCY"; payload: string }
   | { type: "SET_BALANCE"; payload: number | null }
+  | { type: "RESET"; payload: WalletFormState };
 
 const initialState: WalletFormState = {
   walletName: "",
@@ -44,6 +46,8 @@ function walletFormReducer(state: WalletFormState, action: WalletFormAction): Wa
     return { ...state, currency: action.payload };
   case "SET_BALANCE":
     return { ...state, balance: action.payload };
+  case "RESET":
+    return { ...action.payload };
   default:
     return state;
   }
@@ -53,21 +57,45 @@ export default function AddNewWalletModal({
   open,
   onOpenChange,
   onSave,
-  isEditing = false,
   id,
-  walletName: initialName = "",
-  currency: initialCurrency = "",
-  initialBalance,
 }: WalletFormModalProps) {
   const createWallet = api.wallets.createWallet.useMutation();
   const updateWallet = api.wallets.updateWallet.useMutation();
 
-  const [state, dispatch] = useReducer(walletFormReducer, {
-    ...initialState,
-    walletName: initialName,
-    currency: initialCurrency,
-    balance: initialBalance ?? null,
-  });
+  // Fetch wallet data if editing (id is present)
+  const { data: walletData, isLoading: isWalletLoading } = api.wallets.getWalletById.useQuery(
+    { id: id ?? null },
+    { enabled: !!id }
+  );
+
+  // Initialize form state, updating when walletData or open changes
+  const [state, dispatch] = useReducer(walletFormReducer, initialState);
+
+  useEffect(() => {
+    if (open) {
+      if (id && walletData) {
+        dispatch({
+          type: "RESET",
+          payload: {
+            walletName: walletData.name ?? "",
+            currency: walletData.currency ?? "",
+            balance: walletData.balance ?? null,
+          },
+        });
+      } else if (!id) {
+        // Reset to initial state when creating a new wallet
+        dispatch({
+          type: "RESET",
+          payload: {
+            walletName: "",
+            currency: "",
+            balance: null,
+          },
+        });
+      }
+    }
+    // Only run when modal is opened, id changes, or walletData changes
+  }, [open, id, walletData]);
 
   const canSave = useMemo(() => {
     const hasValidName = state.walletName.trim().length > 0;
@@ -81,7 +109,7 @@ export default function AddNewWalletModal({
     const payload = {
       name: state.walletName,
       currency: state.currency,
-      ...(isEditing ? {} : { initialBalance: state.balance ?? undefined }),
+      ...(id ? {} : { initialBalance: state.balance ?? undefined }),
     };
 
     try {
@@ -89,8 +117,8 @@ export default function AddNewWalletModal({
         return;
       }
 
-      const result = isEditing
-        ? await updateWallet.mutateAsync({ ...payload, id: id! })
+      const result = id
+        ? await updateWallet.mutateAsync({ ...payload, id })
         : await createWallet.mutateAsync(payload);
 
       onSave(result);
@@ -102,49 +130,51 @@ export default function AddNewWalletModal({
 
   const handleModalClose = () => {
     onOpenChange(false);
-    dispatch({ type: "SET_WALLET_NAME", payload: "" });
-    dispatch({ type: "SET_CURRENCY", payload: "" });
-    dispatch({ type: "SET_BALANCE", payload: null });
-  }
+    // Do not reset state here; let useEffect handle it on open
+  };
 
   return (
     <Modal open={open} onOpenChange={handleModalClose}>
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>{isEditing ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
+          <ModalTitle>{id ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
         </ModalHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Label htmlFor="wallet-name">Wallet Name</Label>
-          <Input
-            id="wallet-name"
-            placeholder="Wallet Name"
-            value={state.walletName}
-            onChange={(e) => dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })}
-            required
-          />
-          <CurrencySelect
-            selectedCurrency={state.currency}
-            setSelectedCurrency={(currency) =>
-              dispatch({ type: "SET_CURRENCY", payload: currency ?? "" })
-            }
-          />
-          {!isEditing && (
-            <>
-              <Label htmlFor="initial-balance">Initial Balance</Label>
-              <Input
-                id="initial-balance"
-                placeholder="Initial Balance"
-                type="number"
-                value={state.balance ?? ""}
-                onChange={(e) => dispatch({ type: "SET_BALANCE", payload: parseFloat(e.target.value) })}
-              />
-            </>
-          )}
+        {isWalletLoading ? 
+          <div className="flex justify-center items-center h-full">
+            <LoadingSpinner />
+          </div>
+          : <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Label htmlFor="wallet-name">Wallet Name</Label>
+            <Input
+              id="wallet-name"
+              placeholder="Wallet Name"
+              value={state.walletName}
+              onChange={(e) => dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })}
+              required
+            />
+            <CurrencySelect
+              selectedCurrency={state.currency}
+              setSelectedCurrency={(currency) =>
+                dispatch({ type: "SET_CURRENCY", payload: currency ?? "" })
+              }
+            />
+            {!id && (
+              <>
+                <Label htmlFor="initial-balance">Initial Balance</Label>
+                <Input
+                  id="initial-balance"
+                  placeholder="Initial Balance"
+                  type="number"
+                  value={state.balance ?? ""}
+                  onChange={(e) => dispatch({ type: "SET_BALANCE", payload: parseFloat(e.target.value) })}
+                />
+              </>
+            )}
 
-          <Button type="submit" disabled={!canSave || createWallet.isPending || updateWallet.isPending}>
-            {isEditing ? "Update" : "Create"}
-          </Button>
-        </form>
+            <Button type="submit" disabled={!canSave || createWallet.isPending || updateWallet.isPending}>
+              {id ? "Update" : "Create"}
+            </Button>
+          </form>}
       </ModalContent>
     </Modal>
   );
