@@ -22,8 +22,10 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().optional(),
     EXCHANGE_RATE_URL: z.string().optional(),
     EXCHANGE_RATE_API_KEY: z.string().optional(),
+    PORT: z.string().default("3000"),
   },
   client: {
+    NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   },
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
@@ -33,6 +35,7 @@ export const env = createEnv({
     POSTGRES_HOST: process.env.POSTGRES_HOST,
     POSTGRES_PORT: process.env.POSTGRES_PORT,
     NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
     REDIS_KV_REST_API_READ_ONLY_TOKEN: process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
     REDIS_KV_REST_API_TOKEN: process.env.REDIS_KV_REST_API_TOKEN,
@@ -44,6 +47,7 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EXCHANGE_RATE_URL: process.env.EXCHANGE_RATE_URL,
     EXCHANGE_RATE_API_KEY: process.env.EXCHANGE_RATE_API_KEY,
+    PORT: process.env.PORT,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

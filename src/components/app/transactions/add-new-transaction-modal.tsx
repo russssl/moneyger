@@ -13,6 +13,7 @@ import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -95,7 +96,7 @@ export default function AddNewTransactionModal({
 
   const currencyQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
   const { data: exchangeRate = 1 } = api.transactions.getCurrentExchangeRate.useQuery(
-    { from: selectedFirstWallet!, to: selectedSecondWallet! },
+    { from: currencyData?.code ?? "", to: toCurrencyCode ?? "" },
     { enabled: currencyQueryEnabled }
   );
 
@@ -127,9 +128,26 @@ export default function AddNewTransactionModal({
     );
   };
 
+  const setTransactionType = (value: TransactionType) => {
+    dispatch({ type: "set", field: "transactionType", value });
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const keyToType: Record<string, TransactionType> = {
+      e: "expense",
+      i: "income",
+      t: "transfer",
+    };
+
+    const pressedKey = event.key.toLowerCase();
+    if (keyToType[pressedKey]) {
+      setTransactionType(keyToType[pressedKey]);
+    }
+  };
+
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent>
+      <ModalContent onKeyDown={handleKeyDown}>
         <ModalHeader>
           <ModalTitle>{t("add_transaction")}</ModalTitle>
           <ModalDescription>{t("transaction_description")}</ModalDescription>
@@ -142,7 +160,7 @@ export default function AddNewTransactionModal({
 
             <TransactionTypeSelect
               value={transactionType}
-              setValue={(value) => dispatch({ type: "set", field: "transactionType", value })}
+              setValue={setTransactionType}
             />
 
             <div className="grid grid-cols-2 gap-4">
@@ -171,18 +189,25 @@ export default function AddNewTransactionModal({
                 <Label>
                   {transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
                 </Label>
-                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tGeneral("select_wallet")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex rounded-lg shadow-xs">
+                  <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}>
+                    <SelectTrigger className={cn("shadow-none", currencyData ? "rounded-e-none" : "rounded")}>
+                      <SelectValue placeholder={tGeneral("select_wallet")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wallets.map((wallet) => (
+                        <SelectItem key={wallet.id} value={wallet.id}>
+                          {wallet.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {currencyData && (
+                    <span className="border-input bg-background text-muted-foreground inline-flex items-center rounded-e-lg border px-3 text-sm">
+                      {currencyData.symbol}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -202,18 +227,25 @@ export default function AddNewTransactionModal({
             {transactionType === "transfer" && (
               <div>
                 <Label>{tGeneral("to_wallet")}</Label>
-                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tGeneral("select_wallet")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {wallets.map((wallet) => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex rounded-lg shadow-xs">
+                  <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}>
+                    <SelectTrigger className={cn("shadow-none", currencyData ? "rounded-e-none" : "rounded")}>
+                      <SelectValue placeholder={tGeneral("select_wallet")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wallets.map((wallet) => (
+                        <SelectItem key={wallet.id} value={wallet.id}>
+                          {wallet.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {toCurrencyCode && (
+                    <span className="border-input bg-background text-muted-foreground inline-flex items-center rounded-e-lg border px-3 text-sm">
+                      {currencies(toCurrencyCode)?.symbol}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 

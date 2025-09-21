@@ -12,6 +12,7 @@ import { updateUser } from "@/hooks/use-session";
 
 export default function ProfileSettings({...props}) {
   const { data: userSettings } = api.user.getUserSettings.useQuery()
+  console.log("userSettings", userSettings);
   const [email, setEmail] = useState(userSettings?.email ?? "");
   const [username, setUsername] = useState(userSettings?.username ?? "");
   const [language, setLanguage] = useState<string | undefined>("en");

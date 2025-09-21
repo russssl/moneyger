@@ -4,7 +4,6 @@ import db from "@/server/db";
 import { sendResetPasswordEmail } from "@/server/api/services/emails";
 import { env } from "@/env";
 import { haveIBeenPwned, username } from "better-auth/plugins"
-import { userSettings } from "@/server/db/userSettings";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -18,17 +17,6 @@ export const auth = betterAuth({
       return true;
     }
   })],
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          await db.insert(userSettings).values({
-            userId: user.id,
-          });
-        },
-      },
-    },
-  },
   account: {
     accountLinking: {
       enabled: true,

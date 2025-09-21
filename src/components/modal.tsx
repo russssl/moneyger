@@ -32,6 +32,7 @@ interface BaseProps {
 interface RootModalProps extends BaseProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void
 }
 
 interface ModalSectionProps extends BaseProps {
@@ -39,11 +40,14 @@ interface ModalSectionProps extends BaseProps {
   asChild?: true
 }
 
-const Modal = ({ children, ...props }: RootModalProps) => {
+const Modal = ({ children, open, onOpenChange, ...props }: RootModalProps) => {
   const isDesktop = !useIsMobile()
   const ModalComponent = isDesktop ? Dialog : Drawer
-
-  return <ModalComponent {...props}>{children}</ModalComponent>
+  return (
+    <ModalComponent open={open} onOpenChange={onOpenChange} {...props}>
+      {children}
+    </ModalComponent>
+  )
 }
 
 const ModalTrigger = ({ className, children, ...props }: ModalSectionProps) => {
@@ -68,14 +72,16 @@ const ModalClose = ({ className, children, ...props }: ModalSectionProps & { dis
   )
 }
 
-const ModalContent = ({ className, children, ...props }: ModalSectionProps) => {
+const ModalContent = ({ className, children, onKeyDown, ...props }: ModalSectionProps & { onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void }) => {
   const isDesktop = !useIsMobile()
   const ModalContentComponent = isDesktop ? DialogContent : DrawerContent
 
   return (
-    <ModalContentComponent className={className} {...props}>
-      {children}
-    </ModalContentComponent>
+    <div onKeyDown={onKeyDown} className="absolute inset-0 pointer-events-none">
+      <ModalContentComponent className={className} {...props}>
+        {children}
+      </ModalContentComponent>
+    </div>
   )
 }
 

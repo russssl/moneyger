@@ -29,6 +29,7 @@ const buttonVariants = cva(
           "bg-gray-100 text-light-foreground shadow hover:bg-light/90",
         black:
           "bg-black text-white shadow hover:bg-black/90",
+        darkBlue: "bg-blue-800 text-white shadow hover:bg-blue-500/90",
       },
       size: {
         default: "h-9 px-4 py-2",

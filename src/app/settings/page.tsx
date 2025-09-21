@@ -1,6 +1,7 @@
 import type React from "react"
 import SettingsSelect from "@/components/settings/settings-select"
 import ProfileSettings from "@/components/settings/profile-settings"
+import ErrorBoundary from "@/components/error-boundary"
 import PasswordSettings from "@/components/settings/password-settings"
 import AccountSettings from "@/components/settings/account-settings"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
@@ -28,7 +29,7 @@ export default async function SettingsPage(
       <SettingsSelect className="mt-4 px-4"/>
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
-          <ProfileSettings />
+          <ErrorBoundary><ProfileSettings /></ErrorBoundary>
           <PasswordSettings />
           <ConnectedAccountSettings/>
           <AccountSettings/>
