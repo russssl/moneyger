@@ -7,18 +7,13 @@ import { Label } from "../ui/label";
 import { api } from "@/trpc/react";
 import CurrencySelect from "../currency-select";
 import { LoadingSpinner } from "../ui/loading";
+import DeleteButton from "../ui/delete-button";
 
 interface WalletFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (wallet: any) => void;
-  isEditing?: boolean;
   id?: string;
-  walletName?: string;
-  currency?: string;
-  initialBalance?: number;
-  isSavingAccount?: boolean;
-  savingAccountGoal?: number;
 }
 
 type WalletFormState = {
@@ -110,7 +105,7 @@ export default function AddNewWalletModal({
     const payload = {
       name: state.walletName,
       currency: state.currency,
-      ...(id ? {} : { initialBalance: state.balance ?? undefined }),
+      ...(id ? {} : { balance: state.balance ?? undefined }),
     };
 
     try {
@@ -172,9 +167,31 @@ export default function AddNewWalletModal({
               </>
             )}
 
-            <Button type="submit" disabled={!canSave || createWallet.isPending || updateWallet.isPending}>
-              {id ? "Update" : "Create"}
-            </Button>
+            {id ? (
+              <div className="flex flex-col md:flex-row gap-3 sm:flex-row sm:items-center sm:justify-between mt-2 mb-2">
+                <Button
+                  type="submit"
+                  disabled={!canSave || createWallet.isPending || updateWallet.isPending}
+                  className="w-full md:w-28 order-1 md:order-2"
+                >
+                  Update
+                </Button>
+                {/* FIXME: fix delete button behavior  */}
+                <DeleteButton
+                  onCompleted={() => console.log("finished")}
+                  holdDuration={1000}
+                  className="w-full sm:w-28 order-2 md:order-1"
+                />
+              </div>
+            ) : (
+              <Button
+                type="submit"
+                disabled={!canSave || createWallet.isPending || updateWallet.isPending}
+                className="w-full sm:w-28 self-end"
+              >
+                Create
+              </Button>
+            )}
           </form>}
       </ModalContent>
     </Modal>
