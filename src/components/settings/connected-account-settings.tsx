@@ -8,6 +8,7 @@ import { getTranslations } from "next-intl/server";
 export default async function ConnectedAccountSettings({...props}) {
   const t = await getTranslations("settings");
   const userAccounts = await api.user.getUserAccounts();
+  console.log("userAccounts", userAccounts);
   return (
     <Card {...props} className="sm:max-w-md">
       <CardHeader>

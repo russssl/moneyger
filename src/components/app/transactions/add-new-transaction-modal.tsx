@@ -128,9 +128,33 @@ export default function AddNewTransactionModal({
     );
   };
 
+  const setTransactionType = (value: TransactionType) => {
+    dispatch({ type: "set", field: "transactionType", value });
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const keyToType: Record<string, TransactionType> = {
+      e: "expense",
+      i: "income",
+      t: "transfer",
+    };
+
+    const pressedKey = event.key.toLowerCase();
+    // Only trigger if the event target is not an input, textarea, or contenteditable element
+    const target = event.target as HTMLElement;
+    const isInputLike =
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable;
+
+    if (!isInputLike && keyToType[pressedKey]) {
+      setTransactionType(keyToType[pressedKey]);
+    }
+  };
+
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
-      <ModalContent>
+      <ModalContent onKeyDown={handleKeyDown}>
         <ModalHeader>
           <ModalTitle>{t("add_transaction")}</ModalTitle>
           <ModalDescription>{t("transaction_description")}</ModalDescription>
@@ -143,7 +167,7 @@ export default function AddNewTransactionModal({
 
             <TransactionTypeSelect
               value={transactionType}
-              setValue={(value) => dispatch({ type: "set", field: "transactionType", value })}
+              setValue={setTransactionType}
             />
 
             <div className="grid grid-cols-2 gap-4">

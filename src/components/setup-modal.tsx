@@ -15,49 +15,43 @@ import CurrencySelect from "./currency-select";
 import LoadingButton from "./loading-button";
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "./error-alert";
-import { type UserAdditionalData } from "@/server/api/routers/user";
+
 export default function SetupModal() {
   const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-
-  const { data: userAdditionalData } = api.user.getUserAdditionalData.useQuery<UserAdditionalData>();
-  const createUserSettingsMutation = api.user.createUserSettings.useMutation();
+  const saveDataMutation = api.user.saveUserData.useMutation();
+  const { data: userData } = api.user.getUserData.useQuery();
 
   const t = useTranslations("setup-modal");
   const serviceTranslations = useTranslations("service");
 
   useEffect(() => {
-    if (userAdditionalData) {
-      if (userAdditionalData.currency !== undefined) {
-        setCurrency(userAdditionalData.currency);
-      }
-      setOpen(userAdditionalData.currency === undefined);
+    if (userData) {
+      setCurrency(userData.currency ?? undefined);
+      setOpen(!userData.currency);
     }
-  }, [userAdditionalData]);
+  }, [userData]);
 
   function saveSettings() {
     if (!currency) return;
 
-    createUserSettingsMutation.mutate(
-      { currency },
-      {
-        onSuccess: () => {
-          setOpen(false);
-        },
-        onError: (error) => {
-          setError(error.message);
-          console.error("Error saving user settings:", error);
-        },
-      }
-    );
+    saveDataMutation.mutate({
+      currency,
+    }, {
+      onError: (error) => {
+        setError(error.message || "Failed to save settings");
+        console.error(error);
+        setOpen(true);
+      },
+    });
 
   }
 
   return (
     <>
       {open && (
-        <Modal open>
+        <Modal open={true}>
           <ModalContent>
             <ModalHeader>
               <ModalTitle>{t("title")}</ModalTitle>
@@ -79,8 +73,8 @@ export default function SetupModal() {
                 <div className="flex flex-col justify-end w-full space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
                   <LoadingButton
                     variant="success"
-                    loading={createUserSettingsMutation.isPending}
-                    disabled={createUserSettingsMutation.isPending || !currency}
+                    loading={saveDataMutation.isPending}
+                    disabled={saveDataMutation.isPending || !currency}
                     onClick={saveSettings}
                   >
                     {serviceTranslations("save")}

@@ -5,7 +5,6 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { account, type SelectAccount, user as users} from "@/server/db/user";
-import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
 import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
@@ -27,90 +26,6 @@ export const userRouter = createTRPCRouter({
       return user ?? null;
     }),
 
-  createUserSettings: protectedProcedure
-    .input(z.object({
-      currency: z.string(),
-    }))
-    .mutation(async ({ ctx, input }): Promise<SelectUserSettings | null> => {
-      const user = ctx.session.user;
-      const userId = user.id;
-      
-      const res =  await ctx.db.transaction(async (tx) => {
-        const existingSettings = await tx.query.userSettings.findFirst({
-          where: eq(userSettings.userId, userId),
-        });
-        
-        if (existingSettings) {
-          return existingSettings;
-        }
-
-        const result = await tx.insert(userSettings).values({
-          userId,
-          currency: input.currency,
-        }).returning().execute().then((res) => res[0]);
-
-        if (!result) {
-          throw new Error("User settings not created");
-        }
-        
-        return result;
-      });
-      return res;
-    }),
-  
-  getUserSettings: protectedProcedure
-    .query(async ({ ctx }) => {
-      const user = ctx.session.user;
-      const userId = user.id;
-      const userSettingsData = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, userId),
-      });
-
-      const userData = await ctx.db.query.user.findFirst({
-        where: eq(users.id, userId),
-      });
-
-      if (!userSettingsData || !userData) {
-        return null;
-      }
-      return { ...userSettingsData, email: userData.email, username: userData.displayUsername };
-    }),
-
-
-  updateUserSettings: protectedProcedure.input(z.object({
-    currency: z.string().optional(),
-    email: z.string().optional(),
-  }))
-    .mutation(async ({ ctx, input }) => {
-      const user = ctx.session.user;
-      const userId = user.id;
-
-      const us = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, userId),
-      });
-      if (!us) {
-        throw new Error("User settings not found");
-      }
-
-      if (input.currency) {
-        await ctx.db.update(userSettings).set({
-          currency: input.currency ,
-        }).where(eq(userSettings.userId, userId)).execute();
-      }
-
-      if (input.email) {
-        await ctx.db.update(users).set({
-          email: input.email,
-        }).where(eq(users.id, userId)).execute();
-      }
-
-      const updatedUserSettings = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, userId),
-      });
-
-      return updatedUserSettings ?? null;
-    }),
-  
   updatePassword: protectedProcedure
     .input(z.object({
       oldPassword: z.string(),
@@ -188,16 +103,28 @@ export const userRouter = createTRPCRouter({
       await ctx.db.delete(account).where(eq(account.id, accountToRemove.id)).execute();
     }),
 
-  getUserAdditionalData: protectedProcedure
-    .query(async ({ ctx }): Promise<UserAdditionalData> => {
+  getUserData: protectedProcedure
+    .query(async ({ ctx }) => {
       const user = ctx.session.user;
       const userId = user.id;
 
-      const userSettingsData = await ctx.db.query.userSettings.findFirst({
-        where: eq(userSettings.userId, userId),
+      const userData = await ctx.db.query.user.findFirst({
+        where: eq(users.id, userId),
       });
 
-      const currency = userSettingsData?.currency ?? undefined;
-      return { currency: currency === null ? undefined : currency };
+      return userData;
+    }),
+
+  saveUserData: protectedProcedure
+    .input(z.object({
+      currency: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const user = ctx.session.user;
+      const userId = user.id;
+      console.log("input", input);
+      await ctx.db.update(users).set({
+        currency: input.currency,
+      }).where(eq(users.id, userId)).returning().execute().then((res) => res[0]);
     }),
 });

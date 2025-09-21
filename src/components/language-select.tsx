@@ -23,7 +23,7 @@ export function LanguageSelect({language, setLanguage}: LanguageSelectProps) {
   return (
     <>
       <Label>{t("language")}</Label>
-      <Select onValueChange={setLanguage} value={language ?? undefined}>
+      <Select onValueChange={setLanguage} value={language ?? ""}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={t("select_language")} />
         </SelectTrigger>

@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  app:
+    image: registry.moneyger.dev/moneyger-blog-api:latest
+    environment:
+      # Database configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      
+      # Authentication
+      AUTH_SECRET: ${AUTH_SECRET}
+      
+      # Redis configuration
+      REDIS_KV_URL: ${REDIS_URL}
+      
+      # OAuth providers (optional)
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # Email service
+      # RESEND_API_KEY: ${RESEND_API_KEY} // for now we are ignoring this
+      
+      # Exchange rates (optional)
+      EXCHANGE_RATE_URL: ${EXCHANGE_RATE_URL}
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
+      
+      # Environment
+      NODE_ENV: production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneyger.rule=Host(`moneyger.dev`)"
+      - "traefik.http.routers.moneyger.entrypoints=web,websecure"
+      - "traefik.http.routers.moneyger.tls=true"
+      - "traefik.http.routers.moneyger.tls.certresolver=myresolver"
+      - "traefik.http.services.moneyger.loadbalancer.server.scheme=http"
+      - "traefik.http.services.moneyger.loadbalancer.server.port=4000"
+      - "traefik.http.middlewares.moneyger-retry.retry.attempts=3"
+      - "traefik.http.middlewares.moneyger-retry.retry.initialinterval=100ms"
+      - "traefik.http.routers.moneyger.middlewares=moneyger-retry"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.moneyger.middlewares=rate-limit"
+      - "traefik.http.middlewares.rate-limit.ratelimit.average=300"
+      - "traefik.http.middlewares.rate-limit.ratelimit.burst=500"
+      - "traefik.http.middlewares.rate-limit.ratelimit.period=1m"
+    networks:
+      - traefik
+      - moneyger
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - moneyger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  traefik:
+    external: true
+  moneyger:
+    external: true 

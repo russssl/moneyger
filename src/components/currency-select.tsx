@@ -12,12 +12,14 @@ export default function CurrencySelect({ selectedCurrency, setSelectedCurrency }
   const currencyOptions = currencies();
   const t = useTranslations("currency-select");
 
+  const value = selectedCurrency ?? "";
+
   return (
     <>
       <Label>{t("currency")}</Label>
       <Select
         onValueChange={(value) => setSelectedCurrency(value)}
-        value={selectedCurrency ?? undefined}
+        value={value}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder={t("select_currency")} />

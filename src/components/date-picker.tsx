@@ -11,6 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useState } from "react"
+import { DateTime } from "luxon"
 
 interface DatePickerProps {
   value?: Date;
@@ -22,6 +23,19 @@ interface DatePickerProps {
 
 export default function DatePicker({ value, onChange, closeOnSelect = true, placeholder }: DatePickerProps) {
   const [open, setOpen] = useState<boolean>(false)
+
+  /**
+   * Checks if the given date matches the preset type.
+   * @param date The date to check.
+   * @param preset "today" | "yesterday" | "tomorrow"
+   */
+  const isPresetSelected = (date: Date | undefined, preset: "today" | "yesterday" | "tomorrow") => {
+    if (!date) return false;
+    const target = DateTime.now().plus({
+      days: preset === "tomorrow" ? 1 : preset === "yesterday" ? -1 : 0,
+    });
+    return DateTime.fromJSDate(date).toFormat("yyyy-MM-dd") === target.toFormat("yyyy-MM-dd");
+  };
 
   return (
     <div className="flex flex-col space-y-1">
@@ -43,6 +57,51 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
+          <div className="pb-3 pt-2 px-2 flex flex-wrap gap-2">
+            <div className="flex flex-row gap-2">
+              <Button
+                variant={ isPresetSelected(value, "today") ? "default" : "secondary" }
+                size="sm"
+                disabled={ value ? isPresetSelected(value, "today") : false }
+                className="rounded-full px-3"
+                onClick={() => {
+                  onChange?.(new Date());
+                  if (closeOnSelect) setOpen(false);
+                }}
+              >
+                Today
+              </Button>
+              <Button
+                variant={ isPresetSelected(value, "yesterday") ? "default" : "secondary"}
+                size="sm"
+                disabled={
+                  value ? isPresetSelected(value, "yesterday") : false }
+                className="rounded-full px-3"
+                onClick={() => {
+                  const yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  onChange?.(yesterday);
+                  if (closeOnSelect) setOpen(false);
+                }}
+              >
+                Yesterday
+              </Button>
+              <Button
+                variant={ isPresetSelected(value, "tomorrow") ? "default" : "secondary"}
+                size="sm"
+                disabled={ value ? isPresetSelected(value, "tomorrow") : false }
+                className="rounded-full px-3"
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  onChange?.(tomorrow);
+                  if (closeOnSelect) setOpen(false);
+                }}
+              >
+                Tomorrow
+              </Button>
+            </div>
+          </div>
           <Calendar
             mode="single"
             selected={value}

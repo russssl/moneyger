@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/route.ts",
-      "schedule": "5 0 * * *"
-    }
-  ]
-}
