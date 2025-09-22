@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
 import AddNewWalletModal from "./add-wallet-modal";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 export default function DashboardWallets({ wallets, walletItemPadding, iconSize, textSizes }: { wallets: Wallet[], walletItemPadding: string, iconSize: string, textSizes: {
   walletName: string;
   walletCurrency: string;
@@ -10,7 +11,7 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
 } }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-
+  const router = useRouter();
   const saveWallets = (wallet: Wallet) => {
     setSelectedId(wallet.id);
     setIsModalOpen(true);
@@ -21,6 +22,9 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
     setIsModalOpen(true);
   };
 
+  const handleDeleteWallet = () => {
+    router.refresh();
+  }
   return (
     <>
       <div>
@@ -87,7 +91,7 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
           </div>
         ))}
       </div>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={(wallet: Wallet) => saveWallets(wallet)} id={selectedId}/>
+      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={(wallet: Wallet) => saveWallets(wallet)} id={selectedId} onDelete={handleDeleteWallet} />
     </>
   );
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ interface WalletFormModalProps {
   onOpenChange: (open: boolean) => void;
   onSave: (wallet: any) => void;
   id?: string;
+  onDelete: () => void;
 }
 
 type WalletFormState = {
@@ -53,19 +54,20 @@ export default function AddNewWalletModal({
   open,
   onOpenChange,
   onSave,
+  onDelete,
   id,
 }: WalletFormModalProps) {
   const createWallet = api.wallets.createWallet.useMutation();
   const updateWallet = api.wallets.updateWallet.useMutation();
+  const deleteWallet = api.wallets.deleteWallet.useMutation();
 
-  // Fetch wallet data if editing (id is present)
-  const { data: walletData, isLoading: isWalletLoading } = api.wallets.getWalletById.useQuery(
+  const { data: walletData } = api.wallets.getWalletById.useQuery(
     { id: id ?? null },
     { enabled: !!id }
   );
-
   // Initialize form state, updating when walletData or open changes
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -78,6 +80,10 @@ export default function AddNewWalletModal({
             balance: walletData.balance ?? null,
           },
         });
+        setIsInitialized(true);
+      } else if (id && !walletData) {
+        // edit mode but data not yet loaded
+        setIsInitialized(false);
       } else if (!id) {
         // Reset to initial state when creating a new wallet
         dispatch({
@@ -88,6 +94,7 @@ export default function AddNewWalletModal({
             balance: null,
           },
         });
+        setIsInitialized(true);
       }
     }
     // Only run when modal is opened, id changes, or walletData changes
@@ -98,6 +105,12 @@ export default function AddNewWalletModal({
     const hasValidCurrency = state.currency.length > 0;
     return hasValidName && hasValidCurrency;
   }, [state.walletName, state.currency]);
+
+  const handleDeleteWallet = async (id: string) => {
+    await deleteWallet.mutateAsync({ id });
+    onDelete();
+    onOpenChange(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +148,7 @@ export default function AddNewWalletModal({
         <ModalHeader>
           <ModalTitle>{id ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
         </ModalHeader>
-        {isWalletLoading ? 
+        {!isInitialized ? 
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
@@ -176,11 +189,8 @@ export default function AddNewWalletModal({
                 >
                   Update
                 </Button>
-                {/* FIXME: fix delete button behavior  */}
                 <DeleteButton
-                  onCompleted={() => console.log("finished")}
-                  holdDuration={1000}
-                  className="w-full sm:w-28 order-2 md:order-1"
+                  onClick={() => handleDeleteWallet(id)}
                 />
               </div>
             ) : (
