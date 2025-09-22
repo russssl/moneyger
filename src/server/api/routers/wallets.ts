@@ -3,9 +3,11 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { transactions } from "@/server/db/transaction";
-import { type Wallet, wallets } from "@/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { calculateTotalBalance, getCurrentExchangeRate } from "../services/wallets";
+import { type Wallet, wallets } from "@/server/db/wallet";
+import { user } from "@/server/db/user";
 
 export const walletRouter = createTRPCRouter({
   getWallets: protectedProcedure
@@ -40,32 +42,53 @@ export const walletRouter = createTRPCRouter({
       return res_wallet;
     }),
   
+  getExchangeRate: protectedProcedure
+    .input(z.object({
+      from: z.string(),
+      to: z.string(),
+    }))
+    .query(async ({ input }) => {
+      return await getCurrentExchangeRate(input.from, input.to);
+    }),
+
   createWallet: protectedProcedure
     .input(z.object({
       name: z.string(),
       currency: z.string(),
+      isSavingAccount: z.boolean().optional(),
+      savingAccountGoal: z.number().optional(),
       initialBalance: z.number().optional(),
     }))
     .mutation(async ({ ctx, input }): Promise<Wallet> => {
-      const res_wallet = await ctx.db.insert(wallets).values({
-        userId: ctx.session.user.id,
-        name: input.name,
-        currency: input.currency,
-        balance: input.initialBalance ?? 0,
-      }).returning().execute().then((res) => res[0]);
-
-      if (!res_wallet) {
-        throw new Error("Wallet not found");
-      }
-
-      if (input.initialBalance) {
-        await ctx.db.insert(transactions).values({
-          walletId: res_wallet.id,
-          amount: input.initialBalance,
-          type: "adjustment",
+      const res_wallet = await ctx.db.transaction(async (tx) => {
+        const wallet = await tx.insert(wallets).values({
           userId: ctx.session.user.id,
-        }).execute();
-      }
+          name: input.name,
+          currency: input.currency,
+          isSavingAccount: input.isSavingAccount ?? false,
+          balance: input.initialBalance ?? 0,
+          savingAccountGoal: input.savingAccountGoal ?? 0,
+        }).returning().execute().then((res) => res[0]);
+
+        if (!wallet) {
+          throw new Error("Failed to create wallet");
+        }
+
+        if (input.initialBalance && input.initialBalance !== 0) {
+          await tx.insert(transactions).values({
+            userId: ctx.session.user.id,
+            walletId: wallet.id,
+            amount: input.initialBalance,
+            type: "adjustment",
+            transaction_date: new Date(),
+            description: "Initial balance",
+            category: "Initial Balance",
+          }).execute();
+        }
+
+        return wallet;
+      });
+
       return res_wallet;
     }),
 
@@ -116,5 +139,49 @@ export const walletRouter = createTRPCRouter({
         return wallet;
       });
       return res_wallet;
+    }),
+  getFullData: protectedProcedure
+    .query(async ({ ctx }): Promise<{ 
+      totalBalance: number, 
+      wallets: Wallet[], 
+      userMainCurrency: string,
+      // totalTrend: number,
+      // walletTrends: Record<string, number>
+    }> => {
+      const res_wallets = await ctx.db.query.wallets.findMany({
+        where: eq(wallets.userId, ctx.session.user.id),
+        with: {
+          transactions: true,
+        },
+      });
+
+      const userMainCurrency = await ctx.db.query.user.findFirst({
+        where: eq(user.id, ctx.session.user.id),
+        columns: {
+          currency: true,
+        },
+      });
+
+      if (!userMainCurrency?.currency) {
+        // settings are not created yet, return empty data
+        return {
+          totalBalance: 0,
+          wallets: [],
+          userMainCurrency: "",
+          // totalTrend: 0,
+          // walletTrends: {},
+        }
+      }
+
+      const totalBalance = await calculateTotalBalance(ctx.session.user.id, userMainCurrency.currency, ctx);
+      // const { totalTrend, walletTrends } = await calculateWalletTrends(ctx.session.user.id, userMainCurrency.currency, ctx);
+
+      return {
+        totalBalance: totalBalance.totalBalance,
+        wallets: res_wallets,
+        userMainCurrency: userMainCurrency.currency,
+        // totalTrend,
+        // walletTrends
+      }
     }),
 });

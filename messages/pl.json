@@ -1,6 +1,16 @@
 {
   "HomePage": {
-    "welcome_message": "Witaj, {name}!"
+    "good_morning": "Dzień dobry, {name}!",
+    "good_afternoon": "Dobry wieczór, {name}!",
+    "good_evening": "Dobry wieczór, {name}!"
+  },
+  "breadcrumbs": {
+    "home": "Strona główna",
+    "dashboard": "Dashboard",
+    "transactions": "Transakcje",
+    "wallets": "Portfele",
+    "categories": "Kategorie",
+    "settings": "Ustawienia"
   },
   "service": {
     "save": "Zapisz",
@@ -103,7 +113,8 @@
     "add_transaction": "Dodaj nową transakcję",
     "transaction_description": "Tutaj możesz dodać nową transakcję",
     "no_wallet_warning": "Nie masz jeszcze żadnych portfeli. Dodaj nowy portfel, aby móc dodawać transakcje.",
-    "same_wallet_warning": "Nie możesz przelać pieniędzy na ten sam portfel. Wybierz inny portfel docelowy."
+    "same_wallet_warning": "Nie możesz przelać pieniędzy na ten sam portfel. Wybierz inny portfel docelowy.",
+    "you_will_receive": "Otrzymasz"
   },
   "categories": {
     "categories": "Kategorie",

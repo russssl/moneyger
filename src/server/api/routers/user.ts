@@ -8,6 +8,11 @@ import { account, type SelectAccount, user as users} from "@/server/db/user";
 import { and, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
+export type UserAdditionalData = {
+  currency: string | undefined;
+  language?: string;
+}
+
 export const userRouter = createTRPCRouter({
 
   getUserByEmail: publicProcedure.input(z.object({
@@ -112,14 +117,21 @@ export const userRouter = createTRPCRouter({
 
   saveUserData: protectedProcedure
     .input(z.object({
-      currency: z.string(),
+      currency: z.string().optional(),
+      email: z.string().email().optional(),
+      username: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const user = ctx.session.user;
       const userId = user.id;
       console.log("input", input);
+      const userData = await ctx.db.query.user.findFirst({
+        where: eq(users.id, userId),
+      });
       await ctx.db.update(users).set({
-        currency: input.currency,
+        currency: input.currency ?? userData?.currency,
+        email: input.email ?? userData?.email,
+        username: input.username,
       }).where(eq(users.id, userId)).returning().execute().then((res) => res[0]);
     }),
 });

@@ -212,13 +212,4 @@ export const transactionsRouter = createTRPCRouter({
         await tx.delete(transactions).where(eq(transactions.id, input.id));
       });
     }),
-
-  getCurrentExchangeRate: protectedProcedure
-    .input(z.object({
-      from: z.string(),
-      to: z.string(),
-    }))
-    .query(async ({ ctx, input }): Promise<number> => {
-      return await getCurrentExchangeRate(input.from, input.to, ctx);
-    }),
 });

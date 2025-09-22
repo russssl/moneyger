@@ -95,8 +95,8 @@ export default function AddNewTransactionModal({
   const toCurrencyCode = secondWallet?.currency;
 
   const currencyQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
-  const { data: exchangeRate = 1 } = api.transactions.getCurrentExchangeRate.useQuery(
-    { from: currencyData?.code ?? "", to: toCurrencyCode ?? "" },
+  const { data: exchangeRate = 1 } = api.wallets.getExchangeRate.useQuery(
+    { from: firstWallet?.currency ?? "", to: secondWallet?.currency ?? "" },
     { enabled: currencyQueryEnabled }
   );
 

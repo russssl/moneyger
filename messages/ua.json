@@ -1,6 +1,16 @@
 {
   "HomePage": {
-    "welcome_message": "Привіт, {name}!"
+    "good_morning": "Доброго ранку, {name}!",
+    "good_afternoon": "Доброго дня, {name}!",
+    "good_evening": "Доброго вечора, {name}!"
+  },
+  "breadcrumbs": {
+    "home": "Головна",
+    "dashboard": "Dashboard",
+    "transactions": "Транзакції",
+    "wallets": "Гаманці",
+    "categories": "Категорії",
+    "settings": "Налаштування"
   },
   "service": {
     "save": "Зберегти",
@@ -103,7 +113,8 @@
     "add_transaction": "Додати транзакцію",
     "transaction_description": "Додати нову транзакцію",
     "no_wallet_warning": "Немає гаманця для вибору. Спочатку створіть гаманець.",
-    "same_wallet_warning": "Ви не можете переказати гроші на той самий гаманець"
+    "same_wallet_warning": "Ви не можете переказати гроші на той самий гаманець",
+    "you_will_receive": "Ви отримаєте"
   },
   "categories": {
     "categories": "Категорії",

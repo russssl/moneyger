@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useReducer } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,17 +7,14 @@ import { Label } from "../ui/label";
 import { api } from "@/trpc/react";
 import CurrencySelect from "../currency-select";
 import { LoadingSpinner } from "../ui/loading";
+import DeleteButton from "../ui/delete-button";
+
 interface WalletFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (wallet: any) => void;
-  isEditing?: boolean;
   id?: string;
-  walletName?: string;
-  currency?: string;
-  initialBalance?: number;
-  isSavingAccount?: boolean;
-  savingAccountGoal?: number;
+  onDelete: () => void;
 }
 
 type WalletFormState = {
@@ -57,19 +54,20 @@ export default function AddNewWalletModal({
   open,
   onOpenChange,
   onSave,
+  onDelete,
   id,
 }: WalletFormModalProps) {
   const createWallet = api.wallets.createWallet.useMutation();
   const updateWallet = api.wallets.updateWallet.useMutation();
+  const deleteWallet = api.wallets.deleteWallet.useMutation();
 
-  // Fetch wallet data if editing (id is present)
-  const { data: walletData, isLoading: isWalletLoading } = api.wallets.getWalletById.useQuery(
+  const { data: walletData } = api.wallets.getWalletById.useQuery(
     { id: id ?? null },
     { enabled: !!id }
   );
-
   // Initialize form state, updating when walletData or open changes
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -82,6 +80,10 @@ export default function AddNewWalletModal({
             balance: walletData.balance ?? null,
           },
         });
+        setIsInitialized(true);
+      } else if (id && !walletData) {
+        // edit mode but data not yet loaded
+        setIsInitialized(false);
       } else if (!id) {
         // Reset to initial state when creating a new wallet
         dispatch({
@@ -92,6 +94,7 @@ export default function AddNewWalletModal({
             balance: null,
           },
         });
+        setIsInitialized(true);
       }
     }
     // Only run when modal is opened, id changes, or walletData changes
@@ -103,13 +106,19 @@ export default function AddNewWalletModal({
     return hasValidName && hasValidCurrency;
   }, [state.walletName, state.currency]);
 
+  const handleDeleteWallet = async (id: string) => {
+    await deleteWallet.mutateAsync({ id });
+    onDelete();
+    onOpenChange(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload = {
       name: state.walletName,
       currency: state.currency,
-      ...(id ? {} : { initialBalance: state.balance ?? undefined }),
+      ...(id ? {} : { balance: state.balance ?? undefined }),
     };
 
     try {
@@ -139,7 +148,7 @@ export default function AddNewWalletModal({
         <ModalHeader>
           <ModalTitle>{id ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
         </ModalHeader>
-        {isWalletLoading ? 
+        {!isInitialized ? 
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
@@ -171,9 +180,28 @@ export default function AddNewWalletModal({
               </>
             )}
 
-            <Button type="submit" disabled={!canSave || createWallet.isPending || updateWallet.isPending}>
-              {id ? "Update" : "Create"}
-            </Button>
+            {id ? (
+              <div className="flex flex-col md:flex-row gap-3 sm:flex-row sm:items-center sm:justify-between mt-2 mb-2">
+                <Button
+                  type="submit"
+                  disabled={!canSave || createWallet.isPending || updateWallet.isPending}
+                  className="w-full md:w-28 order-1 md:order-2"
+                >
+                  Update
+                </Button>
+                <DeleteButton
+                  onClick={() => handleDeleteWallet(id)}
+                />
+              </div>
+            ) : (
+              <Button
+                type="submit"
+                disabled={!canSave || createWallet.isPending || updateWallet.isPending}
+                className="w-full sm:w-28 self-end"
+              >
+                Create
+              </Button>
+            )}
           </form>}
       </ModalContent>
     </Modal>

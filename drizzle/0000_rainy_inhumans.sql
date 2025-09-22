@@ -55,9 +55,11 @@ CREATE TABLE "wallet" (
 	"user_id" varchar(255) NOT NULL,
 	"name" varchar(255),
 	"balance" double precision DEFAULT 0 NOT NULL,
+	"is_saving_account" boolean DEFAULT false,
+	"saving_account_goal" double precision DEFAULT 0,
 	"description" varchar(255),
 	"icon_name" varchar(255),
-	"currency" varchar(255),
+	"currency" varchar(255) NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
 );
@@ -74,12 +76,6 @@ CREATE TABLE "transaction" (
 	"type" varchar(255),
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now()
-);
---> statement-breakpoint
-CREATE TABLE "currency_exchange_rate" (
-	"base_currency" varchar(255) PRIMARY KEY NOT NULL,
-	"rates" jsonb NOT NULL,
-	"created_at" date DEFAULT now()
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

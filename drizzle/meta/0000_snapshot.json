@@ -1,5 +1,5 @@
 {
-  "id": "40b7c022-ebf2-426a-b2b1-010102e73ed6",
+  "id": "e03f976e-9a0a-48bd-8cee-06472160b876",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -358,6 +358,20 @@
           "notNull": true,
           "default": 0
         },
+        "is_saving_account": {
+          "name": "is_saving_account",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "saving_account_goal": {
+          "name": "saving_account_goal",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
         "description": {
           "name": "description",
           "type": "varchar(255)",
@@ -374,7 +388,7 @@
           "name": "currency",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -515,38 +529,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.currency_exchange_rate": {
-      "name": "currency_exchange_rate",
-      "schema": "",
-      "columns": {
-        "base_currency": {
-          "name": "base_currency",
-          "type": "varchar(255)",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "rates": {
-          "name": "rates",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
