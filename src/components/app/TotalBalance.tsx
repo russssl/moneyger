@@ -1,4 +1,3 @@
-import { api } from "@/trpc/server";
 import { Card, CardTitle, CardHeader, CardContent } from "../ui/card";
 import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,7 +16,8 @@ const TEXT_SIZES = {
 } as const;
 
 export default async function TotalBalance() {
-  const res = await api.wallets.getFullData();
+  // const res = await api.wallets.getFullData();
+  const res = [] as any;
   return (
     <div>
       <Card className={cn(
@@ -40,7 +40,7 @@ export default async function TotalBalance() {
           CARD_PADDING
         )}>
           <div className="space-y-4">
-            {res.wallets.length > 0 && <div className="flex items-baseline justify-between">
+            {res.wallets?.length > 0 && <div className="flex items-baseline justify-between">
               <div className="flex flex-col gap-0.5">
                 <div className={cn(
                   TEXT_SIZES.total,
@@ -57,7 +57,7 @@ export default async function TotalBalance() {
               </div>
             </div>}
             <div className="space-y-1.5">
-              {res.wallets.length === 0 ? (
+              {res.wallets?.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 rounded-lg bg-muted/40 border border-dashed border-border/50 p-3">
                   <div className="mb-3 flex items-center justify-center w-16 h-16 rounded-full bg-muted">
                     <Briefcase className="w-8 h-8 text-muted-foreground/50" />

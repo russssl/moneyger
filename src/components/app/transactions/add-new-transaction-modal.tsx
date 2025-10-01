@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import DatePicker from "@/components/date-picker";
 import { useReducer, useEffect } from "react";
 import AutogrowingTextarea from "@/components/autogrowing-textarea";
-import { api } from "@/trpc/react";
 import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
@@ -69,7 +68,6 @@ export default function AddNewTransactionModal({
   const tService = useTranslations("service");
   const tGeneral = useTranslations("general");
   const tCategory = useTranslations("categories");
-
   const [state, dispatch] = useReducer(reducer, initialState(defaultTab));
   const {
     date,
@@ -81,8 +79,10 @@ export default function AddNewTransactionModal({
     selectedCategory,
   } = state;
 
-  const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open });
-  const createTransaction = api.transactions.createTransaction.useMutation();
+  // const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open });
+  // const createTransaction = api.transactions.createTransaction.useMutation();
+  const walletsData = [] as any;
+  const createTransaction = [] as any;
 
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
   const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;
@@ -93,12 +93,13 @@ export default function AddNewTransactionModal({
 
   const currencyData: Currency | undefined = firstWallet?.currency ? currencies(firstWallet.currency) : undefined;
   const toCurrencyCode = secondWallet?.currency;
+  const exchangeRate = 1;
 
   const currencyQueryEnabled = selectedFirstWallet !== undefined && selectedSecondWallet !== undefined;
-  const { data: exchangeRate = 1 } = api.wallets.getExchangeRate.useQuery(
-    { from: firstWallet?.currency ?? "", to: secondWallet?.currency ?? "" },
-    { enabled: currencyQueryEnabled }
-  );
+  // const { data: exchangeRate = 1 } = api.wallets.getExchangeRate.useQuery(
+  //   { from: firstWallet?.currency ?? "", to: secondWallet?.currency ?? "" },
+  //   { enabled: currencyQueryEnabled }
+  // );
 
   useEffect(() => {
     if (!open) {

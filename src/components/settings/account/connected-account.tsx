@@ -1,8 +1,8 @@
 "use client"
 import { Button } from "@/components/ui/button";
+import { useMutation } from "@/hooks/use-api";
 import { type Provider, signIn } from "@/hooks/use-session";
-import { api } from "@/trpc/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 type ExtendedProvider = {
@@ -12,9 +12,8 @@ type ExtendedProvider = {
 }
 
 export default function ConnectedAccount({ accounts, provider }: { accounts: any[], provider: ExtendedProvider }) {
-  // use local state for accounts
   const [localAccounts, setLocalAccounts] = useState(accounts);
-  const removeAccountMutation = api.user.removeUserAccount.useMutation();
+  const removeAccountMutation = useMutation("/api/user/accounts/");
 
   const signInWithProvider = async (providerName: Provider) => {
     try {
@@ -46,10 +45,6 @@ export default function ConnectedAccount({ accounts, provider }: { accounts: any
 
   const account = localAccounts.find(account => account.providerId === provider.id);
 
-  useEffect(() => {
-    setLocalAccounts(accounts);
-  }, [accounts]);
-
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-3">
@@ -63,6 +58,7 @@ export default function ConnectedAccount({ accounts, provider }: { accounts: any
           </p>
         </div>
       </div>
+
       <Button variant="outline" size="sm" onClick={() => handleConnection(provider.id)}>
         {account ? "Disconnect" : "Connect"}
       </Button>

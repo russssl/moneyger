@@ -28,7 +28,7 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
   return (
     <>
       <div>
-        {wallets.map((wallet) => (
+        {wallets?.map((wallet) => (
           <div
             key={wallet.id}
             onClick={() => openModal(wallet.id)}

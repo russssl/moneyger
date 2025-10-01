@@ -4,7 +4,6 @@ import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/modal
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
-import { api } from "@/trpc/react";
 import CurrencySelect from "../currency-select";
 import { LoadingSpinner } from "../ui/loading";
 import DeleteButton from "../ui/delete-button";
@@ -57,14 +56,13 @@ export default function AddNewWalletModal({
   onDelete,
   id,
 }: WalletFormModalProps) {
-  const createWallet = api.wallets.createWallet.useMutation();
-  const updateWallet = api.wallets.updateWallet.useMutation();
-  const deleteWallet = api.wallets.deleteWallet.useMutation();
-
-  const { data: walletData } = api.wallets.getWalletById.useQuery(
-    { id: id ?? null },
-    { enabled: !!id }
-  );
+  // const createWallet = api.wallets.createWallet.useMutation();
+  // const updateWallet = api.wallets.updateWallet.useMutation();
+  // const deleteWallet = api.wallets.deleteWallet.useMutation();
+  const createWallet = null;
+  const updateWallet = null;
+  const deleteWallet = null;
+  const walletData = null;
   // Initialize form state, updating when walletData or open changes
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);

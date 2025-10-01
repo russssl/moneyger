@@ -11,7 +11,6 @@ export default function DeleteButton({ onClick }: { onClick: () => void }) {
     e.stopPropagation();
     if (clicked) {
       onClick();
-      console.log("clicked");
       setClicked(false);
     } else {
       setClicked(true);
