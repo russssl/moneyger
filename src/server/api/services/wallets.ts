@@ -3,7 +3,6 @@ import { type Transaction, transactions, transactions as transactionsSchema} fro
 import { and, eq, gte, lte } from "drizzle-orm";
 import { env } from "@/env";
 import { redis } from "@/server/api/cache/cache";
-import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
 import { type Wallet, wallets } from "@/server/db/wallet";
 import { DateTime } from "luxon";
 

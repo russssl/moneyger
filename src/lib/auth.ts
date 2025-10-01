@@ -23,13 +23,22 @@ export const auth = betterAuth({
       trustedProviders: ["github", "google"],
     }
   },
+  user: {
+    additionalFields: {
+      currency: {
+        type: "string",
+        required: false,
+        default: null,
+      }
+    }
+  },
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({user, url}) => {
       await sendResetPasswordEmail(
-        user.email,
-        user.name ?? user.email.split("@")[0],
-        url
+        user.email as string, // TODO: fix this
+        user.name as string ?? user.email.split("@")[0],
+        url as string
       );
     },
   },

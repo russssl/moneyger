@@ -6,6 +6,7 @@ import { type NextRequest } from "next/server"
 import { auth } from "@/lib/auth"
 import { type AuthVariables } from "@/server/api/authenticate"
 import userRouter from "@/server/api/routers/userRouter"
+import walletsRouter from "@/server/api/routers/walletsRouter"
 
 const api = new Hono<AuthVariables>();
 
@@ -30,6 +31,7 @@ api.on(["GET", "POST"], "/auth/*", (c) => {
 
 api.route("/api/stats", statsRouter);
 api.route("/api/user", userRouter);
+api.route("/api/wallets", walletsRouter);
 
 export async function GET(req: NextRequest) { return api.fetch(req) }
 export async function POST(req: NextRequest) { return api.fetch(req) }
