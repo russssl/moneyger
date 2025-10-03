@@ -52,7 +52,7 @@ export async function getUserData(c: Context<AuthVariables>): Promise<UserData> 
   return {
     user: c.get("user"),
     session: c.get("session"),
-    context: await c.get("context"),
+    context: c.get("context"),
     query: c.req.query(),
     body: c.req.raw.body,
     headers: c.req.raw.headers,

@@ -1,6 +1,6 @@
 import { account, type SelectAccount, user as users} from "@/server/db/user";
 import { and, eq, ne } from "drizzle-orm";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 import { z } from "zod";
 import { authenticated, type AuthVariables, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";

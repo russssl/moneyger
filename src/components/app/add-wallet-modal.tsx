@@ -58,9 +58,9 @@ export default function AddNewWalletModal({
   id,
 }: WalletFormModalProps) {
   // Create mutations for wallet operations
-  const createWallet = useMutation<any, any>("/api/wallets", "POST");
+  const createWallet = useMutation<{name: string, currency: string, balance: number}, any>("/api/wallets", "POST");
   const updateWallet = useMutation<{ id: string, name: string, currency: string }, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "PUT");
-  const deleteWallet = useMutation<object, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
+  const deleteWallet = useMutation<void, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -104,7 +104,7 @@ export default function AddNewWalletModal({
 
   const handleDeleteWallet = async (walletId: string) => {
     try {
-      await deleteWallet.mutateAsync({} as object);
+      await deleteWallet.mutateAsync();
       onDelete(walletId);
       onOpenChange(false);
     } catch (error) {
@@ -128,7 +128,7 @@ export default function AddNewWalletModal({
 
       const result = id
         ? await updateWallet.mutateAsync({ ...payload, id })
-        : await createWallet.mutateAsync(payload);
+        : await createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 });
 
       onSave(result);
       onOpenChange(false);

@@ -63,7 +63,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
   walletId: z.string(),
   toWalletId: z.string().optional(),
   amount: z.number(),
-  transaction_date: z.date(),
+  transaction_date: z.coerce.date(),
   description: z.string(),
   category: z.string(),
   type: z.string(),
@@ -74,7 +74,10 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
   const transactionData = await db.transaction(async (tx) => {
 
     const wallet = await tx.query.wallets.findFirst({
-      where: eq(wallets.id, walletId),
+      where: and(
+        eq(wallets.id, walletId),
+        eq(wallets.userId, user.id),
+      ),
     });
 
     if (!wallet) {
@@ -84,6 +87,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     const transaction = await tx.insert(transactions).values({
       userId: user.id,
       walletId,
+      fromWalletId: toWalletId, // if type is transfer, then fromWalletId is the walletId of the wallet that was transferred from
       amount,
       transaction_date,
       description,
@@ -100,17 +104,26 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       const balance = type === "income" ? wallet.balance + amount : wallet.balance - amount; 
       await tx.update(wallets).set({
         balance,
-      }).where(eq(wallets.id, walletId)).execute();
+      }).where(and(
+        eq(wallets.id, walletId),
+        eq(wallets.userId, user.id),
+      )).execute();
     } else {
       if (!toWalletId) {
         throw new Error("To wallet ID is required");
       }
       const [sourceWallet, destinationWallet] = await Promise.all([
         tx.query.wallets.findFirst({
-          where: eq(wallets.id, walletId),
+          where: and(
+            eq(wallets.id, walletId),
+            eq(wallets.userId, user.id),
+          ),
         }),
         tx.query.wallets.findFirst({
-          where: eq(wallets.id, toWalletId),
+          where: and(
+            eq(wallets.id, toWalletId),
+            eq(wallets.userId, user.id),
+          ),
         }),
       ]);
 
@@ -130,10 +143,16 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       await Promise.all([
         tx.update(wallets).set({
           balance: newSourceBalance,
-        }).where(eq(wallets.id, walletId)).execute(),
+        }).where(and(
+          eq(wallets.id, walletId),
+          eq(wallets.userId, user.id),
+        )).execute(),
         tx.update(wallets).set({
           balance: newDestinationBalance,
-        }).where(eq(wallets.id, toWalletId)).execute(),
+        }).where(and(
+          eq(wallets.id, toWalletId),
+          eq(wallets.userId, user.id),
+        )).execute(),
       ]);
     }
 
@@ -146,7 +165,7 @@ transactionsRouter.post("/:id", authenticated, zValidator("param", z.object({
   id: z.string(),
 })), zValidator("json", z.object({
   amount: z.number(),
-  transaction_date: z.date(),
+  transaction_date: z.coerce.date(),
   description: z.string(),
   category: z.string(),
 })),
@@ -172,7 +191,10 @@ async (c) => {
       transaction_date,
       description,
       category,
-    }).where(eq(transactions.id, id)).returning().execute().then((res) => res[0]);
+    }).where(and(
+      eq(transactions.id, id),
+      eq(transactions.userId, user.id),
+    )).returning().execute().then((res) => res[0]);
 
     if (!updatedTransaction) {
       throw new Error("Transaction not updated");
@@ -207,7 +229,10 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
     }
 
     const wallet = await tx.query.wallets.findFirst({
-      where: eq(wallets.id, transaction.walletId),
+      where: and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      ),
     });
 
     if (!wallet) {
@@ -218,12 +243,50 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
       const balance = transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
       await tx.update(wallets).set({
         balance,
-      }).where(eq(wallets.id, transaction.walletId)).execute();
+      }).where(and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      )).execute();
     } else {
-      // TODO: Implement this, for this we need to have the fromWalletId in the transaction table to reverse the transaction
+      const transactionWallet = await tx.query.wallets.findFirst({
+        where: and(
+          eq(wallets.id, transaction.walletId),
+          eq(wallets.userId, user.id),
+        ),
+      });
+      if (!transactionWallet) {
+        throw new Error("Transaction wallet not found");
+      }
+      const balance = transactionWallet.balance - transaction.amount;
+  
+      await tx.update(wallets).set({
+        balance,
+      }).where(and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      )).execute();
+
+      if (transactionWallet.currency != wallet.currency) {
+        if (!transaction.fromWalletId) {
+          throw new Error("From wallet ID is required");
+        }
+        const exchangeRate = await getCurrentExchangeRate(transactionWallet.currency, wallet.currency);
+        const amount = transaction.amount * exchangeRate;
+        await tx.update(wallets).set({
+          balance: wallet.balance + amount,
+        }).where(and(
+          eq(wallets.id, transaction.fromWalletId),
+          eq(wallets.userId, user.id),
+        )).execute();
+
+        // TODO: add the reversed transaction (something like "Automatic transfer after transaction deletion")
+      }
     }
 
-    await tx.delete(transactions).where(eq(transactions.id, id)).execute();
+    await tx.delete(transactions).where(and(
+      eq(transactions.id, id),
+      eq(transactions.userId, user.id),
+    )).execute();
     return transaction;
   });
 

@@ -26,7 +26,8 @@ export const wallets = pgTable("wallet", {
 
 export const walletsRelations = relations(wallets, ({ one, many }) => ({
   user: one(user, { fields: [wallets.userId], references: [user.id] }),
-  transactions: many(transactions),
+  transactions: many(transactions, { relationName: "transactionWallet" }),
+  fromTransactions: many(transactions, { relationName: "transactionFromWallet" }),
 }));
 
 export type Wallet = typeof wallets.$inferSelect;

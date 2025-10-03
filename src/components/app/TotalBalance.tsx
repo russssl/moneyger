@@ -61,12 +61,9 @@ export default function TotalBalance() {
                 )}>
                   {totalBalance ? totalBalance.toLocaleString("en-US", {
                     style: "currency",
-                    currency: userMainCurrency! // TODO: fix this
+                    currency: userMainCurrency ?? "USD" // TODO: fix this
                   }) : "0"}
                 </div>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span>{userMainCurrency}</span>
               </div>
             </div>}
             <div className="space-y-1.5">

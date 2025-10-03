@@ -43,6 +43,16 @@ walletsRouter.get("/full", authenticated, async (c) => {
   });
 });
 
+// still authenticated so this wont be abused
+walletsRouter.get("/exchange-rate", authenticated, zValidator("query", z.object({
+  from: z.string(),
+  to: z.string(),
+})), async (c) => {
+  const { from, to } = c.req.valid("query");
+  const res_exchange_rate = await getCurrentExchangeRate(from, to);
+  return c.json(res_exchange_rate);
+});
+
 walletsRouter.get("/:id", authenticated, async (c) => {
   const { user } = await getUserData(c);
   const { id } = c.req.param();
@@ -55,19 +65,6 @@ walletsRouter.get("/:id", authenticated, async (c) => {
   return c.json(res_wallet);
 });
 
-// still authenticated so this wont be abused
-walletsRouter.get("/exchange-rate", authenticated, zValidator(
-  "query",
-  z.object({
-    from: z.string(),
-    to: z.string(),
-  }),
-), async (c) => {
-  const { from, to } = c.req.valid("query");
-  const res_exchange_rate = await getCurrentExchangeRate(from, to);
-  return c.json(res_exchange_rate);
-});
-
 walletsRouter.post("/", authenticated, zValidator(
   "json",
   z.object({
@@ -75,31 +72,31 @@ walletsRouter.post("/", authenticated, zValidator(
     currency: z.string(),
     isSavingAccount: z.boolean().optional(),
     savingAccountGoal: z.number().optional(),
-    initialBalance: z.number().optional(),
+    balance: z.number().optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);
 
   const wallet = await db.transaction(async (tx) => {
-    const { name, currency, isSavingAccount, initialBalance, savingAccountGoal } = c.req.valid("json");
+    const { name, currency, isSavingAccount, balance, savingAccountGoal } = c.req.valid("json");
     const wallet = await tx.insert(wallets).values({
       userId: user.id,
       name,
       currency,
       isSavingAccount: isSavingAccount ?? false,
       savingAccountGoal: savingAccountGoal ?? 0,
-      balance: initialBalance ?? 0,
+      balance: balance ?? 0,
     }).returning().execute().then((res) => res[0]);
 
     if (!wallet) {
       throw new Error("Failed to create wallet");
     }
 
-    if (initialBalance && initialBalance !== 0) {
+    if (balance && balance !== 0) {
       await tx.insert(transactions).values({
         userId: user.id,
         walletId: wallet.id,
-        amount: initialBalance,
+        amount: balance,
         type: "adjustment",
         transaction_date: new Date(),
         description: "Initial balance", // TODO: improve this. maybe distinguish initials more
