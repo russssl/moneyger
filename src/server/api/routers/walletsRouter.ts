@@ -19,6 +19,30 @@ walletsRouter.get("/", authenticated, async (c) => {
   return c.json(res_wallets);
 });
 
+walletsRouter.get("/full", authenticated, async (c) => {
+  const { user } = await getUserData(c);
+  const res_wallets = await db.query.wallets.findMany({
+    where: eq(wallets.userId, user.id),
+  });
+
+  if (!user.currency) {
+    // user still dont have a currency, return empty data
+    return c.json({
+      totalBalance: 0,
+      wallets: [],
+      userMainCurrency: null,
+    });
+  }
+
+  const totalBalance = await calculateTotalBalance(user.id, user.currency);
+
+  return c.json({
+    totalBalance: totalBalance.totalBalance,
+    wallets: res_wallets,
+    userMainCurrency: user.currency,
+  });
+});
+
 walletsRouter.get("/:id", authenticated, async (c) => {
   const { user } = await getUserData(c);
   const { id } = c.req.param();
@@ -126,30 +150,6 @@ walletsRouter.delete("/:id", authenticated, async (c) => {
     eq(wallets.id, id),
   )).execute();
   return c.json({ message: "Wallet deleted successfully" });
-});
-
-walletsRouter.get("/full", authenticated, async (c) => {
-  const { user } = await getUserData(c);
-  const res_wallets = await db.query.wallets.findMany({
-    where: eq(wallets.userId, user.id),
-  });
-
-  if (!user.currency) {
-    // user still dont have a currency, return empty data
-    return c.json({
-      totalBalance: 0,
-      wallets: [],
-      userMainCurrency: null,
-    });
-  }
-
-  const totalBalance = await calculateTotalBalance(user.id, user.currency, c);
-
-  return c.json({
-    totalBalance: totalBalance.totalBalance,
-    wallets: res_wallets,
-    userMainCurrency: user.currency,
-  });
 });
 
 export default walletsRouter;

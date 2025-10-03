@@ -41,17 +41,21 @@ export async function fetchWithToken(
 }
 
 export function useFetch<T>(
-  url: string, 
+  url: string | null, 
 ) {
-  const { data, isLoading, error, refetch } = useQuery<T>({
+  const { data, isLoading, error, refetch } = useQuery<T | null>({
     queryKey: [url],
     queryFn: async () => {
+      if (!url) {
+        return null;
+      }
       const response = await fetchWithToken(url)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json() as Promise<T>
+      return response.json() as Promise<T | null>
     },
+    enabled: !!url,
   })
 
   return { 
@@ -62,11 +66,11 @@ export function useFetch<T>(
   }
 }
 
-export function useMutation<TInput, TResponse = TInput>(url: string) {
+export function useMutation<TInput, TResponse = TInput>(url: string, method: "POST" | "PUT" | "DELETE" = "POST") {
   const { mutate, mutateAsync, isPending, error } = useTanstackMutation({
     mutationFn: async (data: TInput) => {
       const response = await fetchWithToken(url, {
-        method: "POST",
+        method,
         body: JSON.stringify(data),
       })
       if (!response.ok) {

@@ -19,7 +19,6 @@ const TEXT_SIZES = {
 } as const;
 
 export default function TotalBalance() {
-  // const res = await api.wallets.getFullData();
   const [wallets, setWallets] = useState<[]>([]);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [userMainCurrency, setUserMainCurrency] = useState<string | null>(null);

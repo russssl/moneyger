@@ -13,6 +13,7 @@ import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { useFetch, useMutation } from "@/hooks/use-api";
 
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -79,10 +80,8 @@ export default function AddNewTransactionModal({
     selectedCategory,
   } = state;
 
-  // const { data: walletsData } = api.wallets.getWallets.useQuery(undefined, { enabled: open });
-  // const createTransaction = api.transactions.createTransaction.useMutation();
-  const walletsData = [] as any;
-  const createTransaction = [] as any;
+  const { data: walletsData } = useFetch<{id: string, name: string, currency: string}[]>("/api/wallets");
+  const createTransaction = useMutation<{id: string, name: string, currency: string}[]>("/api/transactions", "POST");
 
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
   const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;

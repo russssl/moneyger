@@ -7,13 +7,14 @@ import { Label } from "../ui/label";
 import CurrencySelect from "../currency-select";
 import { LoadingSpinner } from "../ui/loading";
 import DeleteButton from "../ui/delete-button";
+import { useFetch, useMutation } from "@/hooks/use-api";
 
 interface WalletFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (wallet: any) => void;
   id?: string;
-  onDelete: () => void;
+  onDelete: (id: string) => void;
 }
 
 type WalletFormState = {
@@ -56,17 +57,14 @@ export default function AddNewWalletModal({
   onDelete,
   id,
 }: WalletFormModalProps) {
-  // const createWallet = api.wallets.createWallet.useMutation();
-  // const updateWallet = api.wallets.updateWallet.useMutation();
-  // const deleteWallet = api.wallets.deleteWallet.useMutation();
-  const createWallet = null;
-  const updateWallet = null;
-  const deleteWallet = null;
-  const walletData = null;
-  // Initialize form state, updating when walletData or open changes
+  // Create mutations for wallet operations
+  const createWallet = useMutation<any, any>("/api/wallets", "POST");
+  const updateWallet = useMutation<{ id: string, name: string, currency: string }, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "PUT");
+  const deleteWallet = useMutation<object, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const { data: walletData } = useFetch<{name: string, currency: string, balance: number}>(id ? `/api/wallets/${id}` : null);
   useEffect(() => {
     if (open) {
       if (id && walletData) {
@@ -104,10 +102,14 @@ export default function AddNewWalletModal({
     return hasValidName && hasValidCurrency;
   }, [state.walletName, state.currency]);
 
-  const handleDeleteWallet = async (id: string) => {
-    await deleteWallet.mutateAsync({ id });
-    onDelete();
-    onOpenChange(false);
+  const handleDeleteWallet = async (walletId: string) => {
+    try {
+      await deleteWallet.mutateAsync({} as object);
+      onDelete(walletId);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error deleting wallet:", error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,19 +184,20 @@ export default function AddNewWalletModal({
               <div className="flex flex-col md:flex-row gap-3 sm:flex-row sm:items-center sm:justify-between mt-2 mb-2">
                 <Button
                   type="submit"
-                  disabled={!canSave || createWallet.isPending || updateWallet.isPending}
+                  disabled={!canSave || updateWallet.isPending}
                   className="w-full md:w-28 order-1 md:order-2"
                 >
                   Update
                 </Button>
                 <DeleteButton
                   onClick={() => handleDeleteWallet(id)}
+                  disabled={deleteWallet.isPending}
                 />
               </div>
             ) : (
               <Button
                 type="submit"
-                disabled={!canSave || createWallet.isPending || updateWallet.isPending}
+                disabled={!canSave || createWallet.isPending}
                 className="w-full sm:w-28 self-end"
               >
                 Create

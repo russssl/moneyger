@@ -90,14 +90,14 @@ userRouter.post("/updatePassword", authenticated, zValidator("json", z.object({
 
 userRouter.get("/accounts", authenticated, zValidator("query", z.object({
   providerId: z.string(),
-})), async (c: Context<AuthVariables>) => {
-  const { user, query } = await getUserData(c);
-  const { providerId } = query;
+})), async (c) => {
+  const { user } = await getUserData(c);
+  const { providerId } = c.req.valid("query");
 
   const accounts = await db.query.account.findMany({
     where: and(
       eq(account.userId, user.id),
-      ne(account.providerId, providerId ?? ""),
+      ne(account.providerId, providerId),
     ),
   });
 
