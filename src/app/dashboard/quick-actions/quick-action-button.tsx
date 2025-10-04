@@ -21,16 +21,18 @@ export default function QuickActionButton({ action }: { action: QuickAction }) {
     variant="outline"
     onClick={action.onClick}
     className={cn(
-      "flex items-center gap-2 rounded-full whitespace-nowrap transition-all",
+      "flex items-center gap-3 rounded-xl whitespace-nowrap transition-all",
       "active:scale-95 touch-manipulation",
-      "px-4",
+      "px-6 py-4 h-14 min-w-fit",
+      "border-2 font-medium",
+      "shadow-sm hover:shadow-md",
       action.color.border,
       action.color.bg,
       action.color.hover,
     )}
   >
-    <action.icon className={cn("h-4 w-4", action.color.text)} />
-    <span>{action.name}</span>
+    <action.icon className={cn("h-5 w-5", action.color.text)} />
+    <span className="text-sm">{action.name}</span>
   </Button>
   )
 }

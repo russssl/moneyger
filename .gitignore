@@ -43,3 +43,6 @@ yarn-error.log*
 
 # idea files
 .idea
+
+## TODO files
+TODO.md

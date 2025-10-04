@@ -9,6 +9,12 @@ import { Palette } from "lucide-react"
 import {ThemeSwitch} from "@/components/theme-toggle"
 import ConnectedAccountSettings from "@/components/settings/connected-account-settings"
 import PagesHeader from "../pages-header"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import db from "@/server/db"
+import { eq } from "drizzle-orm"
+import { account } from "@/server/db/user"
 
 export default async function SettingsPage(
   props: {
@@ -17,16 +23,29 @@ export default async function SettingsPage(
 ) {
   const categoryGroupStyle = "grid grid-cols-[repeat(auto-fit,350px)] gap-4 p-4 justify-center md:justify-start";
   const searchParams = await props.searchParams;
+  const user = await auth.api.getSession({
+    headers: await headers()
+  })
+  if (!user) {
+    return redirect("/login");
+  }
+  const accounts = await db.query.account.findMany({
+    where: eq(account.userId, user.session.userId),
+  })
+
+  const passwordChangeAllowed = accounts.length > 0 && accounts.find((account) => account.providerId === "credential");
+
   const selectedCategory = searchParams?.category || "account";
+
   return (
     <div className="h-full gap-6 p-6">
       <PagesHeader />
       <SettingsSelect className="mt-4 px-4"/>
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
-          <ProfileSettings />
-          <PasswordSettings />
-          <ConnectedAccountSettings/>
+          <ProfileSettings session={user.session ?? null}/>
+          <PasswordSettings passwordChangeAllowed={passwordChangeAllowed}/>
+          <ConnectedAccountSettings accounts={accounts}/>
           <AccountSettings/>
         </div>
       )}

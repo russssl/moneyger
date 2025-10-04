@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input";
 import LoadingButton from "@/components/loading-button";
 import { LanguageSelect } from "../language-select";
 import { useTranslations } from "next-intl";
-import { api } from "@/trpc/react";
 import { updateUser } from "@/hooks/use-session";
+import { useFetch, useMutation } from "@/hooks/use-api";
 
 export default function ProfileSettings({...props}) {
-  const { data: userSettings } = api.user.getUserData.useQuery()
-  console.log("userSettings", userSettings);
+  const {data: userSettings, isLoading, error} = useFetch<{email: string, username: string}>("/api/user/me");
+  const { session } = props;
   const [email, setEmail] = useState(userSettings?.email ?? "");
   const [username, setUsername] = useState(userSettings?.username ?? "");
   const [language, setLanguage] = useState<string | undefined>("en");
@@ -33,11 +33,24 @@ export default function ProfileSettings({...props}) {
       setUsername(userSettings.username ?? "");
     }
   }, [userSettings]);
-  const saveUserSettingsMutation = api.user.saveUserData.useMutation();
+  // error handling
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+    }
+  }, [error]);
+
+  const {mutateAsync: saveUserSettingsMutation, isPending} = useMutation("/api/user");
+
+  if (!session) {
+    return null;
+  }
 
   const saveBasicSettings = async () => {
-    saveUserSettingsMutation.mutate({
+    await saveUserSettingsMutation({
       email,
+      username,
+      id: session?.user?.id,
     });
     if (username) {
       await updateUser({
@@ -67,11 +80,11 @@ export default function ProfileSettings({...props}) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading}/>
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">{t("username")}</Label>
-            <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("username")}/>
+            <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("username")} disabled={isLoading}/>
           </div>
           <div className="space-y-2">
             <LanguageSelect
@@ -89,8 +102,8 @@ export default function ProfileSettings({...props}) {
             await saveBasicSettings();
           }}
           toastText="Settings saved successfully"
-          loading={saveUserSettingsMutation.isPending}
-          disabled={false}
+          loading={isPending || isLoading}
+          disabled={isPending || isLoading}
         >
           {t("save_changes")}
         </LoadingButton>

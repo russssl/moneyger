@@ -1,5 +1,5 @@
 {
-  "id": "e03f976e-9a0a-48bd-8cee-06472160b876",
+  "id": "69d9230a-79e6-405a-afd4-89ba81fa563d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -449,6 +449,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "from_wallet_id": {
+          "name": "from_wallet_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "amount": {
           "name": "amount",
           "type": "double precision",
@@ -521,6 +527,19 @@
           "tableTo": "wallet",
           "columnsFrom": [
             "wallet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transaction_from_wallet_id_wallet_id_fk": {
+          "name": "transaction_from_wallet_id_wallet_id_fk",
+          "tableFrom": "transaction",
+          "tableTo": "wallet",
+          "columnsFrom": [
+            "from_wallet_id"
           ],
           "columnsTo": [
             "id"

@@ -5,20 +5,20 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import AddNewWalletModal from "./add-wallet-modal"
-import { api } from "@/trpc/react";
 import { LoadingSpinner } from "../ui/loading"
 import { NoItems } from "./no-items"
 import { useTranslations } from "next-intl"
 import { type Wallet as WalletType } from "@/server/db/wallet"
+import { useFetch } from "@/hooks/use-api"
 
 export default function Wallets({className}: {className?: string | undefined}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [items, setItems] = useState<WalletType[]>([]);
-  const { data: wallets, isLoading } = api.wallets.getWallets.useQuery();
+  // const { data: wallets, isLoading } = api.wallets.getWallets.useQuery();
+  const { data: wallets, isLoading } = useFetch<WalletType[]>("/api/wallets");
   const t = useTranslations("finances");
 
-  const deleteMutation = api.wallets.deleteWallet.useMutation();
   useEffect(() => {
     if (wallets) {
       setItems(wallets);
@@ -31,8 +31,8 @@ export default function Wallets({className}: {className?: string | undefined}) {
   };
 
   const deleteWallet = async (id: string) => {
-    await deleteMutation.mutateAsync({ id });
     setItems(prevItems => prevItems.filter(item => item.id !== id));
+    setIsModalOpen(false);
     setSelectedId(undefined);
   };
 
@@ -74,7 +74,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
             </div>
           ) : (
             items.map(item => (
-              <FinanceItem key={item.id} item={item} onEdit={openModal} onDelete={deleteWallet}/>
+              <FinanceItem key={item.id} item={item} onEdit={openModal} onDelete={() => deleteWallet(item.id)}/>
             ))
           )}
           <div className="mt-4">
@@ -85,7 +85,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={(wallet: WalletType) => saveWallets(wallet)} id={selectedId}/>
+      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={(wallet: WalletType) => saveWallets(wallet)} id={selectedId} onDelete={(id) => deleteWallet(id)}/>
     </div>
   );
 }

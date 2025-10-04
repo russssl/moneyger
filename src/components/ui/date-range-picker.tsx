@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { addDays, format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { type DateRange } from "react-day-picker"
+import { DateTime } from "luxon"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,7 @@ export function DatePickerWithRange({
 }: DatePickerWithRangeProps) {
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
+    to: DateTime.fromJSDate(new Date(2022, 0, 20)).plus({ days: 20 }).toJSDate(),
   })
 
   const handleDateChange = (newDate: DateRange | undefined) => {
@@ -49,11 +49,11 @@ export function DatePickerWithRange({
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
+                  {DateTime.fromJSDate(date.from).toFormat("LLL dd, y")} -{" "}
+                  {DateTime.fromJSDate(date.to).toFormat("LLL dd, y")}
                 </>
               ) : (
-                format(date.from, "LLL dd, y")
+                DateTime.fromJSDate(date.from).toFormat("LLL dd, y")
               )
             ) : (
               <span>Pick a date</span>

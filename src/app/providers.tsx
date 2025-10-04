@@ -3,7 +3,8 @@
 
 import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
-import { type ReactNode, useEffect, memo } from "react"
+import { type ReactNode, useEffect, memo, useState } from "react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 const POSTHOG_KEY = null; // no posthog for now
 
@@ -36,3 +37,8 @@ function PostHogProviderComponent({ children }: { children: ReactNode }) {
 }
 
 export const PostHogProvider = memo(PostHogProviderComponent)
+
+export function ReactQueryProvider({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient())
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+}
