@@ -1,6 +1,6 @@
 "use client"
 
-import { format } from "date-fns"
+import { DateTime } from "luxon"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useState } from "react"
-import { DateTime } from "luxon"
 
 interface DatePickerProps {
   value?: Date;
@@ -49,7 +48,8 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
             )}
           >
             {value ? (
-              format(value, "PPP")
+              // format(value, "PPP")
+              DateTime.fromJSDate(value).toFormat("PPP")
             ) : (
               <span>{placeholder}</span>
             )}

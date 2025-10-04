@@ -12,7 +12,6 @@ import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import CurrencySelect from "../currency-select";
 
@@ -81,7 +80,8 @@ export default function AddNewTransactionModal({
     selectedCategory,
   } = state;
 
-  const { data: walletsData } = useFetch<{id: string, name: string, currency: string}[]>("/api/wallets");
+  const { data: walletsData, isLoading: isLoadingWallets } = useFetch<{id: string, name: string, currency: string}[]>(open ? "/api/wallets" : null);
+
   const createTransaction = useMutation<{walletId: string, toWalletId: string | undefined, amount: number, transaction_date: Date, description: string, category: string, type: TransactionType}, any>("/api/transactions", "POST");
   
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
@@ -94,7 +94,9 @@ export default function AddNewTransactionModal({
   const currencyData: Currency | undefined = firstWallet?.currency ? currencies(firstWallet.currency) : undefined;
   const toCurrencyCode = secondWallet?.currency;
   const fromCurrencyCode = firstWallet?.currency;
-  const { data: exchangeRateData } = useFetch<number>(`/api/wallets/exchange-rate?from=${fromCurrencyCode}&to=${toCurrencyCode}`);
+  
+  const shouldFetchExchangeRate = open && transactionType === "transfer" && fromCurrencyCode && toCurrencyCode && fromCurrencyCode !== toCurrencyCode;
+  const { data: exchangeRateData } = useFetch<number>(shouldFetchExchangeRate ? `/api/wallets/exchange-rate?from=${fromCurrencyCode}&to=${toCurrencyCode}` : null);
   const exchangeRate = exchangeRateData ?? 1;
 
   useEffect(() => {
@@ -158,7 +160,7 @@ export default function AddNewTransactionModal({
         </ModalHeader>
         <ModalBody>
           <div className="grid gap-3">
-            {wallets.length === 0 && (
+            {wallets.length === 0 && !isLoadingWallets && open && (
               <div className="p-4 bg-red-100 text-red-800 rounded-lg">{t("no_wallet_warning")}</div>
             )}
 

@@ -74,11 +74,12 @@ export function QuickActions({ className }: { className?: string }) {
   ]
 
   return (
-    <div className={cn("rounded-lg my-3 relative", className)}>
-      <div className="mb-3">
-        <h3 className="font-medium text-base text-muted-foreground">Quick Actions</h3>
+    <div className={cn("relative", className)}>
+      <div className="mb-4">
+        <h3 className="font-semibold text-lg">Quick Actions</h3>
+        <p className="text-sm text-muted-foreground">Quickly add transactions or manage your wallets</p>
       </div>
-      <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth px-1">
+      <div className="flex flex-nowrap gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth">
         {quickActions.map((action) => (
           <QuickActionButton key={action.id} action={action} />
         ))}
@@ -96,6 +97,9 @@ export function QuickActions({ className }: { className?: string }) {
         open={newWalletModalOpen}
         onOpenChange={setNewWalletModalOpen}
         onSave={() => {
+          setNewWalletModalOpen(false);
+        }}
+        onDelete={() => {
           setNewWalletModalOpen(false);
         }}
       />

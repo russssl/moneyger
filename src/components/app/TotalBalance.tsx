@@ -1,5 +1,6 @@
 "use client"
 import { Card, CardTitle, CardHeader, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DashboardWallets from "./dashboard-wallets";

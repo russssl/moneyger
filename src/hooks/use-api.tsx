@@ -1,43 +1,48 @@
 import { useQuery, useMutation as useTanstackMutation } from "@tanstack/react-query"
 import { getSession } from "./use-session"
+import { useState } from "react";
 
-
+type ReqOptions = RequestInit & { query?: Record<string, any>; body?: string }
 export async function fetchWithToken(
   url: string,
-  options: RequestInit & { query?: Record<string, any>; body?: string } = {}
+  options: ReqOptions = {}
 ) {
-  const session = await getSession();
-  const headers = new Headers(options.headers);
-  const reqOptions = options as RequestInit & { query?: Record<string, any>; body?: string };
-  if (session.data?.session.token) {
-    headers.set("Authorization", `Bearer ${session.data.session.token}`);
-  }
+  try {
+    const session = await getSession();
+    const headers = new Headers(options.headers);
+    if (session.data?.session.token) {
+      headers.set("Authorization", `Bearer ${session.data.session.token}`);
+    }
 
-  // Handle query parameters
-  let finalUrl = url;
-  if (reqOptions.query && typeof reqOptions.query === "object") {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(reqOptions.query)) {
-      if (value !== undefined && value !== null) {
-        params.append(key, String(value));
+    // Handle query parameters
+    let finalUrl = url;
+    if (options.query && typeof options.query === "object") {
+      const params = new URLSearchParams();
+      for (const [key, value] of Object.entries(options.query)) {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      }
+      if (Array.from(params).length > 0) {
+        finalUrl += (finalUrl.includes("?") ? "&" : "?") + params.toString();
       }
     }
-    if (Array.from(params).length > 0) {
-      finalUrl += (finalUrl.includes("?") ? "&" : "?") + params.toString();
+
+    // Handle body
+    const body = options.body;
+    if (options.body) {
+      headers.set("Content-Type", "application/json");
     }
-  }
 
-  // Handle body
-  const body = reqOptions.body;
-  if (reqOptions.body) {
-    headers.set("Content-Type", "application/json");
+    return await fetch(finalUrl, {
+      method: options.method || "GET",
+      headers,
+      body,
+    });
+  } catch (error) {
+    console.error(error)
+    throw error
   }
-
-  return await fetch(finalUrl, {
-    method: options.method || "GET",
-    headers,
-    body,
-  });
 }
 
 export function useFetch<T>(
@@ -66,19 +71,42 @@ export function useFetch<T>(
   }
 }
 
-export function useMutation<TInput, TResponse = TInput>(url: string, method: "POST" | "PUT" | "DELETE" = "POST") {
-  const { mutate, mutateAsync, isPending, error } = useTanstackMutation({
+export function useMutation<TInput extends { id?: string }, TResponse = TInput>(
+  url: string,
+  method: "POST" | "PUT" | "DELETE" = "POST"
+) {
+  const [mutationError, setMutationError] = useState<Error | null>(null);
+
+  const { mutate, mutateAsync, isPending, error } = useTanstackMutation<TResponse, Error, TInput>({
     mutationFn: async (data: TInput) => {
-      const response = await fetchWithToken(url, {
-        method,
-        body: JSON.stringify(data),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      let finalUrl = url;
+      let bodyData: Record<string, unknown> = data as Record<string, unknown>;
+
+      // If data has an id, use it as a path param and remove from body
+      if (data && typeof data === "object" && "id" in data && data.id) {
+        // Remove trailing slash if present
+        finalUrl = finalUrl.replace(/\/$/, "");
+        finalUrl = `${finalUrl}/${encodeURIComponent(String(data.id))}`;
+        // Remove id from body
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...rest } = data;
+        bodyData = rest;
       }
-      return response.json() as Promise<TResponse>
+
+      const response = await fetchWithToken(finalUrl, {
+        method,
+        body: Object.keys(bodyData).length > 0 ? JSON.stringify(bodyData) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorObj = new Error(`HTTP error! status: ${response.status}`);
+        setMutationError(errorObj);
+        throw errorObj;
+      }
+      setMutationError(null);
+      return response.json() as Promise<TResponse>;
     },
   });
 
-  return { mutate, mutateAsync, isPending, error };
+  return { mutate, mutateAsync, isPending, error: error ?? mutationError };
 }

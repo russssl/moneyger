@@ -217,6 +217,7 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
   const { id } = c.req.valid("param");
 
   const transactionData = await db.transaction(async (tx) => {
+    const params = c.req.param();
     const transaction = await tx.query.transactions.findFirst({
       where: and(
         eq(transactions.id, id),
@@ -279,7 +280,7 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
           eq(wallets.userId, user.id),
         )).execute();
 
-        // TODO: add the reversed transaction (something like "Automatic transfer after transaction deletion")
+        // MAYBE: add the reversed transaction (something like "Automatic transfer after transaction deletion")
       }
     }
 

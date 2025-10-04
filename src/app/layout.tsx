@@ -6,10 +6,10 @@ import type{ Viewport, Metadata } from "next";
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "next-themes";
 import { PostHogProvider, ReactQueryProvider } from "./providers";
-import { Toaster } from "@/components/ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import PersistentModals from "@/components/persistent-modals";
+import { Toaster } from "@/components/ui/sonner"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -44,10 +44,10 @@ export default async function RootLayout({
           <ReactQueryProvider>
             <NextIntlClientProvider locale={locale} messages={messages}>
               <SessionWrapper>
+                <Toaster richColors invert closeButton/>
                 <PostHogProvider>
                   <PersistentModals />
                   {children}
-                  <Toaster />
                 </PostHogProvider>
               </SessionWrapper>
             </NextIntlClientProvider>
