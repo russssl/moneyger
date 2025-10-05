@@ -14,8 +14,8 @@ export const transactions = pgTable("transaction", {
   walletId: varchar("wallet_id", { length: 255 })
     .notNull()
     .references(() => wallets.id),
-  fromWalletId: varchar("from_wallet_id", { length: 255 })
-    .references(() => wallets.id), // was transferred from this wallet
+  toWalletId: varchar("to_wallet_id", { length: 255 })
+    .references(() => wallets.id), // was transferred to this wallet
   amount: doublePrecision("amount").notNull(),
   transaction_date: timestamp("transaction_date"),
   description: varchar("description", { length: 255 }),
@@ -33,10 +33,10 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     references: [wallets.id],
     relationName: "transactionWallet"
   }),
-  fromWallet: one(wallets, { 
-    fields: [transactions.fromWalletId], 
+  toWallet: one(wallets, { 
+    fields: [transactions.toWalletId], 
     references: [wallets.id],
-    relationName: "transactionFromWallet"
+    relationName: "transactionToWallet"
   }),
 }));
 

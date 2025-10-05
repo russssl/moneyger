@@ -101,7 +101,6 @@ export function useMutation<TInput extends { id?: string }, TResponse = TInput>(
       if (!response.ok) {
         const errorObj = new Error(`HTTP error! status: ${response.status}`);
         setMutationError(errorObj);
-        throw errorObj;
       }
       setMutationError(null);
       return response.json() as Promise<TResponse>;

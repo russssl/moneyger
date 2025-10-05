@@ -82,7 +82,7 @@ export default function AddNewTransactionModal({
 
   const { data: walletsData, isLoading: isLoadingWallets } = useFetch<{id: string, name: string, currency: string}[]>(open ? "/api/wallets" : null);
 
-  const createTransaction = useMutation<{walletId: string, toWalletId: string | undefined, amount: number, transaction_date: Date, description: string, category: string, type: TransactionType}, any>("/api/transactions", "POST");
+  const createTransaction = useMutation<any, {walletId: string, toWalletId: string | undefined, amount: number, transaction_date: Date, description: string, category: string, type: TransactionType}>("/api/transactions", "POST");
   
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
   const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;

@@ -91,7 +91,6 @@
   "devDependencies": {
     "@types/eslint": "^8.56.10",
     "@types/luxon": "^3.4.2",
-    "@types/next": "^9.0.0",
     "@types/node": "^22.13.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

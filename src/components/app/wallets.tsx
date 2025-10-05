@@ -69,7 +69,6 @@ export default function Wallets({className}: {className?: string | undefined}) {
                 icon={Wallet}
                 title={t("no_wallets")}
                 description={t("no_wallets_desc")}
-                size="md"
               />
             </div>
           ) : (

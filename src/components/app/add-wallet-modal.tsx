@@ -14,7 +14,7 @@ interface WalletFormModalProps {
   onOpenChange: (open: boolean) => void;
   onSave: (wallet: any) => void;
   id?: string;
-  onDelete: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 type WalletFormState = {
@@ -58,9 +58,9 @@ export default function AddNewWalletModal({
   id,
 }: WalletFormModalProps) {
   // Create mutations for wallet operations
-  const createWallet = useMutation<{name: string, currency: string, balance: number}, any>("/api/wallets", "POST");
-  const updateWallet = useMutation<{ id: string, name: string, currency: string }, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "PUT");
-  const deleteWallet = useMutation<void, any>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
+  const createWallet = useMutation<any, {name: string, currency: string, balance: number}>("/api/wallets", "POST");
+  const updateWallet = useMutation<any, { id: string, name: string, currency: string }>(id ? `/api/wallets/${id}` : "/api/wallets/", "PUT");
+  const deleteWallet = useMutation<any, void>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -104,8 +104,8 @@ export default function AddNewWalletModal({
 
   const handleDeleteWallet = async (walletId: string) => {
     try {
-      await deleteWallet.mutateAsync();
-      onDelete(walletId);
+      await deleteWallet.mutateAsync({ id: walletId });
+      onDelete?.(walletId);
       onOpenChange(false);
     } catch (error) {
       console.error("Error deleting wallet:", error);
@@ -189,10 +189,12 @@ export default function AddNewWalletModal({
                 >
                   Update
                 </Button>
-                <DeleteButton
-                  onClick={() => handleDeleteWallet(id)}
-                  disabled={deleteWallet.isPending}
-                />
+                {onDelete && (
+                  <DeleteButton
+                    onClick={() => handleDeleteWallet(id)}
+                    disabled={deleteWallet.isPending}
+                  />
+                )}
               </div>
             ) : (
               <Button

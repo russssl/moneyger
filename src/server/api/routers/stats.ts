@@ -13,21 +13,21 @@ const statsRouter = new Hono<AuthVariables>();
 statsRouter.get("/spendings", authenticated, zValidator(
   "query",
   z.object({
-    startDate: z.string().optional(),
-    endDate: z.string().optional(),
+    startDate: z.coerce.date().optional(),
+    endDate: z.coerce.date().optional(),
     walletId: z.string().optional(),
     category: z.string().optional(),
   }),
 ), async (c) => {
-  const { user, query } = await getUserData(c);
-  const { startDate, endDate, walletId, category } = query;
+  const { user } = await getUserData(c);
+  const { startDate, endDate, walletId, category } = c.req.valid("query");
 
 
   const spendingData = await db.select({
     category: transactions.category,
     totalSpent: sql<number>`sum(${transactions.amount})`.as("totalSpent"),
   }).from(transactions).where(and(
-    eq(transactions.userId, user.id as string), // fix this
+    eq(transactions.userId, user.id),
     eq(transactions.type, "expense"),
     // avoid using sql in where clauses
     startDate ? gte(transactions.transaction_date, new Date(startDate)) : undefined,

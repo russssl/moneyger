@@ -1,4 +1,3 @@
-"use server"
 import statsRouter from "@/server/api/routers/stats"
 import { Hono } from "hono"
 import { cors } from "hono/cors"

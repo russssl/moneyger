@@ -87,7 +87,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     const transaction = await tx.insert(transactions).values({
       userId: user.id,
       walletId,
-      fromWalletId: toWalletId, // if type is transfer, then fromWalletId is the walletId of the wallet that was transferred from
+      toWalletId: type === "transfer" ? toWalletId : undefined,
       amount,
       transaction_date,
       description,
@@ -217,7 +217,6 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
   const { id } = c.req.valid("param");
 
   const transactionData = await db.transaction(async (tx) => {
-    const params = c.req.param();
     const transaction = await tx.query.transactions.findFirst({
       where: and(
         eq(transactions.id, id),
@@ -249,9 +248,12 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
         eq(wallets.userId, user.id),
       )).execute();
     } else {
+      if (!transaction.toWalletId) {
+        throw new Error("To wallet ID is required for transfer transactions");
+      }
       const transactionWallet = await tx.query.wallets.findFirst({
         where: and(
-          eq(wallets.id, transaction.walletId),
+          eq(wallets.id, transaction.toWalletId),
           eq(wallets.userId, user.id),
         ),
       });
@@ -268,15 +270,15 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
       )).execute();
 
       if (transactionWallet.currency != wallet.currency) {
-        if (!transaction.fromWalletId) {
+        if (!transaction.toWalletId) {
           throw new Error("From wallet ID is required");
         }
-        const exchangeRate = await getCurrentExchangeRate(transactionWallet.currency, wallet.currency);
+        const exchangeRate = await getCurrentExchangeRate(transactionWallet.currency, wallet.currency); // TODO: replace with saved exchange rate (so exhange rate changes are NOT reflected in the balance)
         const amount = transaction.amount * exchangeRate;
         await tx.update(wallets).set({
           balance: wallet.balance + amount,
         }).where(and(
-          eq(wallets.id, transaction.fromWalletId),
+          eq(wallets.id, transaction.toWalletId),
           eq(wallets.userId, user.id),
         )).execute();
 

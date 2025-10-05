@@ -25,8 +25,7 @@ export function TransactionList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const fetchTransactions = useFetch<TransactionWithWallet[]>("/api/transactions");
-  const { isLoading, error } = fetchTransactions;
-  let { data: transactions } = fetchTransactions;
+  const { isLoading, error, refetch, data: transactions } = fetchTransactions;
   const removeTransactionMutation = useMutation<{id: string}, any>("/api/transactions/", "DELETE")
   
 
@@ -40,18 +39,12 @@ export function TransactionList() {
       success: "Transaction removed successfully",
       error: (error) => error instanceof Error ? error.message : "Failed to remove transaction",
     })
-
-    // update list
-    transactions = transactions?.filter(transaction => transaction.id !== id) ?? []
+  
+    await refetch()
   }
 
   const t = useTranslations("finances")
   const tGeneral = useTranslations("general")
-
-
-  function updateList(_newItem: TransactionWithWallet) {
-    // setTransactions([...transactions, newItem])
-  }
 
   return (
     <>
@@ -69,7 +62,7 @@ export function TransactionList() {
             <div className="p-4 text-center text-muted-foreground flex-1 flex justify-center items-center">
               <LoadingSpinner className="w-6 h-6" />
             </div>
-          ) : transactions && transactions.length > 0 ? (
+          ) : transactions && transactions.length > 0 && !isLoading ? (
             <div className="flex-1 flex flex-col">
               <Table>
                 <TableHeader>
@@ -86,7 +79,7 @@ export function TransactionList() {
                     <TableRow key={transaction.id}>
                       <TableCell>
                         {transaction.transaction_date ? (
-                          DateTime.fromJSDate(transaction.transaction_date).toFormat("dd/MM/yy")
+                          new Date(transaction.transaction_date).toLocaleDateString()
                         ) : (
                           "-"
                         )}
@@ -120,23 +113,14 @@ export function TransactionList() {
                   ))}
                 </TableBody>
               </Table>
-              <Button onClick={() => setIsModalOpen(true)} className="w-full mt-4">
-                <PlusCircle className="w-4 h-4 mr-2" />
-                {t("add_transaction")}
-              </Button>
+              <div className="mt-6 pt-4 border-t">
+                <Button onClick={() => setIsModalOpen(true)} className="w-full">
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                  {t("add_transaction")}
+                </Button>
+              </div>
             </div>
           ) : (
-            // <div className="flex-1 flex flex-col items-center justify-center py-10 rounded-lg bg-muted/40 border border-dashed border-border/50 p-3">
-            //   <div className="mb-3 flex items-center justify-center w-16 h-16 rounded-full bg-muted">
-            //     <Banknote className="w-8 h-8 text-muted-foreground/50" />
-            //   </div>
-            //   <div className="text-lg font-semibold text-muted-foreground mb-1">
-            //     No transactions found
-            //   </div>
-            //   <div className="text-sm text-muted-foreground/70 text-center max-w-xs">
-            //     Start by adding your first transaction to track your spending and income.
-            //   </div>
-            // </div>
             <NoItems
               icon={Banknote}
               title="No transactions found"
@@ -152,7 +136,7 @@ export function TransactionList() {
       <AddNewTransactionModal 
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        onSave={updateList}
+        onSave={async () => await refetch()}
       />
     </>
   )

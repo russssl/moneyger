@@ -48,8 +48,7 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
             )}
           >
             {value ? (
-              // format(value, "PPP")
-              DateTime.fromJSDate(value).toFormat("PPP")
+              DateTime.fromJSDate(value).toFormat("DDD")
             ) : (
               <span>{placeholder}</span>
             )}
