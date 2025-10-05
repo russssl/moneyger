@@ -6,7 +6,6 @@ import { useState } from "react"
 import { type TransactionWithWallet } from "@/server/db/transaction"
 import { Button } from "../ui/button"
 import AddNewTransactionModal from "./transactions/add-new-transaction-modal"
-import { DateTime } from "luxon"
 import { formatCurrency } from "@/hooks/currencies"
 import { LoadingSpinner } from "../ui/loading"
 import { toast } from "sonner"
@@ -32,9 +31,7 @@ export function TransactionList() {
   async function removeTransaction(id: string) {
     if (removeTransactionMutation.isPending) return
       
-    const removePromise = () => removeTransactionMutation.mutateAsync({ id: id })
-      
-    toast.promise(removePromise, {
+    toast.promise(removeTransactionMutation.mutateAsync({ id: id }), {
       loading: "Removing transaction...",
       success: "Transaction removed successfully",
       error: (error) => error instanceof Error ? error.message : "Failed to remove transaction",

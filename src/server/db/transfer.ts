@@ -2,6 +2,7 @@ import { pgTable, timestamp, varchar, doublePrecision } from "drizzle-orm/pg-cor
 import { user } from "./user";
 import { wallets } from "./wallet";
 import { relations } from "drizzle-orm";
+import { transactions } from "./transaction";
 
 export const transfers = pgTable("transfer", {
   id: varchar("id", { length: 255 })
@@ -11,6 +12,9 @@ export const transfers = pgTable("transfer", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => user.id),
+  transactionId: varchar("transaction_id", { length: 255 })
+    .notNull()
+    .references(() => transactions.id),
   fromWalletId: varchar("from_wallet_id", { length: 255 })
     .notNull()
     .references(() => wallets.id),
@@ -26,6 +30,7 @@ export const transfers = pgTable("transfer", {
 
 export const transfersRelations = relations(transfers, ({ one }) => ({
   user: one(user, { fields: [transfers.userId], references: [user.id] }),
+  transaction: one(transactions, { fields: [transfers.transactionId], references: [transactions.id] }),
   fromWallet: one(wallets, { fields: [transfers.fromWalletId], references: [wallets.id], relationName: "transferFromWallet" }),
   toWallet: one(wallets, { fields: [transfers.toWalletId], references: [wallets.id], relationName: "transferToWallet" }),
 }));

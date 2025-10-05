@@ -129,7 +129,7 @@ export default function AddNewWalletModal({
 
       if (id) {
         toast.promise(
-          updateWallet.mutateAsync({ ...payload, id }),
+          updateWallet.mutateAsync({ ...payload }),
           {
             loading: "Updating wallet...",
             success: "Wallet updated successfully",
