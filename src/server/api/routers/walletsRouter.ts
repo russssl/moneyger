@@ -26,7 +26,7 @@ walletsRouter.get("/full", authenticated, async (c) => {
   });
 
   if (!user.currency) {
-    // user still dont have a currency, return empty data
+    // user still doesn't have a currency, return empty data
     return c.json({
       totalBalance: 0,
       wallets: [],

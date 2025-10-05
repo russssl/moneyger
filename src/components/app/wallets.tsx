@@ -15,8 +15,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [items, setItems] = useState<WalletType[]>([]);
-  // const { data: wallets, isLoading } = api.wallets.getWallets.useQuery();
-  const { data: wallets, isLoading } = useFetch<WalletType[]>("/api/wallets");
+  const { data: wallets, isLoading, refetch } = useFetch<WalletType[]>("/api/wallets");
   const t = useTranslations("finances");
 
   useEffect(() => {
@@ -34,22 +33,6 @@ export default function Wallets({className}: {className?: string | undefined}) {
     setItems(prevItems => prevItems.filter(item => item.id !== id));
     setIsModalOpen(false);
     setSelectedId(undefined);
-  };
-
-  const saveWallets = (newItem: WalletType) => {
-    setItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === newItem.id);
-      if (existingItem) {
-        const existingIndex = prevItems.indexOf(existingItem);
-        const updatedItems = [...prevItems];
-        updatedItems[existingIndex] = newItem;
-        return updatedItems;
-      } else {
-        return [...prevItems, newItem];
-      }
-    });
-    setSelectedId(undefined);
-    setIsModalOpen(false);
   };
 
   return (
@@ -84,7 +67,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={(wallet: WalletType) => saveWallets(wallet)} id={selectedId} onDelete={(id) => deleteWallet(id)}/>
+      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={(id) => deleteWallet(id)}/>
     </div>
   );
 }

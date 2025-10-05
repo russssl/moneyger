@@ -8,11 +8,12 @@ import CurrencySelect from "../currency-select";
 import { LoadingSpinner } from "../ui/loading";
 import DeleteButton from "../ui/delete-button";
 import { useFetch, useMutation } from "@/hooks/use-api";
+import { toast } from "sonner";
 
 interface WalletFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (wallet: any) => void;
+  onSave: () => void;
   id?: string;
   onDelete?: (id: string) => void;
 }
@@ -59,7 +60,7 @@ export default function AddNewWalletModal({
 }: WalletFormModalProps) {
   // Create mutations for wallet operations
   const createWallet = useMutation<any, {name: string, currency: string, balance: number}>("/api/wallets", "POST");
-  const updateWallet = useMutation<any, { id: string, name: string, currency: string }>(id ? `/api/wallets/${id}` : "/api/wallets/", "PUT");
+  const updateWallet = useMutation<any, { id: string, name: string, currency: string }>(id ? `/api/wallets/${id}` : "/api/wallets/", "POST");
   const deleteWallet = useMutation<any, void>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -126,11 +127,26 @@ export default function AddNewWalletModal({
         return;
       }
 
-      const result = id
-        ? await updateWallet.mutateAsync({ ...payload, id })
-        : await createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 });
-
-      onSave(result);
+      if (id) {
+        toast.promise(
+          updateWallet.mutateAsync({ ...payload, id }),
+          {
+            loading: "Updating wallet...",
+            success: "Wallet updated successfully",
+            error: (error) => error instanceof Error ? error.message : "Failed to update wallet",
+          }
+        );
+      } else {
+        toast.promise(
+          createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 }),
+          {
+            loading: "Creating wallet...",
+            success: "Wallet created successfully",
+            error: (error) => error instanceof Error ? error.message : "Failed to create wallet",
+          }
+        );
+      }
+      onSave();
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving wallet:", error);

@@ -19,6 +19,8 @@ export default async function Component() {
     redirect("/");
   }
   return (
-    <RegisterForm />
+    <div className="fixed inset-0 flex items-center justify-center min-h-screen w-full overflow-hidden">
+      <RegisterForm />
+    </div>
   )
 }

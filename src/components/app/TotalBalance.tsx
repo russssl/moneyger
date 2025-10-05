@@ -23,7 +23,7 @@ export default function TotalBalance() {
   const [wallets, setWallets] = useState<[]>([]);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [userMainCurrency, setUserMainCurrency] = useState<string | null>(null);
-  const { data, isLoading } = useFetch<{wallets: [], totalBalance: number, userMainCurrency: string}>("/api/wallets/full");
+  const { data, isLoading, refetch } = useFetch<{wallets: [], totalBalance: number, userMainCurrency: string}>("/api/wallets/full");
 
   useEffect(() => {
     if (data) {
@@ -73,7 +73,7 @@ export default function TotalBalance() {
                 />
               ) : (
                 <>
-                  <DashboardWallets wallets={wallets} walletItemPadding={WALLET_ITEM_PADDING} iconSize={ICON_SIZE} textSizes={TEXT_SIZES}/>
+                  <DashboardWallets wallets={wallets} walletItemPadding={WALLET_ITEM_PADDING} iconSize={ICON_SIZE} textSizes={TEXT_SIZES} refetch={refetch}/>
                 </>
               )}
             </div>
