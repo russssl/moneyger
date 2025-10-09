@@ -20,8 +20,8 @@ export const transactions = pgTable("transaction", {
   note: varchar("note", { length: 255 }),
   category: varchar("category", { length: 255 }),
   type: varchar("type", { length: 255 }), // should be one of the following: "income", "expense", "transfer", "adjustment"
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({

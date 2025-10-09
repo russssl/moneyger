@@ -61,9 +61,9 @@ export default function AddNewWalletModal({
   id,
 }: WalletFormModalProps) {
   // Create mutations for wallet operations
-  const createWallet = useMutation<any, NewWallet>("/api/wallets", "POST");
-  const updateWallet = useMutation<any, Wallet>(id ? `/api/wallets/${id}` : "/api/wallets/", "POST");
-  const deleteWallet = useMutation<any, void>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
+  const createWallet = useMutation<any, NewWallet>("/api/wallets");
+  const updateWallet = useMutation<any, Wallet>("/api/wallets");
+  const deleteWallet = useMutation<any, void>("/api/wallets", "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -74,9 +74,9 @@ export default function AddNewWalletModal({
         dispatch({
           type: "RESET",
           payload: {
-            walletName: walletData.name ?? "",
-            currency: walletData.currency ?? "",
-            balance: walletData.balance ?? null,
+            walletName: walletData.name,
+            currency: walletData.currency,
+            balance: walletData.balance,
           },
         });
         setIsInitialized(true);
@@ -131,7 +131,7 @@ export default function AddNewWalletModal({
 
       if (id) {
         toast.promise(
-          updateWallet.mutateAsync({ ...payload }),
+          updateWallet.mutateAsync({ ...payload, id }),
           {
             loading: "Updating wallet...",
             success: "Wallet updated successfully",
@@ -157,7 +157,6 @@ export default function AddNewWalletModal({
 
   const handleModalClose = () => {
     onOpenChange(false);
-    // Do not reset state here; let useEffect handle it on open
   };
 
   return (

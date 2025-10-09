@@ -24,8 +24,8 @@ export const transfers = pgTable("transfer", {
   amountSent: doublePrecision("amount_sent").notNull(),
   amountReceived: doublePrecision("amount_received").notNull(), // this can be different from amountSent if the currency is different
   exchangeRate: doublePrecision("exchange_rate").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const transfersRelations = relations(transfers, ({ one }) => ({

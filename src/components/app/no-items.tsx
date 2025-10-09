@@ -15,7 +15,7 @@ type NoItemsProps = {
   title: string
   description?: string
   icon: LucideIcon
-  button?: { text: string, onClick: () => void, icon: LucideIcon }
+  button?: { text: string, onClick: () => void, icon?: LucideIcon }
 }
 
 export function NoItems({ title, description, icon: Icon, button }: NoItemsProps) {
@@ -23,7 +23,7 @@ export function NoItems({ title, description, icon: Icon, button }: NoItemsProps
     <Empty className="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          {Icon ? <Icon /> : null}
+          <Icon />
         </EmptyMedia>
         <EmptyTitle>{title}</EmptyTitle>
         {description && (
