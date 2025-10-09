@@ -2,9 +2,9 @@ import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, Drawer
 import { Button } from "./ui/button"
 import { Wallet, Plus, ArrowRightLeft, Target, PiggyBank } from "lucide-react"
 import { cn } from "@/lib/utils"
-import AddNewTransactionModal from "./app/transactions/add-new-transaction-modal"
+import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
 import { useState } from "react"
-import AddNewWalletModal from "./app/add-wallet-modal"
+import EditWalletModal from "@/components/app/edit-wallet-modal"
 import { useTranslations } from "next-intl"
 
 type Action = {
@@ -160,13 +160,13 @@ export function BottomBarActionButton({ updateList }: { updateList: () => void }
           </div>
         </DrawerContent>
       </Drawer>
-      <AddNewTransactionModal 
+      <EditTransactionModal 
         open={isTransactionModalOpen}
         onOpenChange={setTransactionModalOpen}
         onSave={updateList}
         defaultTab={transactionTab}
       />
-      <AddNewWalletModal
+      <EditWalletModal
         open={isWalletModalOpen}
         onOpenChange={setWalletModalOpen}
         // eslint-disable-next-line @typescript-eslint/no-empty-function

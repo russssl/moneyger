@@ -15,12 +15,13 @@ import LoadingButton from "./loading-button";
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "./error-alert";
 import { useFetch, useMutation } from "@/hooks/use-api";
+import { type NewUser } from "@/server/db/user";
 
 export default function SetupModal() {
   const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const saveDataMutation = useMutation("/api/user");
+  const saveDataMutation = useMutation<Partial<NewUser>>("/api/user");
 
   const {data: userData} = useFetch<{currency: string | undefined}>("/api/user/me");
   
@@ -43,6 +44,9 @@ export default function SetupModal() {
         setError(error.message || "Failed to save settings");
         console.error(error);
         setOpen(true);
+      },
+      onSuccess: () => {
+        setOpen(false);
       },
     });
 

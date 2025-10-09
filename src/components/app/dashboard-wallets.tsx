@@ -1,7 +1,7 @@
 "use client"
 import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
-import AddNewWalletModal from "./add-wallet-modal";
+import EditWalletModal from "@/components/app/edit-wallet-modal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 export default function DashboardWallets({ wallets, walletItemPadding, iconSize, textSizes, refetch }: { wallets: Wallet[], walletItemPadding: string, iconSize: string, textSizes: {
@@ -87,7 +87,7 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
           </div>
         ))}
       </div>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={handleDeleteWallet} />
+      <EditWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={handleDeleteWallet} />
     </>
   );
 }

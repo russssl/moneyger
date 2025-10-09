@@ -6,10 +6,10 @@ import {
   Minus,
 } from "lucide-react"
 import QuickActionButton, { type QuickAction } from "./quick-action-button"
-import AddNewTransactionModal from "@/components/app/transactions/add-new-transaction-modal"
+import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import AddNewWalletModal from "@/components/app/add-wallet-modal";
+import EditWalletModal from "@/components/app/edit-wallet-modal";
 
 export function QuickActions({ className }: { className?: string }) {
   const [newTransactionModalOpen, setNewTransactionModalOpen] = useState(false);
@@ -84,7 +84,7 @@ export function QuickActions({ className }: { className?: string }) {
           <QuickActionButton key={action.id} action={action} />
         ))}
       </div>
-      <AddNewTransactionModal
+      <EditTransactionModal
         key={newTransactionType}
         open={newTransactionModalOpen}
         defaultTab={newTransactionType}
@@ -93,7 +93,7 @@ export function QuickActions({ className }: { className?: string }) {
         }}
         onOpenChange={setNewTransactionModalOpen}
       />
-      <AddNewWalletModal
+      <EditWalletModal
         open={newWalletModalOpen}
         onOpenChange={setNewWalletModalOpen}
         onSave={() => {

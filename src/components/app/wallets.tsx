@@ -4,7 +4,7 @@ import { Wallet, MoreVertical, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import AddNewWalletModal from "./add-wallet-modal"
+import EditWalletModal from "@/components/app/edit-wallet-modal"
 import { LoadingSpinner } from "../ui/loading"
 import { NoItems } from "./no-items"
 import { useTranslations } from "next-intl"
@@ -67,7 +67,7 @@ export default function Wallets({className}: {className?: string | undefined}) {
           </div>
         </CardContent>
       </Card>
-      <AddNewWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={(id) => deleteWallet(id)}/>
+      <EditWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={(id) => deleteWallet(id)}/>
     </div>
   );
 }

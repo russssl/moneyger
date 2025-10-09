@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import LoadingButton from "../loading-button";
 
-interface WalletFormModalProps {
+interface EditWalletModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: () => void;
@@ -53,13 +53,13 @@ function walletFormReducer(state: WalletFormState, action: WalletFormAction): Wa
   }
 }
 
-export default function AddNewWalletModal({
+export default function EditWalletModal({
   open,
   onOpenChange,
   onSave,
   onDelete,
   id,
-}: WalletFormModalProps) {
+}: EditWalletModalProps) {
   // Create mutations for wallet operations
   const createWallet = useMutation<any, NewWallet>("/api/wallets");
   const updateWallet = useMutation<any, Wallet>("/api/wallets");

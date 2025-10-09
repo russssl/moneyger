@@ -5,7 +5,7 @@ import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, TrashIcon, Pl
 import { useState } from "react"
 import { type TransactionWithWallet } from "@/server/db/transaction"
 import { Button } from "../ui/button"
-import AddNewTransactionModal from "./transactions/add-new-transaction-modal"
+import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
 import { formatCurrency } from "@/hooks/currencies"
 import { LoadingSpinner } from "../ui/loading"
 import { toast } from "sonner"
@@ -130,7 +130,7 @@ export function TransactionList() {
           )}
         </CardContent>
       </Card>
-      <AddNewTransactionModal 
+      <EditTransactionModal 
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onSave={async () => await refetch()}

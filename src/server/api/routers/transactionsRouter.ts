@@ -231,89 +231,96 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
   const { user } = await getUserData(c);
   const { id } = c.req.valid("param");
 
-  const transaction = await db.query.transactions.findFirst({
-    where: and(
-      eq(transactions.id, id),
-      eq(transactions.userId, user.id),
-    ),
-  });
+  const transaction = await db.transaction(async (tx) => {
+    const transaction = await tx.query.transactions.findFirst({
+      where: and(
+        eq(transactions.id, id),
+        eq(transactions.userId, user.id),
+      ),
+    });
 
-  if (!transaction) {
-    throw new Error("Transaction not found");
-  }
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
 
-  const wallet = await db.query.wallets.findFirst({
-    where: and(
-      eq(wallets.id, transaction.walletId),
-      eq(wallets.userId, user.id),
-    ),
-  });
+    const wallet = await tx.query.wallets.findFirst({
+      where: and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      ),
+    });
   
-  if (!wallet) {
-    throw new Error("Wallet not found");
-  }
+    if (!wallet) {
+      throw new Error("Wallet not found");
+    }
 
-  if (transaction.type !== "transfer") {
+    if (transaction.type !== "transfer") {
 
-    const balance = transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
-    await db.update(wallets).set({
-      balance,
-    }).where(and(
-      eq(wallets.id, transaction.walletId),
-      eq(wallets.userId, user.id),
-    )).execute();
-    return c.json(transaction);
-  }
+      const balance = transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
+      await tx.update(wallets).set({
+        balance,
+      }).where(and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      )).execute();
 
-  const transfer = await db.query.transfers.findFirst({
-    where: and(
-      eq(transfers.transactionId, transaction.id),
-      eq(transfers.fromWalletId, transaction.walletId),
-      eq(transfers.userId, user.id),
-    ),
-  });
+      // delete transaction
+      await tx.delete(transactions).where(eq(transactions.id, transaction.id)).execute();
 
-  if (!transfer) {
-    throw new Error("Transfer not found");
-  }
+      return transaction;
+    }
 
-  const destinationWallet = await db.query.wallets.findFirst({
-    where: and(
-      eq(wallets.id, transfer.toWalletId),
-      eq(wallets.userId, user.id),
-    ),
-  });
+    const transfer = await tx.query.transfers.findFirst({
+      where: and(
+        eq(transfers.transactionId, transaction.id),
+        eq(transfers.fromWalletId, transaction.walletId),
+        eq(transfers.userId, user.id),
+      ),
+    });
+
+    if (!transfer) {
+      throw new Error("Transfer not found");
+    }
+
+    const destinationWallet = await tx.query.wallets.findFirst({
+      where: and(
+        eq(wallets.id, transfer.toWalletId),
+        eq(wallets.userId, user.id),
+      ),
+    });
   
-  if (!destinationWallet) {
-    throw new Error("Destination wallet not found");
-  }
+    if (!destinationWallet) {
+      throw new Error("Destination wallet not found");
+    }
 
-  const sourceBalance = wallet.balance + transfer.amountSent;
-  const destinationBalance = destinationWallet.balance - transfer.amountReceived;
+    const sourceBalance = wallet.balance + transfer.amountSent;
+    const destinationBalance = destinationWallet.balance - transfer.amountReceived;
 
-  await Promise.all([
-    db.update(wallets).set({
-      balance: sourceBalance,
-    }).where(and(
-      eq(wallets.id, transaction.walletId),
-      eq(wallets.userId, user.id),
-    )).execute(),
-    db.update(wallets).set({
-      balance: destinationBalance,
-    }).where(and(
-      eq(wallets.id, transfer.toWalletId),
-      eq(wallets.userId, user.id),
-    )).execute(),
-    db.delete(transfers).where(and(
-      eq(transfers.transactionId, transaction.id),
-      eq(transfers.userId, user.id),
-    )).execute(),
-    db.delete(transactions).where(and(
-      eq(transactions.id, transaction.id),
-      eq(transactions.userId, user.id),
-    )).execute(),
-  ]);
+    await Promise.all([
+      tx.update(wallets).set({
+        balance: sourceBalance,
+      }).where(and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      )).execute(),
+      tx.update(wallets).set({
+        balance: destinationBalance,
+      }).where(and(
+        eq(wallets.id, transfer.toWalletId),
+        eq(wallets.userId, user.id),
+      )).execute(),
+      tx.delete(transfers).where(and(
+        eq(transfers.transactionId, transaction.id),
+        eq(transfers.userId, user.id),
+      )).execute(),
+      tx.delete(transactions).where(and(
+        eq(transactions.id, transaction.id),
+        eq(transactions.userId, user.id),
+      )).execute(),
+    ]);
 
+    return transaction;
+  });
   return c.json(transaction);
 });
 

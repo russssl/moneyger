@@ -20,7 +20,7 @@ import LoadingButton from "@/components/loading-button";
 import { LoadingSpinner } from "@/components/ui/loading";
 type TransactionType = "income" | "expense" | "transfer";
 
-interface AddNewTransactionModalProps {
+interface EditTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (transaction: any) => void;
@@ -62,12 +62,12 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-export default function AddNewTransactionModal({
+export default function EditTransactionModal({
   open,
   onOpenChange,
   onSave,
   defaultTab = "expense",
-}: AddNewTransactionModalProps) {
+}: EditTransactionModalProps) {
   const t = useTranslations("finances");
   const tService = useTranslations("service");
   const tGeneral = useTranslations("general");
