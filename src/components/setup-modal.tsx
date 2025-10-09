@@ -10,22 +10,22 @@ import {
   ModalTitle,
 } from "@/components/modal";
 import { useEffect, useState } from "react";
-import { api } from "@/trpc/react";
 import CurrencySelect from "./currency-select";
 import LoadingButton from "./loading-button";
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "./error-alert";
+import { useFetch, useMutation } from "@/hooks/use-api";
 
 export default function SetupModal() {
   const [currency, setCurrency] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const saveDataMutation = api.user.saveUserData.useMutation();
-  const { data: userData } = api.user.getUserData.useQuery();
+  const saveDataMutation = useMutation("/api/user");
 
+  const {data: userData} = useFetch<{currency: string | undefined}>("/api/user/me");
+  
   const t = useTranslations("setup-modal");
   const serviceTranslations = useTranslations("service");
-
   useEffect(() => {
     if (userData) {
       setCurrency(userData.currency ?? undefined);
@@ -33,10 +33,10 @@ export default function SetupModal() {
     }
   }, [userData]);
 
-  function saveSettings() {
+  async function saveSettings() {
     if (!currency) return;
 
-    saveDataMutation.mutate({
+    await saveDataMutation.mutateAsync({
       currency,
     }, {
       onError: (error) => {

@@ -4,9 +4,8 @@ import { cookies } from "next/headers";
 export default getRequestConfig(async () => {
   // Get the locale from cookies
   let locale = (await cookies())?.get("locale")?.value;
-
   if (!locale) {
-    const navigatorLocale = navigator.language;
+    const navigatorLocale = "en";
     const supportedLocales = ["en", "pl", "ua"];
     if (navigatorLocale && supportedLocales.includes(navigatorLocale)) {
       locale = navigatorLocale;

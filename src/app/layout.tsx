@@ -3,14 +3,13 @@ import "@/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import type{ Viewport, Metadata } from "next";
 
-import { TRPCReactProvider } from "@/trpc/react";
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "next-themes";
-import { PostHogProvider } from "./providers";
-import { Toaster } from "@/components/ui/sonner";
+import { PostHogProvider, ReactQueryProvider } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import PersistentModals from "@/components/persistent-modals";
+import { Toaster } from "@/components/ui/sonner"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -22,7 +21,6 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "Moneyger",
   description: "Manage your money with Moneyger",
-  manifest: "/manifest.json",
   appleWebApp: {
     title: "Moneyger",
     statusBarStyle: "default",
@@ -43,17 +41,17 @@ export default async function RootLayout({
     <html lang={locale} className={GeistSans.variable} suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <TRPCReactProvider>
+          <ReactQueryProvider>
             <NextIntlClientProvider locale={locale} messages={messages}>
               <SessionWrapper>
+                <Toaster richColors invert closeButton/>
                 <PostHogProvider>
                   <PersistentModals />
                   {children}
-                  <Toaster />
                 </PostHogProvider>
               </SessionWrapper>
             </NextIntlClientProvider>
-          </TRPCReactProvider>
+          </ReactQueryProvider>
         </ThemeProvider>
       </body>
     </html>

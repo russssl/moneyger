@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button"
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner"; // Add this import
+import { Spinner } from "@/components/ui/spinner"
 
 export default function LoadingButton({
   children,
@@ -33,7 +33,7 @@ export default function LoadingButton({
       onClick={handleClick}
     >
       {loading && (
-        <Loader2 className='animate-spin'/>
+        <Spinner />
       )}
       {children}
     </Button>

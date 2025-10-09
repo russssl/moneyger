@@ -3,6 +3,21 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useIsMobile } from "@/hooks/use-mobile";
 type TransactionType = "income" | "expense" | "transfer";
+
+const ShortcutBadge = ({ shortcut, ariaLabel }: { shortcut: string; ariaLabel: string }) => {
+  const isMobile = useIsMobile();
+  if (isMobile) return null;
+  
+  return (
+    <span
+      className="absolute top-1 right-2 text-xs bg-foreground/10 text-foreground rounded px-1 pointer-events-none border-2 border-foreground/50"
+      aria-label={ariaLabel}
+    >
+      {shortcut}
+    </span>
+  );
+};
+
 export default function TransactionTypeSelect({ value, setValue }: { value: TransactionType, setValue: (value: TransactionType) => void}) {
   const t = useTranslations("general");
 
@@ -22,12 +37,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
       >
         <ArrowUpIcon className="h-4 w-4" />
         {t("expense")}
-        {!useIsMobile() && <span
-          className="absolute top-1 right-2 text-xs bg-muted-foreground/10 text-muted-foreground rounded px-1 pointer-events-none"
-          aria-label="Shortcut E"
-        >
-          {keyIndicators.expense}
-        </span>}
+        {!useIsMobile() && <ShortcutBadge shortcut={keyIndicators.expense} ariaLabel="Shortcut E" />}
       </Button>
       <Button
         variant={value === "income" ? "success" : "ghost"}
@@ -37,12 +47,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
       >
         <ArrowDownIcon className="h-4 w-4" />
         {t("income")}
-        {!useIsMobile() && <span
-          className="absolute top-1 right-2 text-xs bg-muted-foreground/10 text-muted-foreground rounded px-1 pointer-events-none"
-          aria-label="Shortcut I"
-        >
-          {keyIndicators.income}
-        </span>}
+        {!useIsMobile() && <ShortcutBadge shortcut={keyIndicators.income} ariaLabel="Shortcut I" />}
       </Button>
       <Button
         variant={value === "transfer" ? "darkBlue" : "ghost"}
@@ -52,12 +57,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
       >
         <ArrowLeftRightIcon className="h-4 w-4" />
         {t("transfer")}
-        {!useIsMobile() && <span
-          className="absolute top-1 right-2 text-xs bg-muted-foreground/10 text-muted-foreground rounded px-1 pointer-events-none"
-          aria-label="Shortcut T"
-        >
-          {keyIndicators.transfer}
-        </span>}
+        {!useIsMobile() && <ShortcutBadge shortcut={keyIndicators.transfer} ariaLabel="Shortcut T" />}
       </Button>
     </div>
   );

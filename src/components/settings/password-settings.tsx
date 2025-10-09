@@ -1,16 +1,19 @@
 "use client"
 import { useMemo, useState, useEffect } from "react"
-import { Key, AlertCircle, Check, X } from "lucide-react"
+import { Key, AlertCircle, Check, X, Info } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import PasswordInput from "@/components/password-input"
 import LoadingButton from "@/components/loading-button"
-import { api } from "@/trpc/react"
 import { ErrorAlert } from "../error-alert"
 import { checkStrength, getStrengthText, getStrengthColor } from "@/hooks/passwordUtil"
 import { useTranslations } from "next-intl"
+import { useMutation } from "@/hooks/use-api"
+import { Alert, AlertDescription } from "../ui/alert"
+
 
 export default function PasswordSettings({...props}) {
+  const { passwordChangeAllowed } = props;
   const [oldPassword, setOldPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [error, setError] = useState("")
@@ -33,23 +36,20 @@ export default function PasswordSettings({...props}) {
   }, [strength]);
   
   
-  const updatePasswordMutation = api.user.updatePassword.useMutation();
-
+  const {mutate: updatePasswordMutation, isPending, error: updatePasswordError} = useMutation<{ oldPassword: string; newPassword: string }, any>("/api/user/updatePassword");
   const updatePassword = () => {
-    updatePasswordMutation.mutate({
+    updatePasswordMutation({
       oldPassword,
       newPassword,
-    }, {
-      onError: (error) => {
-        setError(error.message);
-      },
-      onSuccess: () => {
-        setOldPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-        setError("");
-      }
-    })
+    });
+    if (updatePasswordError) {
+      setError(updatePasswordError.message);
+    } else {
+      setError("");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
   }
   
 
@@ -67,49 +67,61 @@ export default function PasswordSettings({...props}) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="current-password">{settingsT("current_password")}</Label>
-            <PasswordInput password={oldPassword} setPassword={setOldPassword} placeholder={settingsT("current_password")} />
+            <PasswordInput password={oldPassword} setPassword={setOldPassword} placeholder={settingsT("current_password")} disabled={!passwordChangeAllowed}/>
           </div>
           <div className="space-y-2">
             <Label htmlFor="new-password">{settingsT("new_password")}</Label>
-            <PasswordInput password={newPassword} setPassword={setNewPassword} placeholder={settingsT("new_password")} />
+            <PasswordInput password={newPassword} setPassword={setNewPassword} placeholder={settingsT("new_password")} disabled={!passwordChangeAllowed}/>
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirm-password">{settingsT("confirm_new_password")}</Label>
-            <PasswordInput password={confirmPassword} setPassword={setConfirmPassword} placeholder={settingsT("confirm_new_password")} />
+            <PasswordInput password={confirmPassword} setPassword={setConfirmPassword} placeholder={settingsT("confirm_new_password")} disabled={!passwordChangeAllowed}/>
           </div>
-          <div
-            className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border"
-            role="progressbar"
-            aria-valuenow={strengthScore}
-            aria-valuemin={0}
-            aria-valuemax={4}
-            aria-label="Password strength"
-          >
-            <div
-              className={`h-full ${getStrengthColor(strengthScore)} transition-all duration-500 ease-out`}
-              style={{ width: `${(strengthScore / 4) * 100}%` }}
-            ></div>
-          </div>
-          <p id="password-strength" className="mb-2 text-sm font-medium text-foreground">
-            {t(getStrengthText(strengthScore))}. {t("must_contain")}:
-          </p>
-          <ul className="space-y-1.5" aria-label="Password requirements">
-            {strength.map((req, index) => (
-              <li key={index} className="flex items-center gap-2">
-                {req.met ? (
-                  <Check size={16} className="text-emerald-500" aria-hidden="true" />
-                ) : (
-                  <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
-                )}
-                <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
-                  {t(req.text)}
-                  <span className="sr-only">
-                    {req.met ? " - Requirement met" : " - Requirement not met"}
-                  </span>
+          {passwordChangeAllowed ? (
+            <>
+              <div 
+                className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border"
+                role="progressbar"
+                aria-valuenow={strengthScore}
+                aria-valuemin={0}
+                aria-valuemax={4}
+                aria-label="Password strength"
+              >
+                <div
+                  className={`h-full ${getStrengthColor(strengthScore)} transition-all duration-500 ease-out`}
+                  style={{ width: `${(strengthScore / 4) * 100}%` }}
+                ></div>
+              </div>
+              <p id="password-strength" className="mb-2 text-sm font-medium text-foreground">
+                {t(getStrengthText(strengthScore))}. {t("must_contain")}:
+              </p>
+              <ul className="space-y-1.5" aria-label="Password requirements">
+                {strength.map((req, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    {req.met ? (
+                      <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                    ) : (
+                      <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
+                    )}
+                    <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
+                      {t(req.text)}
+                      <span className="sr-only">
+                        {req.met ? " - Requirement met" : " - Requirement not met"}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ): (
+            <Alert variant="info" className="mt-3">
+              <AlertDescription>
+                <span>
+                  To enable password changes, log in with your email and password.
                 </span>
-              </li>
-            ))}
-          </ul>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
         <div className="mt-4">
           {!passwordsMatch && (
@@ -128,8 +140,8 @@ export default function PasswordSettings({...props}) {
             updatePassword();
           }}
           toastText="Password updated successfully"
-          loading={updatePasswordMutation.isPending}
-          disabled={!passwordsMatch || updatePasswordMutation.isPending || !oldPassword || !newPassword}
+          loading={isPending}
+          disabled={!passwordsMatch || isPending || !oldPassword || !newPassword}
         >{settingsT("update_password")}
         </LoadingButton>
       </CardFooter>

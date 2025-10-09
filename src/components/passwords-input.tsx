@@ -38,6 +38,7 @@ export default function PasswordsInput({
           password={localPassword} 
           setPassword={setLocalPassword} 
           placeholder={t("password")} 
+          disabled={false}
         />
       </div>
       <div className="space-y-2 mt-4">
@@ -49,6 +50,7 @@ export default function PasswordsInput({
           password={confirmPassword} 
           setPassword={setConfirmPassword} 
           placeholder={t("confirm_password")}
+          disabled={false}
         />
       </div>
       <div className="mt-3">

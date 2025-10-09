@@ -63,7 +63,6 @@ const config = {
       {
         "drizzleObjectName": [
           "db",
-          "ctx.db"
         ]
       }
     ]

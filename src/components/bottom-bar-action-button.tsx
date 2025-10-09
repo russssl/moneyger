@@ -169,6 +169,8 @@ export function BottomBarActionButton({ updateList }: { updateList: () => void }
       <AddNewWalletModal
         open={isWalletModalOpen}
         onOpenChange={setWalletModalOpen}
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onDelete={() => {}} // TODO: Add delete function
         onSave={updateList}
       />
     </>

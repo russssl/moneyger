@@ -3,7 +3,6 @@ import { type Transaction, transactions, transactions as transactionsSchema} fro
 import { and, eq, gte, lte } from "drizzle-orm";
 import { env } from "@/env";
 import { redis } from "@/server/api/cache/cache";
-import { type SelectUserSettings, userSettings } from "@/server/db/userSettings";
 import { type Wallet, wallets } from "@/server/db/wallet";
 import { DateTime } from "luxon";
 
@@ -120,9 +119,9 @@ type WalletWithTransactions = Wallet & {
   transactions: Transaction[];
 }
 
-export async function calculateTotalBalance(userId: string, userMainCurrency: string, ctx: any, startDate?: Date | null, endDate?: Date | null): Promise<WalletsStats> {
+export async function calculateTotalBalance(userId: string, userMainCurrency: string, startDate?: Date | null, endDate?: Date | null): Promise<WalletsStats> {
   let totalBalance = 0;
-  const res_wallets: WalletWithTransactions[] = await ctx.db.query.wallets.findMany({
+  const res_wallets: WalletWithTransactions[] = await db.query.wallets.findMany({
     where: eq(wallets.userId, userId),
     with: {
       transactions: {
@@ -163,7 +162,6 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
 export async function calculateWalletTrends(
   userId: string, 
   userMainCurrency: string, 
-  ctx: any, 
   days = 30
 ): Promise<WalletTrends> {
   const now = DateTime.now().startOf("day");
@@ -171,10 +169,10 @@ export async function calculateWalletTrends(
   const endDate = now.endOf("day").toJSDate();
 
   // Get current balances (without date filter)
-  const currentBalance = await calculateTotalBalance(userId, userMainCurrency, ctx);
+  const currentBalance = await calculateTotalBalance(userId, userMainCurrency);
   
   // Get balances from 30 days ago
-  const pastBalance = await calculateTotalBalance(userId, userMainCurrency, ctx, startDate, endDate);
+  const pastBalance = await calculateTotalBalance(userId, userMainCurrency, startDate, endDate);
 
   // Calculate total trend with 1 decimal place
   const totalTrend = Number(
