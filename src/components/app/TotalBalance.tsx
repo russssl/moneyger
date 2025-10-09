@@ -7,6 +7,7 @@ import { useFetch } from "@/hooks/use-api";
 import { useEffect, useState } from "react";
 import { NoItems } from "./no-items";
 import { LoadingSpinner } from "../ui/loading";
+import { type Wallet } from "@/server/db/wallet";
 
 const WALLET_ITEM_PADDING = "p-3";
 const ICON_SIZE = "h-8 w-8";
@@ -20,10 +21,10 @@ const TEXT_SIZES = {
 } as const;
 
 export default function TotalBalance() {
-  const [wallets, setWallets] = useState<[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [userMainCurrency, setUserMainCurrency] = useState<string | null>(null);
-  const { data, isLoading, refetch } = useFetch<{wallets: [], totalBalance: number, userMainCurrency: string}>("/api/wallets/full");
+  const { data, isLoading, refetch } = useFetch<{wallets: Wallet[], totalBalance: number, userMainCurrency: string}>("/api/wallets/full");
 
   useEffect(() => {
     if (data) {

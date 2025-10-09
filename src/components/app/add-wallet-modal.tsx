@@ -9,6 +9,8 @@ import { LoadingSpinner } from "../ui/loading";
 import DeleteButton from "../ui/delete-button";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { toast } from "sonner";
+import { type NewWallet, type Wallet } from "@/server/db/wallet";
+import LoadingButton from "../loading-button";
 
 interface WalletFormModalProps {
   open: boolean;
@@ -59,13 +61,13 @@ export default function AddNewWalletModal({
   id,
 }: WalletFormModalProps) {
   // Create mutations for wallet operations
-  const createWallet = useMutation<any, {name: string, currency: string, balance: number}>("/api/wallets", "POST");
-  const updateWallet = useMutation<any, { id: string, name: string, currency: string }>(id ? `/api/wallets/${id}` : "/api/wallets/", "POST");
+  const createWallet = useMutation<any, NewWallet>("/api/wallets", "POST");
+  const updateWallet = useMutation<any, Wallet>(id ? `/api/wallets/${id}` : "/api/wallets/", "POST");
   const deleteWallet = useMutation<any, void>(id ? `/api/wallets/${id}` : "/api/wallets/", "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { data: walletData } = useFetch<{name: string, currency: string, balance: number}>(id ? `/api/wallets/${id}` : null);
+  const { data: walletData } = useFetch<Wallet>(id ? `/api/wallets/${id}` : null);
   useEffect(() => {
     if (open) {
       if (id && walletData) {
@@ -213,13 +215,14 @@ export default function AddNewWalletModal({
                 )}
               </div>
             ) : (
-              <Button
+              <LoadingButton
                 type="submit"
+                loading={createWallet.isPending}
                 disabled={!canSave || createWallet.isPending}
                 className="w-full sm:w-28 self-end"
               >
                 Create
-              </Button>
+              </LoadingButton>
             )}
           </form>}
       </ModalContent>

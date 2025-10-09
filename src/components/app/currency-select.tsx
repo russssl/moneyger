@@ -2,9 +2,10 @@ import { currencies } from "@/hooks/currencies";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { type Wallet } from "@/server/db/wallet";
 
 type CurrencySelectProps = {
-  wallets: {id: string, name: string, currency: string}[];
+  wallets: Wallet[];
   selectedCurrency: string | undefined | null;
   label: string;
   onSelect: (currency: string | undefined | null) => void;

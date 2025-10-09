@@ -1,4 +1,3 @@
-import statsRouter from "@/server/api/routers/stats"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { type NextRequest } from "next/server"
@@ -7,7 +6,7 @@ import { type AuthVariables } from "@/server/api/authenticate"
 import userRouter from "@/server/api/routers/userRouter"
 import walletsRouter from "@/server/api/routers/walletsRouter"
 import transactionsRouter from "@/server/api/routers/transactionsRouter"
-
+import statsRouter from "@/server/api/routers/statsRouter"
 const api = new Hono<AuthVariables>();
 
 // Configure CORS

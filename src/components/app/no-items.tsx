@@ -15,7 +15,7 @@ type NoItemsProps = {
   title: string
   description?: string
   icon: LucideIcon
-  button?: { text: string, onClick: () => void }
+  button?: { text: string, onClick: () => void, icon: LucideIcon }
 }
 
 export function NoItems({ title, description, icon: Icon, button }: NoItemsProps) {
@@ -35,6 +35,7 @@ export function NoItems({ title, description, icon: Icon, button }: NoItemsProps
       <EmptyContent>
         {button && (
           <Button variant="outline" size="sm" onClick={button.onClick}>
+            {button.icon && <button.icon />}
             {button.text}
           </Button>
         )}

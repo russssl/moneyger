@@ -1,5 +1,5 @@
 {
-  "id": "35ac3ed1-1b93-40b4-bd20-67340d43c901",
+  "id": "58f65a20-16b8-447a-92a4-e79ed1638488",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -449,12 +449,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "to_wallet_id": {
-          "name": "to_wallet_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
         "amount": {
           "name": "amount",
           "type": "double precision",
@@ -533,10 +527,125 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.transfer": {
+      "name": "transfer",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(255)",
+          "primaryKey": true,
+          "notNull": true
         },
-        "transaction_to_wallet_id_wallet_id_fk": {
-          "name": "transaction_to_wallet_id_wallet_id_fk",
-          "tableFrom": "transaction",
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transaction_id": {
+          "name": "transaction_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "from_wallet_id": {
+          "name": "from_wallet_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "to_wallet_id": {
+          "name": "to_wallet_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_sent": {
+          "name": "amount_sent",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_received": {
+          "name": "amount_received",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "exchange_rate": {
+          "name": "exchange_rate",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transfer_user_id_user_id_fk": {
+          "name": "transfer_user_id_user_id_fk",
+          "tableFrom": "transfer",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfer_transaction_id_transaction_id_fk": {
+          "name": "transfer_transaction_id_transaction_id_fk",
+          "tableFrom": "transfer",
+          "tableTo": "transaction",
+          "columnsFrom": [
+            "transaction_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfer_from_wallet_id_wallet_id_fk": {
+          "name": "transfer_from_wallet_id_wallet_id_fk",
+          "tableFrom": "transfer",
+          "tableTo": "wallet",
+          "columnsFrom": [
+            "from_wallet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "transfer_to_wallet_id_wallet_id_fk": {
+          "name": "transfer_to_wallet_id_wallet_id_fk",
+          "tableFrom": "transfer",
           "tableTo": "wallet",
           "columnsFrom": [
             "to_wallet_id"

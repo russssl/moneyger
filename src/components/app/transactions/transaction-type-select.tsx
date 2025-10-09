@@ -23,7 +23,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
         <ArrowUpIcon className="h-4 w-4" />
         {t("expense")}
         {!useIsMobile() && <span
-          className="absolute top-1 right-2 text-xs bg-muted-foreground/10 text-muted-foreground rounded px-1 pointer-events-none"
+          className="absolute top-1 right-2 text-xs bg-foreground/10 text-foreground rounded px-1 pointer-events-none border-2 border-foreground/50"
           aria-label="Shortcut E"
         >
           {keyIndicators.expense}
@@ -38,7 +38,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
         <ArrowDownIcon className="h-4 w-4" />
         {t("income")}
         {!useIsMobile() && <span
-          className="absolute top-1 right-2 text-xs bg-muted-foreground/10 text-muted-foreground rounded px-1 pointer-events-none"
+          className="absolute top-1 right-2 text-xs bg-foreground/10 text-foreground rounded px-1 pointer-events-none border-2 border-foreground/50"
           aria-label="Shortcut I"
         >
           {keyIndicators.income}
@@ -53,7 +53,7 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
         <ArrowLeftRightIcon className="h-4 w-4" />
         {t("transfer")}
         {!useIsMobile() && <span
-          className="absolute top-1 right-2 text-xs bg-muted-foreground/10 text-muted-foreground rounded px-1 pointer-events-none"
+          className="absolute top-1 right-2 text-xs bg-foreground/10 text-foreground rounded px-1 pointer-events-none border-2 border-foreground/50"
           aria-label="Shortcut T"
         >
           {keyIndicators.transfer}

@@ -14,7 +14,10 @@ import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations } from "next-intl";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import CurrencySelect from "../currency-select";
-
+import { type Wallet as WalletType } from "@/server/db/wallet";
+import { type NewTransaction } from "@/server/db/transaction";
+import LoadingButton from "@/components/loading-button";
+import { LoadingSpinner } from "@/components/ui/loading";
 type TransactionType = "income" | "expense" | "transfer";
 
 interface AddNewTransactionModalProps {
@@ -80,9 +83,9 @@ export default function AddNewTransactionModal({
     selectedCategory,
   } = state;
 
-  const { data: walletsData, isLoading: isLoadingWallets } = useFetch<{id: string, name: string, currency: string}[]>(open ? "/api/wallets" : null);
+  const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null);
 
-  const createTransaction = useMutation<any, {walletId: string, toWalletId: string | undefined, amount: number, transaction_date: Date, description: string, category: string, type: TransactionType}>("/api/transactions", "POST");
+  const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST");
   
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
   const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;
@@ -160,113 +163,117 @@ export default function AddNewTransactionModal({
         </ModalHeader>
         <ModalBody>
           <div className="grid gap-3">
-            {wallets.length === 0 && !isLoadingWallets && open && (
-              <div className="p-4 bg-red-100 text-red-800 rounded-lg">{t("no_wallet_warning")}</div>
-            )}
-
-            <TransactionTypeSelect
-              value={transactionType}
-              setValue={setTransactionType}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>{tGeneral("date")}</Label>
-                <DatePicker
-                  value={date}
-                  onChange={(value) => dispatch({ type: "set", field: "date", value })}
-                  placeholder={tGeneral("select_date")}
-                />
-              </div>
-              <div>
-                <Label>{tGeneral("amount")}</Label>
-                <AddonInput
-                  value={amount}
-                  setValue={(value) => dispatch({ type: "set", field: "amount", value: Number(value) })}
-                  addonText={currencyData?.symbol}
-                  type="number"
-                  placeholder={tGeneral("enter_amount")}
-                />
-              </div>
-            </div>
-
-            {wallets.length > 0 && (
-              <CurrencySelect
-                wallets={wallets}
-                selectedCurrency={fromCurrencyCode}
-                label={transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
-                onSelect={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}
-              />
-            )}
-
-            {transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && exchangeRate !== 1 && (
-              <div className="mt-2 p-2 bg-blue-50 rounded-md text-blue-700 text-sm font-medium">
-                <p>
+            {!open ? null : (
+              isLoadingWallets ? (
+                <div className="p-4 flex justify-center items-center h-full">
+                  <LoadingSpinner />
+                </div>
+              ) : wallets.length === 0 ? (
+                <div className="p-4 bg-red-100 text-red-800 rounded-lg">{t("no_wallet_warning")}</div>
+              ) : (
+                <>
+                  <TransactionTypeSelect
+                    value={transactionType}
+                    setValue={setTransactionType}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>{tGeneral("date")}</Label>
+                      <DatePicker
+                        value={date}
+                        onChange={(value) => dispatch({ type: "set", field: "date", value })}
+                        placeholder={tGeneral("select_date")}
+                      />
+                    </div>
+                    <div>
+                      <Label>{tGeneral("amount")}</Label>
+                      <AddonInput
+                        value={amount}
+                        setValue={(value) => dispatch({ type: "set", field: "amount", value: Number(value) })}
+                        addonText={currencyData?.symbol}
+                        type="number"
+                        placeholder={tGeneral("enter_amount")}
+                      />
+                    </div>
+                  </div>
+                  <CurrencySelect
+                    wallets={wallets}
+                    selectedCurrency={fromCurrencyCode}
+                    label={transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
+                    onSelect={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}
+                  />
+                  {transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && exchangeRate !== 1 && (
+                    <div className="mt-2 p-2 bg-blue-50 rounded-md text-blue-700 text-sm font-medium">
+                      <p>
                   1 {fromCurrencyCode} = {exchangeRate} {toCurrencyCode}
-                </p>
-                {amount > 0 && (
-                  <p>
-                    {t("you_will_receive")}: {(amount * exchangeRate).toFixed(2)} {toCurrencyCode}
-                  </p>
-                )}
-              </div>
+                      </p>
+                      {amount > 0 && (
+                        <p>
+                          {t("you_will_receive")}: {(amount * exchangeRate).toFixed(2)} {toCurrencyCode}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {transactionType === "transfer" && (
+                    <CurrencySelect
+                      wallets={wallets}
+                      selectedCurrency={toCurrencyCode}
+                      label={tGeneral("to_wallet")}
+                      onSelect={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}
+                    />
+                  )}
+
+                  {sameWallet && transactionType === "transfer" && (
+                    <div className="p-2 bg-yellow-50 text-yellow-800 rounded-md text-sm font-medium">
+                      {t("same_wallet_warning")}
+                    </div>
+                  )}
+                  <div>
+                    <Label>{tGeneral("description")}</Label>
+                    <Input
+                      placeholder={tGeneral("enter_description")}
+                      value={description}
+                      onChange={(e) => dispatch({ type: "set", field: "description", value: e.target.value })}
+                    />
+                  </div>
+
+                  {transactionType !== "transfer" && (
+                    <div>
+                      <Label>{tGeneral("category")}</Label>
+                      <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={tGeneral("select_category")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
+                          <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
+                          <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
+                          <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
+                          <SelectItem value="other">{tCategory("other")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div>
+                    <Label>{tGeneral("notes")}</Label>
+                    <AutogrowingTextarea placeholder={tGeneral("notes_description")} />
+                  </div>
+                </>
+              )
             )}
-
-            {transactionType === "transfer" && (
-              <CurrencySelect
-                wallets={wallets}
-                selectedCurrency={toCurrencyCode}
-                label={tGeneral("to_wallet")}
-                onSelect={(value) => dispatch({ type: "set", field: "selectedSecondWallet", value })}
-              />
-            )}
-
-            {sameWallet && transactionType === "transfer" && (
-              <div className="p-2 bg-yellow-50 text-yellow-800 rounded-md text-sm font-medium">
-                {t("same_wallet_warning")}
-              </div>
-            )}
-
-            <div>
-              <Label>{tGeneral("description")}</Label>
-              <Input
-                placeholder={tGeneral("enter_description")}
-                value={description}
-                onChange={(e) => dispatch({ type: "set", field: "description", value: e.target.value })}
-              />
-            </div>
-
-            {transactionType !== "transfer" && (
-              <div>
-                <Label>{tGeneral("category")}</Label>
-                <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={tGeneral("select_category")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
-                    <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
-                    <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
-                    <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
-                    <SelectItem value="other">{tCategory("other")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
-            <div>
-              <Label>{tGeneral("notes")}</Label>
-              <AutogrowingTextarea placeholder={tGeneral("notes_description")} />
-            </div>
           </div>
         </ModalBody>
         <ModalFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {tService("cancel")}
           </Button>
-          <Button onClick={addTransaction} disabled={!canSave} variant="success">
-            {tService("save")}
-          </Button>
+          {wallets.length > 0 && (
+            <LoadingButton onClick={addTransaction} disabled={!canSave} loading={createTransaction.isPending} variant="success">
+              {tService("save")}
+            </LoadingButton>
+          )}
         </ModalFooter>
       </ModalContent>
     </Modal>

@@ -8,6 +8,7 @@ import db from "@/server/db";
 import { transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
 import { getCurrentExchangeRate } from "../services/wallets";
+import { type NewTransfer, transfers } from "@/server/db/transfer";
 
 const transactionsRouter = new Hono<AuthVariables>();
 
@@ -84,17 +85,17 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       throw new Error("Wallet not found");
     }
 
+
     const transaction = await tx.insert(transactions).values({
       userId: user.id,
       walletId,
-      toWalletId: type === "transfer" ? toWalletId : undefined,
       amount,
       transaction_date,
       description,
       category,
       type,
     }).returning().execute().then((res) => res[0]);
-
+  
     if (!transaction) {
       throw new Error("Transaction not created");
     }
@@ -108,53 +109,67 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
         eq(wallets.id, walletId),
         eq(wallets.userId, user.id),
       )).execute();
-    } else {
-      if (!toWalletId) {
-        throw new Error("To wallet ID is required");
-      }
-      const [sourceWallet, destinationWallet] = await Promise.all([
-        tx.query.wallets.findFirst({
-          where: and(
-            eq(wallets.id, walletId),
-            eq(wallets.userId, user.id),
-          ),
-        }),
-        tx.query.wallets.findFirst({
-          where: and(
-            eq(wallets.id, toWalletId),
-            eq(wallets.userId, user.id),
-          ),
-        }),
-      ]);
-
-      if (!sourceWallet?.currency || !destinationWallet?.currency) {
-        throw new Error("Source or destination wallet not found");
-      }
-
-      let newSourceBalance, newDestinationBalance;
-      if (sourceWallet.currency === destinationWallet.currency) {
-        newSourceBalance = sourceWallet.balance - amount;
-        newDestinationBalance = destinationWallet.balance + amount;
-      } else {
-        const exchangeRate = await getCurrentExchangeRate(sourceWallet.currency, destinationWallet.currency);
-        newSourceBalance = sourceWallet.balance - amount;
-        newDestinationBalance = destinationWallet.balance + amount * exchangeRate;
-      }
-      await Promise.all([
-        tx.update(wallets).set({
-          balance: newSourceBalance,
-        }).where(and(
-          eq(wallets.id, walletId),
-          eq(wallets.userId, user.id),
-        )).execute(),
-        tx.update(wallets).set({
-          balance: newDestinationBalance,
-        }).where(and(
-          eq(wallets.id, toWalletId),
-          eq(wallets.userId, user.id),
-        )).execute(),
-      ]);
+      return transaction;
     }
+    
+    if (!toWalletId) {
+      throw new Error("To wallet ID is required");
+    }
+
+    const destinationWallet = await tx.query.wallets.findFirst({
+      where: and(
+        eq(wallets.id, toWalletId),
+        eq(wallets.userId, user.id),
+      ),
+    });
+
+    if (!wallet?.currency || !destinationWallet?.currency) {
+      throw new Error("Source or destination wallet not found");
+    }
+
+    let newSourceBalance, newDestinationBalance;
+
+    const transfer: NewTransfer = {
+      userId: user.id,
+      transactionId: transaction.id,
+      fromWalletId: walletId,
+      toWalletId: toWalletId,
+      amountSent: amount,
+      amountReceived: amount,
+      exchangeRate: 1,
+    }
+    if (wallet.currency === destinationWallet.currency) {
+      newSourceBalance = wallet.balance - amount;
+      newDestinationBalance = destinationWallet.balance + amount;
+      
+      transfer.exchangeRate = 1;
+      transfer.amountReceived = amount;
+      transfer.amountSent = amount;
+    } else {
+      const exchangeRate = await getCurrentExchangeRate(wallet.currency, destinationWallet.currency);
+      newSourceBalance = wallet.balance - amount;
+      newDestinationBalance = destinationWallet.balance + amount * exchangeRate;
+      
+      transfer.exchangeRate = exchangeRate;
+      transfer.amountReceived = amount * exchangeRate;
+      transfer.amountSent = amount;
+    }
+
+    await Promise.all([
+      tx.update(wallets).set({
+        balance: newSourceBalance,
+      }).where(and(
+        eq(wallets.id, walletId),
+        eq(wallets.userId, user.id),
+      )).execute(),
+      tx.update(wallets).set({
+        balance: newDestinationBalance,
+      }).where(and(
+        eq(wallets.id, toWalletId),
+        eq(wallets.userId, user.id),
+      )).execute(),
+      tx.insert(transfers).values(transfer).execute(),
+    ]);
 
     return transaction;
   });
@@ -216,88 +231,90 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
   const { user } = await getUserData(c);
   const { id } = c.req.valid("param");
 
-  const transactionData = await db.transaction(async (tx) => {
-    const transaction = await tx.query.transactions.findFirst({
-      where: and(
-        eq(transactions.id, id),
-        eq(transactions.userId, user.id),
-      ),
-    });
-
-    if (!transaction) {
-      throw new Error("Transaction not found");
-    }
-
-    const wallet = await tx.query.wallets.findFirst({
-      where: and(
-        eq(wallets.id, transaction.walletId),
-        eq(wallets.userId, user.id),
-      ),
-    });
-
-    if (!wallet) {
-      throw new Error("Wallet not found");
-    }
-
-    if (transaction.type !== "transfer") {
-      const balance = transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
-      await tx.update(wallets).set({
-        balance,
-      }).where(and(
-        eq(wallets.id, transaction.walletId),
-        eq(wallets.userId, user.id),
-      )).execute();
-    } else {
-      if (!transaction.toWalletId) {
-        throw new Error("To wallet ID is required for transfer transactions");
-      }
-      const transactionWallet = await tx.query.wallets.findFirst({
-        where: and(
-          eq(wallets.id, transaction.toWalletId),
-          eq(wallets.userId, user.id),
-        ),
-      });
-      if (!transactionWallet) {
-        throw new Error("Transaction wallet not found");
-      }
-      const balance = transactionWallet.balance - transaction.amount;
-  
-      await tx.update(wallets).set({
-        balance,
-      }).where(and(
-        eq(wallets.id, transaction.walletId),
-        eq(wallets.userId, user.id),
-      )).execute();
-
-      if (transactionWallet.currency != wallet.currency) {
-        if (!transaction.toWalletId) {
-          throw new Error("From wallet ID is required");
-        }
-        const exchangeRate = await getCurrentExchangeRate(transactionWallet.currency, wallet.currency); // TODO: replace with saved exchange rate (so exhange rate changes are NOT reflected in the balance)
-        const amount = transaction.amount * exchangeRate;
-        await tx.update(wallets).set({
-          balance: wallet.balance + amount,
-        }).where(and(
-          eq(wallets.id, transaction.toWalletId),
-          eq(wallets.userId, user.id),
-        )).execute();
-
-        // MAYBE: add the reversed transaction (something like "Automatic transfer after transaction deletion")
-      }
-    }
-
-    await tx.delete(transactions).where(and(
+  const transaction = await db.query.transactions.findFirst({
+    where: and(
       eq(transactions.id, id),
       eq(transactions.userId, user.id),
-    )).execute();
-    return transaction;
+    ),
   });
 
-  if (!transactionData) {
+  if (!transaction) {
     throw new Error("Transaction not found");
   }
 
-  return c.json(transactionData);
+  const wallet = await db.query.wallets.findFirst({
+    where: and(
+      eq(wallets.id, transaction.walletId),
+      eq(wallets.userId, user.id),
+    ),
+  });
+  
+  if (!wallet) {
+    throw new Error("Wallet not found");
+  }
+
+  if (transaction.type !== "transfer") {
+
+    const balance = transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
+    await db.update(wallets).set({
+      balance,
+    }).where(and(
+      eq(wallets.id, transaction.walletId),
+      eq(wallets.userId, user.id),
+    )).execute();
+    return c.json(transaction);
+  }
+
+  const transfer = await db.query.transfers.findFirst({
+    where: and(
+      eq(transfers.transactionId, transaction.id),
+      eq(transfers.fromWalletId, transaction.walletId),
+      eq(transfers.userId, user.id),
+    ),
+  });
+
+  if (!transfer) {
+    throw new Error("Transfer not found");
+  }
+
+  const destinationWallet = await db.query.wallets.findFirst({
+    where: and(
+      eq(wallets.id, transfer.toWalletId),
+      eq(wallets.userId, user.id),
+    ),
+  });
+  
+  if (!destinationWallet) {
+    throw new Error("Destination wallet not found");
+  }
+
+  const sourceBalance = wallet.balance + transfer.amountSent;
+  const destinationBalance = destinationWallet.balance - transfer.amountReceived;
+
+  await Promise.all([
+    db.update(wallets).set({
+      balance: sourceBalance,
+    }).where(and(
+      eq(wallets.id, transaction.walletId),
+      eq(wallets.userId, user.id),
+    )).execute(),
+    db.update(wallets).set({
+      balance: destinationBalance,
+    }).where(and(
+      eq(wallets.id, transfer.toWalletId),
+      eq(wallets.userId, user.id),
+    )).execute(),
+    db.delete(transfers).where(and(
+      eq(transfers.transactionId, transaction.id),
+      eq(transfers.userId, user.id),
+    )).execute(),
+    db.delete(transactions).where(and(
+      eq(transactions.id, transaction.id),
+      eq(transactions.userId, user.id),
+    )).execute(),
+  ]);
+
+  return c.json(transaction);
 });
 
 export default transactionsRouter;
