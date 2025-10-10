@@ -46,7 +46,6 @@ export default async function RootLayout({
               <SessionWrapper>
                 <Toaster richColors invert closeButton/>
                 <PostHogProvider>
-                  <PersistentModals />
                   {children}
                 </PostHogProvider>
               </SessionWrapper>

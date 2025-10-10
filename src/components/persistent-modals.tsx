@@ -1,12 +1,10 @@
-import { headers } from "next/headers";
+"use client";
 import SetupModal from "./setup-modal";
-import { auth } from "@/lib/auth";
+import { useAuthSession } from "@/hooks/use-session";
 
-export default async function PersistentModals() {
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export default function PersistentModals() {
+  const { data: session } = useAuthSession();
+  
   return (
     session ? (
       <>

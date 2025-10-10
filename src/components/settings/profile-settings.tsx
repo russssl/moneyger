@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
-import { User } from "lucide-react";
+import { User as UserIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,10 @@ import { LanguageSelect } from "../language-select";
 import { useTranslations } from "next-intl";
 import { updateUser } from "@/hooks/use-session";
 import { useFetch, useMutation } from "@/hooks/use-api";
+import { type User } from "@/server/db/user";
 
 export default function ProfileSettings({...props}) {
-  const {data: userSettings, isLoading, error} = useFetch<{email: string, username: string}>("/api/user/me");
+  const {data: userSettings, isLoading, error} = useFetch<User>("/api/user/me");
   const { session } = props;
   const [email, setEmail] = useState(userSettings?.email ?? "");
   const [username, setUsername] = useState(userSettings?.username ?? "");
@@ -40,14 +41,16 @@ export default function ProfileSettings({...props}) {
     }
   }, [error]);
 
-  const {mutateAsync: saveUserSettingsMutation, isPending} = useMutation("/api/user");
+  const {mutateAsync: saveUserSettingsMutation, isPending} = useMutation<User>("/api/user");
 
   if (!session) {
     return null;
   }
 
   const saveBasicSettings = async () => {
+    if (!userSettings) return;
     await saveUserSettingsMutation({
+      ...userSettings,
       email,
       username,
       id: session?.user?.id,
@@ -71,7 +74,7 @@ export default function ProfileSettings({...props}) {
     <Card {...props} className="sm:max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <User className="h-5 w-5 mr-2" />
+          <UserIcon className="h-5 w-5 mr-2" />
           {t("profile")}
         </CardTitle>
         <CardDescription>{t("profile_description")}</CardDescription>
