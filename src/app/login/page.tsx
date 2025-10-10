@@ -4,8 +4,10 @@ import Link from "next/link"
 import { type Metadata } from "next";
 import {ThemeToggle} from "@/components/theme-toggle";
 import { getTranslations } from "next-intl/server";
-import { type Provider } from "@/hooks/use-session";
 import { auth } from "@/lib/auth";
+import GitHub from "@/components/icons/github";
+import Google from "@/components/icons/google";
+import { type SocialProvider } from "@/hooks/use-session";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -14,7 +16,25 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const t = await getTranslations("register_login");
-  const availableProviders = Object.keys(auth.options.socialProviders) as Provider[];
+  const providerIcons: Record<string, React.ReactNode> = {
+    github: <GitHub />,
+    google: <Google />
+  };
+
+  const providerNames: Record<string, string> = {
+    github: "Github",
+    google: "Google"
+  };
+
+  const availableProviders: SocialProvider[] = Object.keys(auth.options.socialProviders)
+    .filter((provider): provider is "github" | "google" => 
+      provider === "github" || provider === "google"
+    )
+    .map((provider) => ({
+      provider,
+      name: providerNames[provider] || provider.charAt(0).toUpperCase() + provider.slice(1),
+      icon: providerIcons[provider] || null
+    }));
   return (
     <div className="fixed inset-0 flex items-center justify-center min-h-screen w-full overflow-hidden">
       <Card className="w-full max-w-md mx-auto">

@@ -6,26 +6,48 @@ import { Alert, AlertDescription } from "./ui/alert";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-// import { usePostHog } from "posthog-js/react";
 import { useTranslations } from "next-intl";
-import { type Provider, signIn } from "@/hooks/use-session";
+import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/hooks/use-session";
 import { Button } from "./ui/button";
-import GitHub from "./icons/github";
-import Google from "./icons/google";
 import Link from "next/link";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
-export default function LoginProviders({ providers }: { providers: Provider[] }) {
+function ProviderButton({ provider, onClick, last }: { provider: SocialProvider, onClick: () => void, last: boolean }) {
+  return (
+    <Button 
+      type="button" 
+      onClick={onClick} 
+      variant="outline"
+      className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          {provider.icon}
+        </div>
+        <span className="font-medium text-sm">{provider.name}</span>
+      </div>
+      {last && (
+        <div className="absolute right-3 flex items-center gap-1">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-xs text-green-600 font-medium">Last used</span>
+        </div>
+      )}
+    </Button>
+  );
+}
+
+export default function LoginProviders({ providers }: { providers: SocialProvider[] }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  // const posthog = usePostHog();
+
   const t = useTranslations("register_login");
   const router = useRouter();
-
+  const lastLoginMethod = getLastUsedLoginMethod();
+  console.log(lastLoginMethod);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -53,9 +75,9 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
     }
   };
 
-  const signInWithProvider = async (provider: Provider) => {
+  const signInWithProvider = async (provider: SocialProvider) => {
     await signIn.social({
-      provider,
+      provider: provider.provider,
     });
   }
 
@@ -63,7 +85,7 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
     <>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
-          <div className="space-y-2">
+          <div className="space-y-1">
             <Label htmlFor="email">
               Email
               <span className="text-destructive ms-1">*</span>
@@ -76,7 +98,7 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
               required
             />
           </div>
-          <div className="space-y-2 mt-2">
+          <div className="space-y-1 mt-2">
             <Label htmlFor="password">
               {t("password")}
               <span className="text-destructive ms-1">*</span>
@@ -122,38 +144,26 @@ export default function LoginProviders({ providers }: { providers: Provider[] })
         </div>
       </form>
       {providers && providers.length > 0 && (
-        <div className="relative mt-6">
+        <div className="relative mt-6 mb-2">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-sm uppercase">
+          <div className="relative flex justify-center text-sm">
             <span className="bg-background px-2 text-muted-foreground">
               {t("or_continue_with")}
             </span>
           </div>
         </div>
       )}
-      <div>
-        {providers && providers.includes("github") && (
-          <Button
-            type="button"
-            onClick={() => signInWithProvider("github")}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
-          >
-            <GitHub noBackground/>
-          Github
-          </Button>
-        )}
-        {providers && providers.includes("google") && (
-          <Button
-            type="button"
-            onClick={() => signInWithProvider("google")}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-secondary h-10 px-4 py-2 w-full mt-3 bg-zinc-900 text-zinc-100"
-          >
-            <Google noBackground/>
-          Google
-          </Button>
-        )}
+      <div className="space-y-2">
+        {providers.map((provider) => (
+          <ProviderButton 
+            key={provider.provider} 
+            provider={provider} 
+            onClick={() => signInWithProvider(provider)} 
+            last={lastLoginMethod === provider.provider} 
+          />
+        ))}
       </div>
     </>
   );

@@ -3,13 +3,13 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "@/server/db";
 import { sendResetPasswordEmail } from "@/server/api/services/emails";
 import { env } from "@/env";
-import { haveIBeenPwned, username } from "better-auth/plugins"
+import { haveIBeenPwned, username, lastLoginMethod } from "better-auth/plugins"
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-  plugins: [haveIBeenPwned(), username({
+  plugins: [haveIBeenPwned(), lastLoginMethod(), username({
     usernameValidator: (username) => {
       if (username === "admin") {
         return false;
