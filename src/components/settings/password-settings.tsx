@@ -1,6 +1,6 @@
 "use client"
 import { useMemo, useState, useEffect } from "react"
-import { Key, AlertCircle, Check, X, Info } from "lucide-react"
+import { Key, AlertCircle, Check, X } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import PasswordInput from "@/components/password-input"
@@ -10,15 +10,19 @@ import { checkStrength, getStrengthText, getStrengthColor } from "@/hooks/passwo
 import { useTranslations } from "next-intl"
 import { useMutation } from "@/hooks/use-api"
 import { Alert, AlertDescription } from "../ui/alert"
+import { Button } from "../ui/button"
+import PasskeySettingsModal from "./passkey-settings-modal"
 
 
 export default function PasswordSettings({...props}) {
-  const { passwordChangeAllowed } = props;
+  const { passwordChangeAllowed, existingPasskeys } = props;
   const [oldPassword, setOldPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [error, setError] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [passwordsMatch, setPasswordsMatch] = useState(false)
+
+  const [openPasskeySettingsModal, setOpenPasskeySettingsModal] = useState(false)
 
   useEffect(() => {
     if (!newPassword) {
@@ -35,8 +39,7 @@ export default function PasswordSettings({...props}) {
     return strength.filter((req) => req.met).length;
   }, [strength]);
   
-  
-  const {mutate: updatePasswordMutation, isPending, error: updatePasswordError} = useMutation<{ oldPassword: string; newPassword: string }, any>("/api/user/updatePassword");
+  const {mutate: updatePasswordMutation, isPending, error: updatePasswordError} = useMutation<any, any>("/api/user/updatePassword");
   const updatePassword = () => {
     updatePasswordMutation({
       oldPassword,
@@ -122,6 +125,33 @@ export default function PasswordSettings({...props}) {
               </AlertDescription>
             </Alert>
           )}
+          <hr className="my-4" />
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <Label htmlFor="passkey-settings" className="mb-0.5 text-base font-medium">
+                  Passkey Settings
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  Manage your registered passkeys for passwordless login.
+                </span>
+              </div>
+              <Button
+                id="passkey-settings"
+                variant="outline"
+                size="sm"
+                className="rounded-md flex-shrink-0"
+                onClick={() => setOpenPasskeySettingsModal(true)}
+              >
+                Manage
+              </Button>
+            </div>
+            <PasskeySettingsModal
+              open={openPasskeySettingsModal}
+              onOpenChange={setOpenPasskeySettingsModal}
+              existingPasskeys={existingPasskeys}
+            />
+          </div>
         </div>
         <div className="mt-4">
           {!passwordsMatch && (

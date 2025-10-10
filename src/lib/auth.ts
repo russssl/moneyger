@@ -4,12 +4,22 @@ import db from "@/server/db";
 import { sendResetPasswordEmail } from "@/server/api/services/emails";
 import { env } from "@/env";
 import { haveIBeenPwned, username, lastLoginMethod } from "better-auth/plugins"
+import { passkey } from "better-auth/plugins/passkey";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-  plugins: [haveIBeenPwned(), lastLoginMethod(), username({
+  plugins: [haveIBeenPwned(), lastLoginMethod(), passkey({
+    rpID: process.env.NODE_ENV === "production" ? "your-domain.com" : "localhost",
+    rpName: "Moneyger",
+    origin: process.env.NODE_ENV === "production" ? "https://your-domain.com" : "http://localhost:3000",
+    authenticatorSelection: {
+      authenticatorAttachment: "platform",
+      residentKey: "preferred",
+      userVerification: "preferred",
+    },
+  }), username({
     usernameValidator: (username) => {
       if (username === "admin") {
         return false;

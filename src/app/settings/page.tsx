@@ -37,6 +37,10 @@ export default async function SettingsPage(
 
   const selectedCategory = searchParams?.category || "account";
 
+  const existingPasskeys = await auth.api.listPasskeys({
+    headers: await headers(),
+  });
+
   return (
     <div className="h-full gap-6 p-6">
       <PagesHeader />
@@ -44,7 +48,7 @@ export default async function SettingsPage(
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
           <ProfileSettings session={user.session ?? null}/>
-          <PasswordSettings passwordChangeAllowed={passwordChangeAllowed}/>
+          <PasswordSettings passwordChangeAllowed={passwordChangeAllowed} existingPasskeys={existingPasskeys}/>
           <ConnectedAccountSettings accounts={accounts}/>
           <AccountSettings/>
         </div>

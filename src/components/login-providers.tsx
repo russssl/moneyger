@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Key } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/hooks/use-session";
 import { Button } from "./ui/button";
@@ -15,12 +15,8 @@ const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-cent
 
 function ProviderButton({ provider, onClick, last }: { provider: SocialProvider, onClick: () => void, last: boolean }) {
   return (
-    <Button 
-      type="button" 
-      onClick={onClick} 
-      variant="outline"
-      className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden"
-    >
+    <Button  type="button" onClick={onClick}  variant="outline"
+      className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
           {provider.icon}
@@ -37,17 +33,35 @@ function ProviderButton({ provider, onClick, last }: { provider: SocialProvider,
   );
 }
 
+function PasskeyButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button variant="outline" onClick={onClick} className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          <Key size={16} />
+        </div>
+        <span className="font-medium text-sm">Passkey</span>
+      </div>
+    </Button>
+  );
+}
 export default function LoginProviders({ providers }: { providers: SocialProvider[] }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
 
   const t = useTranslations("register_login");
   const router = useRouter();
-  const lastLoginMethod = getLastUsedLoginMethod();
-  console.log(lastLoginMethod);
+
+  useEffect(() => {
+    // Only get the last login method on the client side to avoid hydration issues
+    const lastMethod = getLastUsedLoginMethod();
+    setLastLoginMethod(lastMethod);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -66,7 +80,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
         return;
       }
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (e) {
       console.error(e);
       setError("An unknown error occurred");
@@ -78,6 +92,20 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
   const signInWithProvider = async (provider: SocialProvider) => {
     await signIn.social({
       provider: provider.provider,
+    });
+  }
+
+  const logInWithPasskey = async () => {
+    await signIn.passkey({
+      autoFill: false,
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/dashboard");
+        },
+        onError: (ctx) => {
+          setError(ctx.error.message ?? "An unknown error occurred");
+        },
+      },
     });
   }
 
@@ -164,6 +192,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
             last={lastLoginMethod === provider.provider} 
           />
         ))}
+        <PasskeyButton onClick={() => logInWithPasskey()} />
       </div>
     </>
   );

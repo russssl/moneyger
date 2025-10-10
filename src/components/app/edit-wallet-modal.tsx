@@ -155,12 +155,8 @@ export default function EditWalletModal({
     }
   };
 
-  const handleModalClose = () => {
-    onOpenChange(false);
-  };
-
   return (
-    <Modal open={open} onOpenChange={handleModalClose}>
+    <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
         <ModalHeader>
           <ModalTitle>{id ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
