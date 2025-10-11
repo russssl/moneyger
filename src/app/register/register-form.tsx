@@ -92,7 +92,7 @@ export default function RegisterForm() {
               <Input id="email" type="email" onChange={(e) => setEmail(e.target.value)} placeholder={t("email")}/>
             </div>
             <PasswordsInput setPassword={setPassword}/>
-            <LoadingButton loading={isSubmitting} className="w-full" disabled={isSubmitting} variant="success" type="submit">
+            <LoadingButton loading={isSubmitting} className="w-full text-white" disabled={isSubmitting} variant="success" type="submit">
               {t("register")}
             </LoadingButton>
           </form>
