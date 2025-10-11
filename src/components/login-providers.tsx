@@ -171,18 +171,16 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
           </div>
         </div>
       </form>
-      {providers && providers.length > 0 && (
-        <div className="relative mt-6 mb-2">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-background px-2 text-muted-foreground">
-              {t("or_continue_with")}
-            </span>
-          </div>
+      <div className="relative mt-6 mb-2">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
         </div>
-      )}
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-background px-2 text-muted-foreground">
+            {t("or_continue_with")}
+          </span>
+        </div>
+      </div>
       <div className="space-y-2">
         {providers.map((provider) => (
           <ProviderButton 
