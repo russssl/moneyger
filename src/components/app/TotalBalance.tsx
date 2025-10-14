@@ -9,11 +9,11 @@ import { NoItems } from "./no-items";
 import { LoadingSpinner } from "../ui/loading";
 import { type Wallet } from "@/server/db/wallet";
 
-const WALLET_ITEM_PADDING = "p-3";
-const ICON_SIZE = "h-8 w-8";
+const WALLET_ITEM_PADDING = "p-2 sm:p-3";
+const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";
 const TEXT_SIZES = {
   title: "text-sm",
-  total: "text-2xl",
+  total: "text-xl sm:text-2xl",
   walletName: "text-sm",
   walletCurrency: "text-xs",
   balance: "text-sm",
@@ -35,9 +35,9 @@ export default function TotalBalance() {
   }, [data]);
 
   return (
-    <div>
+    <div className="h-full">
       <Card className={cn(
-        "w-full",
+        "w-full h-full flex flex-col",
         "bg-card"
       )}>
         <CardHeader>
@@ -46,13 +46,13 @@ export default function TotalBalance() {
           </CardTitle>
         </CardHeader>
         <CardContent className={cn(
-          "pt-0",
+          "pt-0 flex-1 flex flex-col",
         )}>
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1 flex flex-col">
             {wallets?.length > 0 && <div className="flex items-baseline justify-between">
               <div className="flex flex-col gap-0.5">
                 <div className={cn(
-                  "text-2xl",
+                  "text-xl sm:text-2xl",
                   "font-semibold"
                 )}>
                   {totalBalance ? totalBalance.toLocaleString("en-US", {
@@ -62,16 +62,18 @@ export default function TotalBalance() {
                 </div>
               </div>
             </div>}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 flex-1 flex flex-col">
               {isLoading && <div className="flex justify-center mb-4 min-h-[120px] items-center">
                 <LoadingSpinner />
               </div>}
               {wallets?.length === 0 && !isLoading ? (
-                <NoItems
-                  icon={Briefcase}
-                  title="No wallets found"
-                  description="Start by adding a wallet to track your balances and see your total here."
-                />
+                <div className="flex-1">
+                  <NoItems
+                    icon={Briefcase}
+                    title="No wallets found"
+                    description="Start by adding a wallet to track your balances and see your total here."
+                  />
+                </div>
               ) : (
                 <>
                   <DashboardWallets wallets={wallets} walletItemPadding={WALLET_ITEM_PADDING} iconSize={ICON_SIZE} textSizes={TEXT_SIZES} refetch={refetch}/>

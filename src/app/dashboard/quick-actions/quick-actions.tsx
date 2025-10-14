@@ -75,14 +75,20 @@ export function QuickActions({ className }: { className?: string }) {
 
   return (
     <div className={cn("relative", className)}>
-      <div className="mb-4">
-        <h3 className="font-semibold text-lg">Quick Actions</h3>
-        <p className="text-sm text-muted-foreground">Quickly add transactions or manage your wallets</p>
+      <div className="mb-3 sm:mb-4">
+        <h3 className="font-semibold text-base sm:text-lg">Quick Actions</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground">Quickly add transactions or manage your wallets</p>
       </div>
-      <div className="flex flex-nowrap gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth">
-        {quickActions.map((action) => (
-          <QuickActionButton key={action.id} action={action} />
-        ))}
+      <div className="relative">
+        <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+          {quickActions.map((action) => (
+            <div key={action.id} className="snap-start flex-shrink-0">
+              <QuickActionButton action={action} />
+            </div>
+          ))}
+        </div>
+        {/* Mobile scroll indicator */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none sm:hidden" />
       </div>
       <EditTransactionModal
         key={newTransactionType}

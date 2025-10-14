@@ -110,7 +110,7 @@ export function TransactionList() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="mt-6 pt-4 border-t">
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t">
                 <Button onClick={() => setIsModalOpen(true)} className="w-full">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   {t("add_transaction")}
@@ -118,15 +118,17 @@ export function TransactionList() {
               </div>
             </div>
           ) : (
-            <NoItems
-              icon={Banknote}
-              title="No transactions found"
-              description="Start by adding your first transaction to track your spending and income."
-              button={{
-                text: "Add transaction",
-                onClick: () => setIsModalOpen(true),
-              }}
-            />
+            <div className="flex-1 flex flex-col">
+              <NoItems
+                icon={Banknote}
+                title="No transactions found"
+                description="Start by adding your first transaction to track your spending and income."
+                button={{
+                  text: "Add transaction",
+                  onClick: () => setIsModalOpen(true),
+                }}
+              />
+            </div>
           )}
         </CardContent>
       </Card>
