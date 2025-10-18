@@ -2,7 +2,8 @@
   "HomePage": {
     "good_morning": "Good morning, {name}!",
     "good_afternoon": "Good afternoon, {name}!",
-    "good_evening": "Good evening, {name}!"
+    "good_evening": "Good evening, {name}!",
+    "welcome_subtitle": "Welcome to your personal finance dashboard"
   },
   "breadcrumbs": {
     "home": "Home",
@@ -55,9 +56,9 @@
     "budget": "Budget"
   },
   "quick_actions": {
-    "title": "Quick Action Menu",
+    "title": "Quick Actions",
     "add_transaction": "Add transaction",
-    "add_transaction_description": "Add a new transaction",
+    "add_transaction_description": "Quickly add transactions or manage your wallets",
     "add_wallet": "Add wallet",
     "add_wallet_description": "Add a new wallet",
     "add_transfer": "Add transfer",
@@ -88,7 +89,14 @@
     "update_password": "Update password",
     "username": "Username",
     "connected_accounts": "Connected Accounts",
-    "connected_accounts_description": "Manage accounts connected to your profile."
+    "connected_accounts_description": "Manage accounts connected to your profile.",
+    "passkeys_title": "Passkeys",
+    "your_passkeys": "Your passkeys",
+    "passkey_fallback": "Passkey #{number}",
+    "passkey_registered_at": "Registered: {date}",
+    "no_registered_passkeys": "No registered passkeys.",
+    "passkey_deleted": "Passkey deleted successfully",
+    "delete_passkey": "Delete passkey"
   },
   "navbar": {
     "upgrade_to_pro": "Upgrade to Pro",

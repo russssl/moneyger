@@ -33,6 +33,9 @@ export const auth = betterAuth({
       trustedProviders: ["github", "google"],
     }
   },
+  trustedOrigins: [
+    process.env.NODE_ENV === "production" ? "https://your-domain.com" : "http://localhost:3000",
+  ],
   user: {
     additionalFields: {
       currency: {

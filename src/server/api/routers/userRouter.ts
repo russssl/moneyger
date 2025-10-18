@@ -1,10 +1,11 @@
-import { account, type SelectAccount, user as users} from "@/server/db/user";
+import { account, type Account, user as users} from "@/server/db/user";
 import { and, eq, ne } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { authenticated, type AuthVariables, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import db from "@/server/db";
+import { auth } from "@/lib/auth";
 const userRouter = new Hono<AuthVariables>();
 
 userRouter.get("/", authenticated, async (c) => {
@@ -18,6 +19,32 @@ userRouter.get("/me", authenticated, async (c) => {
     where: eq(users.id, user.id),
   });
   return c.json(userData);
+});
+
+userRouter.post("/setPassword", authenticated, zValidator("json", z.object({
+  password: z.string(),
+  confirmPassword: z.string(),
+})), async (c) => {
+  const { user, headers } = await getUserData(c);
+  const { password, confirmPassword } = c.req.valid("json");
+
+  if (password !== confirmPassword) {
+    return c.json({ error: "Passwords do not match" }, 400);
+  }
+
+  const response = await auth.api.signInEmail({
+    body: {
+      email: user.email,
+      password,
+    },
+    headers,
+  });
+
+  if (response.redirect) {
+    return c.redirect(response.url ?? "/");
+  } else {
+    return c.json({ error: "Failed to set password" }, 400);
+  }
 });
 
 userRouter.post("/", authenticated, zValidator("json", z.object({
@@ -68,7 +95,7 @@ userRouter.post("/updatePassword", authenticated, zValidator("json", z.object({
     },
   });
 
-  const credentialsProvider = userData?.accounts.find((account: Partial<SelectAccount>) => account.providerId === "credential");
+  const credentialsProvider = userData?.accounts.find((account: Partial<Account>) => account.providerId === "credential");
   if (!credentialsProvider) {
     return c.json({ error: "Credentials provider not found" }, 400);
   }

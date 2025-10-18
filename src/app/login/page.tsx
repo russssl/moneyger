@@ -8,12 +8,14 @@ import { auth } from "@/lib/auth";
 import GitHub from "@/components/icons/github";
 import Google from "@/components/icons/google";
 import { type SocialProvider } from "@/hooks/use-session";
-import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "Login",
-  description: "Login to your account",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("register_login");
+  return {
+    title: t("login"),
+    description: t("login_description"),
+  };
+}
 
 export default async function Page() {
   const t = await getTranslations("register_login");

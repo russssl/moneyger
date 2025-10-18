@@ -6,12 +6,14 @@ import {
   Minus,
 } from "lucide-react"
 import QuickActionButton, { type QuickAction } from "./quick-action-button"
+import { useTranslations } from "next-intl"
 import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import EditWalletModal from "@/components/app/edit-wallet-modal";
 
 export function QuickActions({ className }: { className?: string }) {
+  const t = useTranslations("quick_actions")
   const [newTransactionModalOpen, setNewTransactionModalOpen] = useState(false);
   const [newWalletModalOpen, setNewWalletModalOpen] = useState(false);
   const [newTransactionType, setNewTransactionType] = useState<"income" | "expense" | "transfer">("income");
@@ -23,7 +25,7 @@ export function QuickActions({ className }: { className?: string }) {
   const quickActions: QuickAction[] = [
     {
       id: "expense",
-      name: "Expense",
+      name: t("add_transaction"),
       icon: Minus,
       color: {
         bg: "bg-red-50 dark:bg-red-950/50",
@@ -35,7 +37,7 @@ export function QuickActions({ className }: { className?: string }) {
     },
     {
       id: "income",
-      name: "Income",
+      name: t("add_transaction"),
       icon: Plus,
       color: {
         bg: "bg-green-50 dark:bg-green-950/50",
@@ -47,7 +49,7 @@ export function QuickActions({ className }: { className?: string }) {
     },
     {
       id: "transfer",
-      name: "Transfer",
+      name: t("add_transfer"),
       icon: ArrowRightLeft,
       color: {
         bg: "bg-blue-50 dark:bg-blue-950/50",
@@ -59,7 +61,7 @@ export function QuickActions({ className }: { className?: string }) {
     },
     {
       id: "wallet",
-      name: "Wallet",
+      name: t("add_wallet"),
       icon: Wallet,
       color: {
         bg: "bg-purple-50 dark:bg-purple-950/50",
@@ -76,8 +78,8 @@ export function QuickActions({ className }: { className?: string }) {
   return (
     <div className={cn("relative", className)}>
       <div className="mb-3 sm:mb-4">
-        <h3 className="font-semibold text-base sm:text-lg">Quick Actions</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground">Quickly add transactions or manage your wallets</p>
+        <h3 className="font-semibold text-base sm:text-lg">{t("title")}</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground">{t("add_transaction_description")}</p>
       </div>
       <div className="relative">
         <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">

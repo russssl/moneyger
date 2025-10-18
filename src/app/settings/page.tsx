@@ -26,6 +26,8 @@ export default async function SettingsPage(
   const user = await auth.api.getSession({
     headers: await headers()
   })
+  
+
   if (!user) {
     return redirect("/login");
   }
@@ -33,13 +35,9 @@ export default async function SettingsPage(
     where: eq(account.userId, user.session.userId),
   })
 
-  const passwordChangeAllowed = accounts.length > 0 && accounts.find((account) => account.providerId === "credential");
+  const passwordExists = accounts.length > 0 && accounts.find((account) => account.providerId === "credential") !== undefined;
 
   const selectedCategory = searchParams?.category || "account";
-
-  const existingPasskeys = await auth.api.listPasskeys({
-    headers: await headers(),
-  });
 
   return (
     <div className="h-full gap-6 p-6">
@@ -48,7 +46,7 @@ export default async function SettingsPage(
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
           <ProfileSettings session={user.session ?? null}/>
-          <PasswordSettings passwordChangeAllowed={passwordChangeAllowed} existingPasskeys={existingPasskeys}/>
+          <PasswordSettings passwordExists={passwordExists ?? false} />
           <ConnectedAccountSettings accounts={accounts}/>
           <AccountSettings/>
         </div>

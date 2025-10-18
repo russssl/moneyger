@@ -53,6 +53,12 @@ export const account = pgTable("account", {
     .notNull(),
 });
 
+export type Account = typeof account.$inferSelect;
+export type NewAccount = typeof account.$inferInsert;
+
+export const selectAccountSchema = createSelectSchema(account);
+export const insertAccountSchema = createInsertSchema(account);
+
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),

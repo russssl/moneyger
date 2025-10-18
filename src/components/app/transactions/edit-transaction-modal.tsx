@@ -205,7 +205,7 @@ export default function EditTransactionModal({
                   {transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && exchangeRate !== 1 && (
                     <div className="mt-2 p-2 bg-blue-50 rounded-md text-blue-700 text-sm font-medium">
                       <p>
-                  1 {fromCurrencyCode} = {exchangeRate} {toCurrencyCode}
+                        {`1 ${fromCurrencyCode} = ${exchangeRate} ${toCurrencyCode}`}
                       </p>
                       {amount > 0 && (
                         <p>

@@ -26,7 +26,7 @@ export default function QuickActionButton({ action }: { action: QuickAction }) {
       "px-3 sm:px-6 py-3 sm:py-4 h-12 sm:h-14 min-w-fit",
       "border-2 font-medium",
       "shadow-sm hover:shadow-md active:shadow-lg",
-      "focus:ring-2 focus:ring-offset-2 focus:ring-primary/20",
+      "focus:ring-2 focus:ring-primary/20 focus:ring-inset",
       "disabled:opacity-50 disabled:cursor-not-allowed",
       "min-h-[48px] sm:min-h-[56px]", // Ensure minimum touch target size
       action.color.border,

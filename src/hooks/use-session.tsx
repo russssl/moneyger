@@ -17,4 +17,4 @@ export const useAuthSession = (): { data: Session | null; isPending: boolean; er
   return useSession();
 };
 
-export { signIn, signOut, signUp, getSession, forgetPassword, resetPassword, updateUser, getLastUsedLoginMethod, passkey};
+export { signIn, signOut, signUp, getSession, forgetPassword, resetPassword, updateUser, getLastUsedLoginMethod, passkey };

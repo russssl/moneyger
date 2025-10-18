@@ -1,39 +1,71 @@
 "use client"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "../modal"
 import { Button } from "../ui/button"
-import { Plus } from "lucide-react"
+import { Key, Plus } from "lucide-react"
 import { passkey } from "@/hooks/use-session"
 import { toast } from "sonner"
-type UserPasskey = {
-  id: string
-  name: string
-  createdAt?: string
-}
+import { useTranslations } from "next-intl"
+import { useState, useEffect, useCallback } from "react"
+import LoadingButton from "../loading-button"
+import { NoItems } from "../app/no-items"
+import { type Passkey } from "better-auth/plugins/passkey"
 
 export default function PasskeySettingsModal({
   open,
   onOpenChange,
-  existingPasskeys,
+  getPasskeys,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  existingPasskeys: UserPasskey[]
+  getPasskeys: () => Promise<Passkey[]>
 }) {
+  const t = useTranslations("settings")
+  const tService = useTranslations("service")
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const [existingPasskeys, setExistingPasskeys] = useState<Passkey[]>([]);
+
+  const refetchPasskeys = useCallback(async () => {
+    try {
+      const passkeys = await getPasskeys()
+      setExistingPasskeys(passkeys)
+    } catch (error) {
+      console.error(error)
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+    }
+  }, [getPasskeys])
+
+  useEffect(() => {
+    if (open) {
+      void refetchPasskeys()
+    }
+  }, [open, refetchPasskeys])
+
+  const deletePasskey = async (id: string) => {
+    const result = await passkey.deletePasskey({ id });
+    if (result.error) {
+      toast.error(result.error.message)
+    }
+    await refetchPasskeys()
+    toast.success(t("passkey_deleted"))
+  }
 
   const registerPasskey = async () => {
-    const result = await passkey.addPasskey({
-      name: "Moneyger",
-    });
-    const error =
-      result &&
-      "error" in result &&
-      result.error
-        ? result.error
-        : undefined;
-
-    if (error) {
+    try {
+      setIsSubmitting(true)
+      const result = await passkey.addPasskey({
+        name: "Moneyger",
+      });
+      if (result?.error) {
+        throw new Error(result.error.message ?? "An unknown error occurred")
+      }
+      await refetchPasskeys()
+    } catch (error) {
       console.error(error)
-      toast.error(error.message)
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -41,40 +73,54 @@ export default function PasskeySettingsModal({
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>Passkeys</ModalTitle>
+          <ModalTitle>{t("passkeys_title")}</ModalTitle>
         </ModalHeader>
         <ModalBody>
           <div className="flex justify-between items-center mb-2 gap-2">
-            <div className="font-semibold text-base">Your passkeys</div>
-            <Button variant="outline" size="sm" onClick={registerPasskey}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add new
-            </Button>
+            <div className="font-semibold text-base">{t("your_passkeys")}</div>
+            <LoadingButton variant="outline" loading={isSubmitting} onClick={registerPasskey} disabled={isSubmitting}>
+              {!isSubmitting && <Plus className="w-4 h-4" />}
+              {tService("add_new")}
+            </LoadingButton>
           </div>
           <div>
-            {existingPasskeys.length > 0 ? (
+            {existingPasskeys && existingPasskeys.length > 0 ? (
               <>
                 <ul className="divide-y divide-border mt-2 border border-border rounded-md overflow-hidden">
                   {existingPasskeys.map((pk, idx) => (
-                    <li key={pk.id} className="flex flex-col px-4 py-3 bg-background hover:bg-accent transition-colors">
-                      <span className="font-medium text-base">{pk.name || `Passkey #${idx + 1}`}</span>
-                      {pk.createdAt && (
-                        <span className="text-xs text-muted-foreground mt-1">
-                          Registered: {new Date(pk.createdAt).toLocaleString()}
+                    <li key={pk.id} className="flex items-center justify-between px-4 py-3 bg-background hover:bg-accent transition-colors">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-medium text-base">
+                          {pk.name || t("passkey_fallback", { number: idx + 1 })}
                         </span>
-                      )}
+                        {pk.createdAt && (
+                          <span className="text-xs text-muted-foreground">
+                            {t("passkey_registered_at", {
+                              date: new Date(pk.createdAt).toLocaleString(),
+                            })}
+                          </span>
+                        )}
+                      </div>
+                      <Button variant="destructive" size="sm" onClick={() => deletePasskey(pk.id)}>
+                        {t("delete_passkey")}
+                      </Button>
                     </li>
                   ))}
                 </ul>
               </>
             ) : (
-              <div className="text-muted-foreground text-sm">No registered passkeys.</div>
+              <>
+                <NoItems
+                  icon={Key}
+                  title={t("no_registered_passkeys")}
+                />
+              </>
             )}
           </div>
         </ModalBody>
         <ModalFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+            {tService("close")}
           </Button>
         </ModalFooter>
       </ModalContent>

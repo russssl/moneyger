@@ -29,7 +29,7 @@ export default async function HomePage() {
             {t(getWelcomeMessage(), { name: session?.user.name })}
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
-            Welcome to your personal finance dashboard
+            {t("welcome_subtitle")}
           </p>
         </div>
         
