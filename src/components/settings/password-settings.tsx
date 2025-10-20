@@ -11,7 +11,6 @@ import { useTranslations } from "next-intl"
 import { useMutation } from "@/hooks/use-api"
 import { Button } from "../ui/button"
 import PasskeySettingsModal from "./passkey-settings-modal"
-import { type Passkey } from "better-auth/plugins/passkey"
 import { passkey as passkeyClient } from "@/hooks/use-session"
 
 interface PasswordSettingsProps {
@@ -86,9 +85,9 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
       <CardHeader>
         <CardTitle className="flex items-center">
           <Key className="h-5 w-5 mr-2" />
-          {settingsT("password")}
+          {passwordExists ? settingsT("password") : settingsT("set_password")}
         </CardTitle>
-        <CardDescription>{settingsT("password_description")}</CardDescription>
+        <CardDescription>{passwordExists ? settingsT("password_description") : settingsT("set_password_description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ErrorAlert error={error} />

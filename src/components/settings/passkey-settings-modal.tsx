@@ -1,7 +1,7 @@
 "use client"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "../modal"
 import { Button } from "../ui/button"
-import { Key, Plus } from "lucide-react"
+import { Key, Plus, Trash } from "lucide-react"
 import { passkey } from "@/hooks/use-session"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
@@ -43,12 +43,20 @@ export default function PasskeySettingsModal({
   }, [open, refetchPasskeys])
 
   const deletePasskey = async (id: string) => {
-    const result = await passkey.deletePasskey({ id });
-    if (result.error) {
-      toast.error(result.error.message)
+    try {
+      setIsSubmitting(true)
+      const res = await passkey.deletePasskey({id});
+      if (res.error) {
+        throw new Error(res.error.message ?? "An unknown error occurred");
+      }
+      toast.success(t("passkey_deleted"))
+      await refetchPasskeys()
+    } catch (error) {
+      console.error(error)
+      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+    } finally {
+      setIsSubmitting(false)
     }
-    await refetchPasskeys()
-    toast.success(t("passkey_deleted"))
   }
 
   const registerPasskey = async () => {
@@ -101,9 +109,10 @@ export default function PasskeySettingsModal({
                           </span>
                         )}
                       </div>
-                      <Button variant="destructive" size="sm" onClick={() => deletePasskey(pk.id)}>
+                      <LoadingButton variant="destructive" size="sm" loading={isSubmitting} onClick={() => deletePasskey(pk.id)} disabled={isSubmitting}>
+                        {!isSubmitting && <Trash className="w-4 h-4" />}
                         {t("delete_passkey")}
-                      </Button>
+                      </LoadingButton>
                     </li>
                   ))}
                 </ul>
