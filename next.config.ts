@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin();
 
 /** @type {import("next").NextConfig} */
 const config: NextConfig = {
+  reactCompiler: true,
   turbopack: {},
   async rewrites() {
     return [

@@ -26,13 +26,17 @@ export default async function SettingsPage(
   const user = await auth.api.getSession({
     headers: await headers()
   })
-  
 
   if (!user) {
     return redirect("/login");
   }
+  
+  if (!user?.session?.userId) {
+    throw new Error("User not found");
+  }
+
   const accounts = await db.query.account.findMany({
-    where: eq(account.userId, user.session.userId),
+    where: eq(account.userId, user.session.userId as string),
   })
 
   const passwordExists = accounts.length > 0 && accounts.find((account) => account.providerId === "credential") !== undefined;
