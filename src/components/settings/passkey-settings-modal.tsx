@@ -36,9 +36,9 @@ export default function PasskeySettingsModal({
       setExistingPasskeys(passkeys)
     } catch (error) {
       console.error(error)
-      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+      toast.error(error instanceof Error ? error.message : t("unknown_error"))
     }
-  }, [getPasskeys])
+  }, [getPasskeys, t])
 
   useEffect(() => {
     if (open) {
@@ -54,14 +54,14 @@ export default function PasskeySettingsModal({
       setIsSubmitting(true)
       const res = await passkey.deletePasskey({id});
       if (res.error) {
-        const errorMessage = res.error?.message ?? "An unknown error occurred";
+        const errorMessage = res.error?.message ?? t("unknown_error");
         throw new Error(errorMessage as string);
       }
       toast.success(t("passkey_deleted"))
       await refetchPasskeys()
     } catch (error) {
       console.error(error)
-      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+      toast.error(error instanceof Error ? error.message : t("unknown_error"))
     } finally {
       setIsSubmitting(false)
     }
@@ -71,7 +71,7 @@ export default function PasskeySettingsModal({
     try {
       setIsSubmitting(true)
       const result = await passkey.addPasskey({
-        name: name || "Moneyger",
+        name: name || t("app_name"),
       });
       if (result?.error) {
         const errorMessage = result.error?.message ?? "";

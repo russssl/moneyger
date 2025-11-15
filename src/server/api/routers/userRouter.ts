@@ -6,6 +6,7 @@ import { authenticated, type AuthVariables, getUserData } from "../authenticate"
 import { zValidator } from "@hono/zod-validator";
 import db from "@/server/db";
 import { auth } from "@/lib/auth";
+
 const userRouter = new Hono<AuthVariables>();
 
 userRouter.get("/", authenticated, async (c) => {
@@ -41,7 +42,7 @@ userRouter.post("/setPassword", authenticated, zValidator("json", z.object({
   });
 
   if (response.redirect) {
-    return c.redirect(response.url ?? "/");
+    return c.redirect(String(response.url ?? "/"));
   } else {
     return c.json({ error: "Failed to set password" }, 400);
   }
@@ -153,5 +154,12 @@ userRouter.delete("/accounts", authenticated, zValidator("query", z.object({
   return c.json({ message: "Account deleted successfully" });
 });
 
+userRouter.delete("/", authenticated, async (c) => {
+  const { user: currentUser } = await getUserData(c);
+
+  await db.delete(users).where(eq(users.id, currentUser.id)).execute();
+
+  return c.json({ message: "User deleted successfully" });
+});
 
 export default userRouter;

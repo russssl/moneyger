@@ -60,7 +60,7 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
       newPassword,
     });
     if (updatePasswordError) {
-      setError(updatePasswordError.message);
+      setError(updatePasswordError instanceof Error ? updatePasswordError.message : String(updatePasswordError));
     } else {
       setError("");
       setOldPassword("");
@@ -107,7 +107,7 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
             <PasswordInput password={confirmPassword} setPassword={setConfirmPassword} placeholder={settingsT("confirm_new_password")} />
           </div>
           <div className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border" role="progressbar" aria-valuenow={strengthScore} aria-valuemin={0}
-            aria-valuemax={4} aria-label="Password strength"
+            aria-valuemax={4} aria-label={settingsT("password_strength")}
           >
             <div
               className={`h-full ${getStrengthColor(strengthScore)} transition-all duration-500 ease-out`}
@@ -129,7 +129,7 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
                   <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
                     {t(req.text)}
                     <span className="sr-only">
-                      {req.met ? " - Requirement met" : " - Requirement not met"}
+                      {req.met ? settingsT("requirement_met") : settingsT("requirement_not_met")}
                     </span>
                   </span>
                 </li>
@@ -141,7 +141,7 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
                 ) : (
                   <X size={16} className="text-muted-foreground/80 text-red-500" aria-hidden="true" />
                 )}
-                <span className={`text-xs ${passwordsMatch ? "text-emerald-600" : "text-muted-foreground"}`}>Passwords match</span>
+                <span className={`text-xs ${passwordsMatch ? "text-emerald-600" : "text-muted-foreground"}`}>{settingsT("passwords_match")}</span>
               </li>
             </>
           </ul>
@@ -150,10 +150,10 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
                 <Label htmlFor="passkey-settings" className="mb-0.5 text-base font-medium">
-                  Passkey Settings
+                  {settingsT("passkey_settings")}
                 </Label>
                 <span className="text-xs text-muted-foreground">
-                  Manage your registered passkeys for passwordless login.
+                  {settingsT("manage_passkeys_description")}
                 </span>
               </div>
               <Button
@@ -163,7 +163,7 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
                 className="rounded-md flex-shrink-0"
                 onClick={() => setOpenPasskeySettingsModal(true)}
               >
-                Manage
+                {settingsT("manage")}
               </Button>
             </div>
             <PasskeySettingsModal
@@ -188,7 +188,7 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
             }
             updatePassword();
           }}
-          toastText="Password updated successfully"
+          toastText={settingsT("password_updated_successfully")}
           loading={isPending || isRegisteringPassword}
           disabled={
             !passwordsMatch || !newPassword ||

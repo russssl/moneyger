@@ -15,6 +15,7 @@ import { redirect } from "next/navigation"
 import db from "@/server/db"
 import { eq } from "drizzle-orm"
 import { account } from "@/server/db/user"
+import { getTranslations } from "next-intl/server"
 
 export default async function SettingsPage(
   props: {
@@ -30,10 +31,6 @@ export default async function SettingsPage(
   if (!user) {
     return redirect("/login");
   }
-  
-  if (!user?.session?.userId) {
-    throw new Error("User not found");
-  }
 
   const accounts = await db.query.account.findMany({
     where: eq(account.userId, user.session.userId as string),
@@ -42,6 +39,11 @@ export default async function SettingsPage(
   const passwordExists = accounts.length > 0 && accounts.find((account) => account.providerId === "credential") !== undefined;
 
   const selectedCategory = searchParams?.category || "account";
+  const t = await getTranslations("settings");
+
+  if (!user?.session?.userId) {
+    throw new Error(t("user_not_found"));
+  }
 
   return (
     <div className="h-full gap-6 p-6">
@@ -61,15 +63,15 @@ export default async function SettingsPage(
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Palette className="h-5 w-5 mr-2" />
-                  Theme
+                {t("theme")}
               </CardTitle>
-              <CardDescription>Customize the appearance of the app.</CardDescription>
+              <CardDescription>{t("customize_appearance")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <Label>Mode</Label>
+                <Label>{t("mode")}</Label>
                 <ThemeSwitch />
-                <p className="text-sm text-muted-foreground">Select a theme preference or use your system settings.</p>
+                <p className="text-sm text-muted-foreground">{t("select_theme_preference")}</p>
               </div>
             </CardContent>
           </Card>

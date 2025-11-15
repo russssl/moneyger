@@ -71,9 +71,9 @@ export function useFetch<T>(
   }
 }
 
-export function useMutation<TInput extends { id?: string }, TResponse = TInput>(
+export function useMutation<TInput = { id?: string }, TResponse = TInput>(
   url: string,
-  method: "POST" | "PUT" | "DELETE" = "POST"
+  method: "POST" | "PUT" | "DELETE"
 ) {
   const [mutationError, setMutationError] = useState<Error | null>(null);
 
@@ -83,7 +83,7 @@ export function useMutation<TInput extends { id?: string }, TResponse = TInput>(
       let bodyData: Record<string, unknown> = data as Record<string, unknown>;
 
       // If data has an id, use it as a path param and remove from body
-      if (data && typeof data === "object" && "id" in data && data.id) {
+      if (data && typeof data === "object" && "id" in data) {
         // Remove trailing slash if present
         finalUrl = finalUrl.replace(/\/$/, "");
         finalUrl = `${finalUrl}/${encodeURIComponent(String(data.id))}`;

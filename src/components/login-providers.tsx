@@ -13,7 +13,7 @@ import Link from "next/link";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
-function ProviderButton({ provider, onClick, last }: { provider: SocialProvider, onClick: () => void, last: boolean }) {
+function ProviderButton({ provider, onClick, last, t }: { provider: SocialProvider, onClick: () => void, last: boolean, t: (key: string) => string }) {
   return (
     <Button  type="button" onClick={onClick}  variant="outline"
       className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
@@ -26,21 +26,21 @@ function ProviderButton({ provider, onClick, last }: { provider: SocialProvider,
       {last && (
         <div className="absolute right-3 flex items-center gap-1">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-xs text-green-600 font-medium">Last used</span>
+          <span className="text-xs text-green-600 font-medium">{t("last_used")}</span>
         </div>
       )}
     </Button>
   );
 }
 
-function PasskeyButton({ onClick }: { onClick: () => void }) {
+function PasskeyButton({ onClick, t }: { onClick: () => void, t: (key: string) => string }) {
   return (
     <Button variant="outline" onClick={onClick} className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
           <Key size={16} />
         </div>
-        <span className="font-medium text-sm">Passkey</span>
+        <span className="font-medium text-sm">{t("passkey")}</span>
       </div>
     </Button>
   );
@@ -69,7 +69,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
       setError("");
 
       if (!email || !password) {
-        setError("Please provide both email and password.");
+        setError(t("please_provide_email_password"));
         return;
       }
 
@@ -83,7 +83,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
       router.push("/dashboard");
     } catch (e) {
       console.error(e);
-      setError("An unknown error occurred");
+      setError(t("unknown_error"));
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
           router.push("/dashboard");
         },
         onError: (ctx) => {
-          setError(ctx.error.message ?? "An unknown error occurred");
+          setError(ctx.error.message ?? t("unknown_error"));
         },
       },
     });
@@ -115,12 +115,12 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
         <div>
           <div className="space-y-1">
             <Label htmlFor="email">
-              Email
+              {t("email")}
               <span className="text-destructive ms-1">*</span>
             </Label>
             <Input
               id="email"
-              placeholder="Email"
+              placeholder={t("email")}
               type="email"
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -144,7 +144,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
                 className={passwordButtonStyle}
                 type="button"
                 onClick={() => setIsVisible(!isVisible)}
-                aria-label={isVisible ? "Hide password" : "Show password"}
+                aria-label={isVisible ? t("hide_password") : t("show_password")}
                 aria-pressed={isVisible}
                 aria-controls="password"
               >
@@ -187,10 +187,11 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
             key={provider.provider} 
             provider={provider} 
             onClick={() => signInWithProvider(provider)} 
-            last={lastLoginMethod === provider.provider} 
+            last={lastLoginMethod === provider.provider}
+            t={t}
           />
         ))}
-        <PasskeyButton onClick={() => logInWithPasskey()} />
+        <PasskeyButton onClick={() => logInWithPasskey()} t={t} />
       </div>
     </>
   );
