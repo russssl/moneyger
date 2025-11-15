@@ -1,13 +1,12 @@
+import { type NextConfig } from "next";
 import "./src/env.js";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin();
 
 /** @type {import("next").NextConfig} */
-const config = {
-  experimental: {
-    esmExternals: true,
-  },
+const config: NextConfig = {
+  turbopack: {},
   async rewrites() {
     return [
       {
@@ -26,9 +25,6 @@ const config = {
   },
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
