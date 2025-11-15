@@ -98,7 +98,14 @@
     "passkey_registered_at": "Registered: {date}",
     "no_registered_passkeys": "No registered passkeys.",
     "passkey_deleted": "Passkey deleted successfully",
-    "delete_passkey": "Delete passkey"
+    "delete_passkey": "Delete passkey",
+    "add_passkey": "Add Passkey",
+    "enter_passkey_name_description": "Enter a name for your passkey to help you identify it later.",
+    "passkey_name": "Passkey name",
+    "passkey_name_placeholder": "My Passkey",
+    "passkey_added": "Passkey added successfully",
+    "passkey_error_unknown": "Failed to add passkey. Please try again.",
+    "passkey_error_cancelled": "Passkey registration was cancelled."
   },
   "navbar": {
     "upgrade_to_pro": "Upgrade to Pro",

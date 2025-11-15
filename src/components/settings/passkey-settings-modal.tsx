@@ -1,7 +1,7 @@
 "use client"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "../modal"
 import { Button } from "../ui/button"
-import { Key, Plus, Trash } from "lucide-react"
+import { Key, Plus, Trash, X } from "lucide-react"
 import { passkey } from "@/hooks/use-session"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
@@ -9,6 +9,8 @@ import { useState, useEffect, useCallback } from "react"
 import LoadingButton from "../loading-button"
 import { NoItems } from "../app/no-items"
 import { type Passkey } from "better-auth/plugins/passkey"
+import { Input } from "../ui/input"
+import { Label } from "../ui/label"
 
 export default function PasskeySettingsModal({
   open,
@@ -23,6 +25,8 @@ export default function PasskeySettingsModal({
   const tService = useTranslations("service")
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showNameDialog, setShowNameDialog] = useState(false)
+  const [passkeyName, setPasskeyName] = useState("")
 
   const [existingPasskeys, setExistingPasskeys] = useState<Passkey[]>([]);
 
@@ -39,6 +43,9 @@ export default function PasskeySettingsModal({
   useEffect(() => {
     if (open) {
       void refetchPasskeys()
+    } else {
+      setShowNameDialog(false)
+      setPasskeyName("")
     }
   }, [open, refetchPasskeys])
 
@@ -47,7 +54,8 @@ export default function PasskeySettingsModal({
       setIsSubmitting(true)
       const res = await passkey.deletePasskey({id});
       if (res.error) {
-        throw new Error(res.error.message ?? "An unknown error occurred");
+        const errorMessage = res.error?.message ?? "An unknown error occurred";
+        throw new Error(errorMessage as string);
       }
       toast.success(t("passkey_deleted"))
       await refetchPasskeys()
@@ -59,21 +67,77 @@ export default function PasskeySettingsModal({
     }
   }
 
-  const registerPasskey = async () => {
+  const registerPasskey = async (name: string) => {
     try {
       setIsSubmitting(true)
       const result = await passkey.addPasskey({
-        name: "Moneyger",
+        name: name || "Moneyger",
       });
       if (result?.error) {
-        throw new Error(result.error.message ?? "An unknown error occurred")
+        const errorMessage = result.error?.message ?? "";
+        const errorCode = "code" in result.error ? result.error.code : "";
+        
+        // Handle user cancellation gracefully
+        const isCancellation = 
+          errorCode === "NotAllowedError" ||
+          errorCode === "AbortError" ||
+          (typeof errorMessage === "string" && (
+            errorMessage.toLowerCase().includes("fallback") ||
+            errorMessage.toLowerCase().includes("cancel") ||
+            errorMessage.toLowerCase().includes("abort") ||
+            errorMessage.toLowerCase().includes("not allowed")
+          ));
+        
+        if (isCancellation) {
+          // User cancelled - don't show error, just reset
+          setShowNameDialog(false)
+          setPasskeyName("")
+          return
+        }
+        
+        // For other errors, show a user-friendly message
+        const friendlyMessage = (typeof errorMessage === "string" ? errorMessage : "") || t("passkey_error_unknown")
+        throw new Error(friendlyMessage)
       }
+      toast.success(t("passkey_added"))
+      setShowNameDialog(false)
+      setPasskeyName("")
       await refetchPasskeys()
     } catch (error) {
       console.error(error)
-      toast.error(error instanceof Error ? error.message : "An unknown error occurred")
+      const errorMessage = error instanceof Error ? error.message : t("passkey_error_unknown")
+      
+      // Check if it's a cancellation error
+      if (
+        errorMessage.toLowerCase().includes("fallback") ||
+        errorMessage.toLowerCase().includes("cancel") ||
+        errorMessage.toLowerCase().includes("abort") ||
+        errorMessage.toLowerCase().includes("not allowed")
+      ) {
+        // User cancelled - silently reset
+        setShowNameDialog(false)
+        setPasskeyName("")
+        return
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleAddClick = () => {
+    setShowNameDialog(true)
+  }
+
+  const handleCancelAdd = () => {
+    setShowNameDialog(false)
+    setPasskeyName("")
+  }
+
+  const handleConfirmAdd = () => {
+    if (passkeyName.trim()) {
+      void registerPasskey(passkeyName.trim())
     }
   }
 
@@ -86,11 +150,44 @@ export default function PasskeySettingsModal({
         <ModalBody>
           <div className="flex justify-between items-center mb-2 gap-2">
             <div className="font-semibold text-base">{t("your_passkeys")}</div>
-            <LoadingButton variant="outline" loading={isSubmitting} onClick={registerPasskey} disabled={isSubmitting}>
-              {!isSubmitting && <Plus className="w-4 h-4" />}
-              {tService("add_new")}
-            </LoadingButton>
+            {!showNameDialog && (
+              <LoadingButton variant="outline" loading={isSubmitting} onClick={handleAddClick} disabled={isSubmitting}>
+                {!isSubmitting && <Plus className="w-4 h-4" />}
+                {tService("add_new")}
+              </LoadingButton>
+            )}
           </div>
+          {showNameDialog && (
+            <div className="mb-4 p-4 border border-border rounded-md bg-accent/50">
+              <div className="flex items-center gap-2 mb-3">
+                <Label htmlFor="passkey-name" className="text-sm font-medium">{t("passkey_name")}</Label>
+                <Button variant="ghost" size="icon" className="ml-auto h-6 w-6" onClick={handleCancelAdd} disabled={isSubmitting}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  id="passkey-name"
+                  value={passkeyName}
+                  onChange={(e) => setPasskeyName(e.target.value)}
+                  placeholder={t("passkey_name_placeholder") || "My Passkey"}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && passkeyName.trim()) {
+                      handleConfirmAdd()
+                    }
+                  }}
+                  autoFocus
+                  className="flex-1"
+                />
+                <Button variant="outline" onClick={handleCancelAdd} disabled={isSubmitting}>
+                  {tService("cancel")}
+                </Button>
+                <LoadingButton onClick={handleConfirmAdd} loading={isSubmitting} disabled={!passkeyName.trim() || isSubmitting}>
+                  {tService("add_new")}
+                </LoadingButton>
+              </div>
+            </div>
+          )}
           <div>
             {existingPasskeys && existingPasskeys.length > 0 ? (
               <>
