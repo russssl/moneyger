@@ -28,20 +28,20 @@ export function TransactionList() {
   const removeTransactionMutation = useMutation<{id: string}, any>("/api/transactions/", "DELETE")
   
 
+  const t = useTranslations("finances")
+  const tGeneral = useTranslations("general")
+
   async function removeTransaction(id: string) {
     if (removeTransactionMutation.isPending) return
       
     toast.promise(removeTransactionMutation.mutateAsync({ id: id }), {
-      loading: "Removing transaction...",
-      success: "Transaction removed successfully",
-      error: (error) => error instanceof Error ? error.message : "Failed to remove transaction",
+      loading: t("removing_transaction"),
+      success: t("transaction_removed_successfully"),
+      error: (error) => error instanceof Error ? error.message : t("failed_to_remove_transaction"),
     })
   
     await refetch()
   }
-
-  const t = useTranslations("finances")
-  const tGeneral = useTranslations("general")
 
   return (
     <>
@@ -96,7 +96,7 @@ export function TransactionList() {
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {tGeneral(transaction.type)}
+                              {transaction.type ? tGeneral(transaction.type as "expense" | "income" | "transfer") : ""}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -121,10 +121,10 @@ export function TransactionList() {
             <div className="flex-1 flex flex-col">
               <NoItems
                 icon={Banknote}
-                title="No transactions found"
-                description="Start by adding your first transaction to track your spending and income."
+                title={t("no_transactions_found")}
+                description={t("no_transactions_found_desc")}
                 button={{
-                  text: "Add transaction",
+                  text: t("add_transaction"),
                   onClick: () => setIsModalOpen(true),
                 }}
               />

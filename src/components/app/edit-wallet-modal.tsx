@@ -11,6 +11,7 @@ import { useFetch, useMutation } from "@/hooks/use-api";
 import { toast } from "sonner";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import LoadingButton from "../loading-button";
+import { useTranslations } from "next-intl";
 
 interface EditWalletModalProps {
   open: boolean;
@@ -61,6 +62,7 @@ export default function EditWalletModal({
   id,
 }: EditWalletModalProps) {
   // Create mutations for wallet operations
+  const t = useTranslations("finances");
   const createWallet = useMutation<any, NewWallet>("/api/wallets");
   const updateWallet = useMutation<any, Wallet>("/api/wallets");
   const deleteWallet = useMutation<any, void>("/api/wallets", "DELETE");
@@ -133,18 +135,18 @@ export default function EditWalletModal({
         toast.promise(
           updateWallet.mutateAsync({ ...payload, id }),
           {
-            loading: "Updating wallet...",
-            success: "Wallet updated successfully",
-            error: (error) => error instanceof Error ? error.message : "Failed to update wallet",
+            loading: t("updating_wallet"),
+            success: t("wallet_updated_successfully"),
+            error: (error) => error instanceof Error ? error.message : t("failed_to_update_wallet"),
           }
         );
       } else {
         toast.promise(
           createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 }),
           {
-            loading: "Creating wallet...",
-            success: "Wallet created successfully",
-            error: (error) => error instanceof Error ? error.message : "Failed to create wallet",
+            loading: t("creating_wallet"),
+            success: t("wallet_created_successfully"),
+            error: (error) => error instanceof Error ? error.message : t("failed_to_create_wallet"),
           }
         );
       }
@@ -159,17 +161,17 @@ export default function EditWalletModal({
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
         <ModalHeader>
-          <ModalTitle>{id ? "Edit Wallet" : "Create Wallet"}</ModalTitle>
+          <ModalTitle>{id ? t("edit_wallet") : t("create_wallet")}</ModalTitle>
         </ModalHeader>
         {!isInitialized ? 
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
           : <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Label htmlFor="wallet-name">Wallet Name</Label>
+            <Label htmlFor="wallet-name">{t("wallet_name")}</Label>
             <Input
               id="wallet-name"
-              placeholder="Wallet Name"
+              placeholder={t("wallet_name")}
               value={state.walletName}
               onChange={(e) => dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })}
               required
@@ -182,10 +184,10 @@ export default function EditWalletModal({
             />
             {!id && (
               <>
-                <Label htmlFor="initial-balance">Initial Balance</Label>
+                <Label htmlFor="initial-balance">{t("wallet_initial_balance")}</Label>
                 <Input
                   id="initial-balance"
-                  placeholder="Initial Balance"
+                  placeholder={t("wallet_initial_balance")}
                   type="number"
                   value={state.balance ?? ""}
                   onChange={(e) => dispatch({ type: "SET_BALANCE", payload: parseFloat(e.target.value) })}

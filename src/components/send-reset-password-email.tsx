@@ -12,8 +12,10 @@ import { forgetPassword } from "@/hooks/use-session"
 import { ErrorAlert } from "@/components/error-alert"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 
 export default function SendResetPasswordEmailForm() {
+  const t = useTranslations("register_login");
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -72,21 +74,21 @@ export default function SendResetPasswordEmailForm() {
                 <Button variant="link" className="text-sm" asChild>
                   <Link href="/login" className="px-0">
                     <ArrowLeft className="h-4 w-4" />
-                    Back to Login
+                    {t("back_to_login")}
                   </Link>
                 </Button>
               </div>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t("enter_your_email")}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <LoadingButton loading={isLoading} className="w-full" type="submit">
-              Send Reset Link
+              {t("send_reset_link")}
             </LoadingButton>
           </form>
         </CardContent>

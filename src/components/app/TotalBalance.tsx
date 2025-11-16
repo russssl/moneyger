@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { NoItems } from "./no-items";
 import { LoadingSpinner } from "../ui/loading";
 import { type Wallet } from "@/server/db/wallet";
+import { useTranslations } from "next-intl";
 
 const WALLET_ITEM_PADDING = "p-2 sm:p-3";
 const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";
@@ -21,6 +22,7 @@ const TEXT_SIZES = {
 } as const;
 
 export default function TotalBalance() {
+  const t = useTranslations("finances");
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [userMainCurrency, setUserMainCurrency] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function TotalBalance() {
       )}>
         <CardHeader>
           <CardTitle>
-            Total Balance
+            {t("total_balance")}
           </CardTitle>
         </CardHeader>
         <CardContent className={cn(
@@ -70,8 +72,8 @@ export default function TotalBalance() {
                 <div className="flex-1">
                   <NoItems
                     icon={Briefcase}
-                    title="No wallets found"
-                    description="Start by adding a wallet to track your balances and see your total here."
+                    title={t("no_wallets_found")}
+                    description={t("no_wallets_found_desc")}
                   />
                 </div>
               ) : (

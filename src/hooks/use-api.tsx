@@ -71,7 +71,7 @@ export function useFetch<T>(
   }
 }
 
-export function useMutation<TInput = { id?: string }, TResponse = TInput>(
+export function useMutation<TInput = { id?: string } & Record<string, unknown>, TResponse = TInput>(
   url: string,
   method: "POST" | "PUT" | "DELETE"
 ) {
@@ -80,7 +80,7 @@ export function useMutation<TInput = { id?: string }, TResponse = TInput>(
   const { mutate, mutateAsync, isPending, error } = useTanstackMutation<TResponse, Error, TInput>({
     mutationFn: async (data: TInput) => {
       let finalUrl = url;
-      let bodyData: Record<string, unknown> = data as Record<string, unknown>;
+      let bodyData: Omit<TInput, "id"> = data as Omit<TInput, "id">;
 
       // If data has an id, use it as a path param and remove from body
       if (data && typeof data === "object" && "id" in data) {

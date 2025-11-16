@@ -4,17 +4,20 @@ import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select"
-// Settings sections
-const settingsSections = [
-  { id: "account", label: "Account", icon: User },
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "privacy", label: "Privacy", icon: Shield },
-]
+import { useTranslations } from "next-intl"
 
 export default function SettingsSelect({ ...props }) {
+  const t = useTranslations("settings");
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Settings sections
+  const settingsSections = [
+    { id: "account", label: t("account"), icon: User },
+    { id: "appearance", label: t("appearance"), icon: Palette },
+    { id: "notifications", label: t("notifications"), icon: Bell },
+    { id: "privacy", label: t("privacy"), icon: Shield },
+  ];
   // Initialize state based on current param or default to 'account'
   const [activeSection, setActiveSection] = useState(searchParams.get("category") || "account")
 
@@ -46,7 +49,7 @@ export default function SettingsSelect({ ...props }) {
           value={activeSection ?? undefined}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a section" />
+            <SelectValue placeholder={t("select_section")} />
           </SelectTrigger>
           <SelectContent className="z-50">
             {settingsSections.map((section) => (

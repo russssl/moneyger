@@ -15,7 +15,7 @@ type ExtendedProvider = {
 export default function ConnectedAccount({ accounts, provider }: { accounts: any[], provider: ExtendedProvider }) {
   const t = useTranslations("settings");
   const [localAccounts, setLocalAccounts] = useState(accounts);
-  const removeAccountMutation = useMutation<string>("/api/user/accounts/");
+  const removeAccountMutation = useMutation<string, any>("/api/user/accounts/", "DELETE");
 
   const signInWithProvider = async (providerName: SocialProvider["provider"]) => {
     try {
