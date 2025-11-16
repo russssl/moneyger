@@ -33,7 +33,7 @@ export default async function SettingsPage(
   }
 
   const accounts = await db.query.account.findMany({
-    where: eq(account.userId, user.session.userId as string),
+    where: eq(account.userId, user.session.userId),
   })
 
   const passwordExists = accounts.length > 0 && accounts.find((account) => account.providerId === "credential") !== undefined;

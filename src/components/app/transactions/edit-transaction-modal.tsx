@@ -242,7 +242,7 @@ export default function EditTransactionModal({
                     <div>
                       <Label>{tGeneral("category")}</Label>
                       <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder={tGeneral("select_category")} />
                         </SelectTrigger>
                         <SelectContent>

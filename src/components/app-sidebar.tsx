@@ -44,9 +44,11 @@ export function AppSidebar({ session, ...props }: AppSidebarProps) {
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
+      <SidebarContent className="overflow-hidden rounded-t-lg">
+        <div className="overflow-auto h-full">
+          <NavMain items={data.navMain} />
+          {/* <NavProjects projects={data.projects} /> */}
+        </div>
       </SidebarContent>
       <SidebarFooter>
         <NavUser session={session}/>

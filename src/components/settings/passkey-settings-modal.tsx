@@ -55,7 +55,7 @@ export default function PasskeySettingsModal({
       const res = await passkey.deletePasskey({id});
       if (res.error) {
         const errorMessage = res.error?.message ?? t("unknown_error");
-        throw new Error(errorMessage as string);
+        throw new Error(errorMessage);
       }
       toast.success(t("passkey_deleted"))
       await refetchPasskeys()

@@ -10,7 +10,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { cn } from "@/lib/utils"
 
 type NoItemsProps = {
   title: string

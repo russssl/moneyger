@@ -8,7 +8,6 @@ import { ThemeProvider } from "next-themes";
 import { PostHogProvider, ReactQueryProvider } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import PersistentModals from "@/components/persistent-modals";
 import { Toaster } from "@/components/ui/sonner"
 
 export const viewport: Viewport = {
