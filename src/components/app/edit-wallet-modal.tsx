@@ -167,23 +167,28 @@ export default function EditWalletModal({
           <div className="flex justify-center items-center h-full">
             <LoadingSpinner />
           </div>
-          : <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Label htmlFor="wallet-name">{t("wallet_name")}</Label>
-            <Input
-              id="wallet-name"
-              placeholder={t("wallet_name")}
-              value={state.walletName}
-              onChange={(e) => dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })}
-              required
-            />
-            <CurrencySelect
-              selectedCurrency={state.currency}
-              setSelectedCurrency={(currency) =>
-                dispatch({ type: "SET_CURRENCY", payload: currency ?? "" })
-              }
-            />
+          : <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-2">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="wallet-name">{t("wallet_name")}</Label>
+              <Input
+                id="wallet-name"
+                placeholder={t("wallet_name")}
+                value={state.walletName}
+                onChange={(e) => dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })}
+                required
+                className="w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <CurrencySelect
+                selectedCurrency={state.currency}
+                setSelectedCurrency={(currency) =>
+                  dispatch({ type: "SET_CURRENCY", payload: currency ?? "" })
+                }
+              />
+            </div>
             {!id && (
-              <>
+              <div className="flex flex-col gap-2">
                 <Label htmlFor="initial-balance">{t("wallet_initial_balance")}</Label>
                 <Input
                   id="initial-balance"
@@ -191,32 +196,33 @@ export default function EditWalletModal({
                   type="number"
                   value={state.balance ?? ""}
                   onChange={(e) => dispatch({ type: "SET_BALANCE", payload: parseFloat(e.target.value) })}
+                  className="w-full"
                 />
-              </>
+              </div>
             )}
 
             {id ? (
-              <div className="flex flex-col md:flex-row gap-3 sm:flex-row sm:items-center sm:justify-between mt-2 mb-2">
-                <Button
-                  type="submit"
-                  disabled={!canSave || updateWallet.isPending}
-                  className="w-full md:w-28 order-1 md:order-2"
-                >
-                  Update
-                </Button>
+              <div className="flex flex-row justify-between items-center gap-3 mt-4">
                 {onDelete && (
                   <DeleteButton
                     onClick={() => handleDeleteWallet(id)}
                     disabled={deleteWallet.isPending}
                   />
                 )}
+                <Button
+                  type="submit"
+                  disabled={!canSave || updateWallet.isPending}
+                  className="ml-auto sm:min-w-28"
+                >
+                  Update
+                </Button>
               </div>
             ) : (
               <LoadingButton
                 type="submit"
                 loading={createWallet.isPending}
                 disabled={!canSave || createWallet.isPending}
-                className="w-full sm:w-28 self-end"
+                className="w-full sm:w-auto sm:self-end sm:min-w-28 mt-4"
               >
                 Create
               </LoadingButton>

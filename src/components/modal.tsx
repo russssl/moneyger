@@ -124,7 +124,7 @@ const ModalTitle = ({ className, children, ...props }: ModalSectionProps) => {
 
 const ModalBody = ({ className, children, ...props }: ModalSectionProps) => {
   return (
-    <div className={cn("px-4 md:px-0", className)} {...props}>
+    <div className={cn("px-4 md:px-0 min-w-0 overflow-x-hidden", className)} {...props}>
       {children}
     </div>
   )

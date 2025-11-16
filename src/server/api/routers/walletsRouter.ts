@@ -50,7 +50,12 @@ walletsRouter.get("/exchange-rate", authenticated, zValidator("query", z.object(
 })), async (c) => {
   const { from, to } = c.req.valid("query");
   const res_exchange_rate = await getCurrentExchangeRate(from, to);
-  return c.json(res_exchange_rate);
+  console.log(res_exchange_rate);
+  return c.json({
+    rate: res_exchange_rate.rate.toFixed(2),
+    timestamp: res_exchange_rate.timestamp,
+    isStale: res_exchange_rate.isStale,
+  });
 });
 
 walletsRouter.get("/:id", authenticated, async (c) => {

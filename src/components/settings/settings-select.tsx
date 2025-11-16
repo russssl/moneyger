@@ -43,7 +43,7 @@ export default function SettingsSelect({ ...props }) {
   return (
     <div className="w-full" {...props}>
       {/* Mobile View - Dropdown */}
-      <div className="md:hidden w-full mb-4 mt-2 px-3">
+      <div className="md:hidden w-full mb-4 mt-2">
         <Select
           onValueChange={(value) => handleSectionChange(value)}
           value={activeSection ?? undefined}

@@ -146,12 +146,12 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       transfer.amountReceived = amount;
       transfer.amountSent = amount;
     } else {
-      const exchangeRate = await getCurrentExchangeRate(wallet.currency, destinationWallet.currency);
+      const exchangeRateData = await getCurrentExchangeRate(wallet.currency, destinationWallet.currency);
       newSourceBalance = wallet.balance - amount;
-      newDestinationBalance = destinationWallet.balance + amount * exchangeRate;
+      newDestinationBalance = destinationWallet.balance + amount * exchangeRateData.rate;
       
-      transfer.exchangeRate = exchangeRate;
-      transfer.amountReceived = amount * exchangeRate;
+      transfer.exchangeRate = exchangeRateData.rate;
+      transfer.amountReceived = amount * exchangeRateData.rate;
       transfer.amountSent = amount;
     }
 

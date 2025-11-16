@@ -73,7 +73,7 @@ export function useFetch<T>(
 
 export function useMutation<TInput = { id?: string } & Record<string, unknown>, TResponse = TInput>(
   url: string,
-  method: "POST" | "PUT" | "DELETE"
+  method: "POST" | "PUT" | "DELETE" = "POST"
 ) {
   const [mutationError, setMutationError] = useState<Error | null>(null);
 

@@ -22,7 +22,7 @@ export default async function SettingsPage(
     searchParams: Promise<{ category?: string }>
   }
 ) {
-  const categoryGroupStyle = "grid grid-cols-[repeat(auto-fit,350px)] gap-4 p-4 justify-center md:justify-start";
+  const categoryGroupStyle = "grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,350px)] gap-4 px-0 sm:px-4 justify-center md:justify-start w-full";
   const searchParams = await props.searchParams;
   const user = await auth.api.getSession({
     headers: await headers()
@@ -46,9 +46,9 @@ export default async function SettingsPage(
   }
 
   return (
-    <div className="h-full gap-6 p-6">
+    <div className="h-full gap-6 p-4 sm:p-6">
       <PagesHeader />
-      <SettingsSelect className="mt-4 px-4"/>
+      <SettingsSelect className="mt-4"/>
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
           <ProfileSettings session={user.session ?? null}/>
