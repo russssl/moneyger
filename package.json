@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "bun run next build",
-    "check": "bun run next lint && bun run tsc --noEmit",
+    "check": "bun run lint && bun run tsc --noEmit",
     "db:generate": "bun run drizzle-kit generate",
     "db:start": "docker-compose -f docker-compose.dev.yml up -d",
     "db:stop": "docker-compose -f docker-compose.dev.yml down",
@@ -18,8 +18,8 @@
     "dev:debug": "NODE_OPTIONS='--inspect' bun run next dev --turbo",
     "format:check": "bun run prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "bun run prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
-    "lint": "bun run next lint",
-    "lint:fix": "bun run next lint --fix",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "preview": "bun run next build && bun run next start",
     "start": "PORT=4000 bun run next start",
     "typecheck": "bun run tsc --noEmit"
