@@ -26,7 +26,7 @@ export default async function HomePage() {
       <div className="max-w-[1700px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-2">
-            {t(getWelcomeMessage(), { name: session?.user.name })}
+            {t(getWelcomeMessage(), { name: session?.user.name ?? "" })}
           </h1>
           <p className="text-muted-foreground text-base sm:text-lg">
             {t("welcome_subtitle")}

@@ -45,7 +45,8 @@ export function TransactionList() {
     await refetch()
   }
 
-  const getTransactionTypeIcon = (type: string) => {
+  const getTransactionTypeIcon = (type: string | null) => {
+    if (!type) return null;
     switch (type) {
     case "income":
       return <ArrowDownIcon className="w-4 h-4 text-green-500" />

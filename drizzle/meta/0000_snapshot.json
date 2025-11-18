@@ -1,5 +1,5 @@
 {
-  "id": "7aac7b66-45b2-4e5d-a7cb-4ac4c287ee5c",
+  "id": "9aa54b13-a08b-49e5-b4ea-ac1b37c0aaa9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -612,8 +612,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "transaction_wallet_id_wallet_id_fk": {
           "name": "transaction_wallet_id_wallet_id_fk",
@@ -625,8 +625,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -714,8 +714,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "transfer_transaction_id_transaction_id_fk": {
           "name": "transfer_transaction_id_transaction_id_fk",
@@ -727,8 +727,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "transfer_from_wallet_id_wallet_id_fk": {
           "name": "transfer_from_wallet_id_wallet_id_fk",
@@ -740,8 +740,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         },
         "transfer_to_wallet_id_wallet_id_fk": {
           "name": "transfer_to_wallet_id_wallet_id_fk",
@@ -753,8 +753,8 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},

@@ -10,7 +10,9 @@ export const env = createEnv({
     POSTGRES_DB: z.string(),
     POSTGRES_HOST: z.string(),
     POSTGRES_PORT: z.string().default("5432"),
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
     REDIS_KV_URL: z.string().url().optional(),
     REDIS_KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
     REDIS_KV_REST_API_TOKEN: z.string().optional(),
@@ -20,13 +22,15 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
-    EXCHANGE_RATE_URL: z.string().optional(),
-    EXCHANGE_RATE_API_KEY: z.string().optional(),
+    EXCHANGE_RATE_URL: z.string().url(),
+    EXCHANGE_RATE_API_KEY: z.string(),
     REDIS_URL: z.string().url(),
     PORT: z.string().default("3000"),
   },
   client: {
-    NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    NEXT_PUBLIC_NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
   },
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
@@ -38,7 +42,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
-    REDIS_KV_REST_API_READ_ONLY_TOKEN: process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
+    REDIS_KV_REST_API_READ_ONLY_TOKEN:
+      process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
     REDIS_KV_REST_API_TOKEN: process.env.REDIS_KV_REST_API_TOKEN,
     REDIS_KV_REST_API_URL: process.env.REDIS_KV_REST_API_URL,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,

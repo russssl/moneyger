@@ -11,16 +11,16 @@ export const transfers = pgTable("transfer", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: varchar("user_id", { length: 255 })
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
   transactionId: varchar("transaction_id", { length: 255 })
     .notNull()
-    .references(() => transactions.id),
+    .references(() => transactions.id, { onDelete: "cascade", onUpdate: "cascade" }),
   fromWalletId: varchar("from_wallet_id", { length: 255 })
     .notNull()
-    .references(() => wallets.id),
+    .references(() => wallets.id, { onDelete: "cascade", onUpdate: "cascade" }),
   toWalletId: varchar("to_wallet_id", { length: 255 })
     .notNull()
-    .references(() => wallets.id),
+    .references(() => wallets.id, { onDelete: "cascade", onUpdate: "cascade" }),
   amountSent: doublePrecision("amount_sent").notNull(),
   amountReceived: doublePrecision("amount_received").notNull(), // this can be different from amountSent if the currency is different
   exchangeRate: doublePrecision("exchange_rate").notNull(),
@@ -30,7 +30,7 @@ export const transfers = pgTable("transfer", {
 
 export const transfersRelations = relations(transfers, ({ one }) => ({
   user: one(user, { fields: [transfers.userId], references: [user.id] }),
-  transaction: one(transactions, { fields: [transfers.transactionId], references: [transactions.id] }),
+  transaction: one(transactions, { fields: [transfers.transactionId], references: [transactions.id], relationName: "transferTransaction" }),
   fromWallet: one(wallets, { fields: [transfers.fromWalletId], references: [wallets.id], relationName: "transferFromWallet" }),
   toWallet: one(wallets, { fields: [transfers.toWalletId], references: [wallets.id], relationName: "transferToWallet" }),
 }));

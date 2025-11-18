@@ -1,9 +1,13 @@
-import { pgTable, timestamp, varchar, doublePrecision, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  timestamp,
+  varchar,
+  doublePrecision,
+  boolean,
+} from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { relations } from "drizzle-orm";
 import { transactions } from "./transaction";
-
-
 
 export const wallets = pgTable("wallet", {
   id: varchar("id", { length: 255 })

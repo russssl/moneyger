@@ -3,6 +3,42 @@ import { getSession } from "./use-session"
 import { useState } from "react";
 
 type ReqOptions = RequestInit & { query?: Record<string, any>; body?: string }
+
+class APIError extends Error {
+  status: number
+  details?: unknown
+
+  constructor(message: string, status: number, details?: unknown) {
+    super(message)
+    this.status = status
+    this.details = details
+  }
+}
+
+async function buildApiError(response: Response) {
+  const defaultMessage = "Something went wrong. Please try again."
+  let message = defaultMessage
+  let details: unknown = null
+
+  try {
+    const contentType = response.headers.get("content-type")
+    if (contentType?.includes("application/json")) {
+      const errorData = await response.json()
+      message = errorData?.message || errorData?.error || defaultMessage
+      details = errorData
+    } else {
+      const text = await response.text()
+      if (text) {
+        message = text
+      }
+      details = text
+    }
+  } catch {
+    message = defaultMessage
+  }
+
+  return new APIError(message, response.status, details)
+}
 export async function fetchWithToken(
   url: string,
   options: ReqOptions = {}
@@ -56,7 +92,7 @@ export function useFetch<T>(
       }
       const response = await fetchWithToken(url)
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw await buildApiError(response)
       }
       return response.json() as Promise<T | null>
     },
@@ -79,28 +115,18 @@ export function useMutation<TInput = { id?: string } & Record<string, unknown>, 
 
   const { mutate, mutateAsync, isPending, error } = useTanstackMutation<TResponse, Error, TInput>({
     mutationFn: async (data: TInput) => {
-      let finalUrl = url;
-      let bodyData: Omit<TInput, "id"> = data as Omit<TInput, "id">;
-
-      // If data has an id, use it as a path param and remove from body
-      if (data && typeof data === "object" && "id" in data) {
-        // Remove trailing slash if present
-        finalUrl = finalUrl.replace(/\/$/, "");
-        finalUrl = `${finalUrl}/${encodeURIComponent(String(data.id))}`;
-        // Remove id from body
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, ...rest } = data;
-        bodyData = rest;
-      }
+      const finalUrl = url;
+      const bodyData: TInput = data;
 
       const response = await fetchWithToken(finalUrl, {
         method,
-        body: Object.keys(bodyData).length > 0 ? JSON.stringify(bodyData) : undefined,
+        body: JSON.stringify(bodyData),
       });
 
       if (!response.ok) {
-        const errorObj = new Error(`HTTP error! status: ${response.status}`);
-        setMutationError(errorObj);
+        const apiError = await buildApiError(response)
+        setMutationError(apiError);
+        throw apiError;
       }
       setMutationError(null);
       return response.json() as Promise<TResponse>;

@@ -50,12 +50,11 @@ userRouter.post("/setPassword", authenticated, zValidator("json", z.object({
 
 userRouter.post("/", authenticated, zValidator("json", z.object({
   email: z.string().email().optional(),
-  username: z.string().optional(),
   currency: z.string().optional(),
 })), async (c) => {
   const { user } = await getUserData(c);
 
-  const { email, username, currency } = c.req.valid("json");
+  const { email, currency } = c.req.valid("json");
 
   const userData = await db.query.user.findFirst({
     where: eq(users.id, user.id),
@@ -67,7 +66,6 @@ userRouter.post("/", authenticated, zValidator("json", z.object({
 
   const updateData: Record<string, unknown> = {};
   if (typeof email !== "undefined") updateData.email = email;
-  if (typeof username !== "undefined") updateData.username = username;
   if (typeof currency !== "undefined") updateData.currency = currency;
 
   if (Object.keys(updateData).length > 0) {

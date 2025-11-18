@@ -129,7 +129,6 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
 
   const serviceTranslations = useServiceTranslations("service");
 
-  // Define step configurations with icons
   type StepConfig = {
     id: string;
     title: string;
@@ -155,16 +154,15 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
   ];
 
   // Always show all steps on first launch
-  const activeSteps = stepConfigs;
 
   // Map current step ID to numeric index
-  const currentStepIndex = activeSteps.findIndex(
+  const currentStepIndex = stepConfigs.findIndex(
     (step) => step.id === stepper.current.id,
   );
   const numericActiveStep = currentStepIndex >= 0 ? currentStepIndex : 0;
 
   const handleStepClick = (stepIndex: number) => {
-    const step = activeSteps[stepIndex];
+    const step = stepConfigs[stepIndex];
     if (step) {
       stepper.goTo(step.id);
     }
@@ -264,7 +262,10 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
   };
 
   return (
-    <ModalContent className="flex max-h-[85vh] max-w-2xl flex-col" disableClose={true}>
+    <ModalContent
+      className="flex max-h-[85vh] max-w-2xl flex-col"
+      disableClose={true}
+    >
       <ModalHeader>
         <ModalTitle>{t("title")}</ModalTitle>
         <ModalDescription>{t("description")}</ModalDescription>
@@ -278,7 +279,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
               orientation="horizontal"
               className="w-full justify-between gap-2 sm:gap-2"
             >
-              {activeSteps.map((step, index) => {
+              {stepConfigs.map((step, index) => {
                 const isActive = step.id === stepper.current.id;
                 const isCompleted = currentStepIndex > index;
                 const StepIcon = step.icon;
@@ -288,7 +289,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                     <StepperItem
                       step={index}
                       completed={isCompleted}
-                      className="flex min-w-0 flex-1 flex-col items-center px-2 sm:px-0 sm:flex-1"
+                      className="flex min-w-0 flex-1 flex-col items-center px-2 sm:flex-1 sm:px-0"
                     >
                       {/* Step Indicator with custom icon */}
                       <div className="relative mb-2 flex items-center justify-center">
@@ -352,13 +353,11 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                               ? "text-muted-foreground"
                               : "text-muted-foreground/70",
                           )}
-                        >
-                        </StepperDescription>
+                        ></StepperDescription>
                       </div>
                     </StepperItem>
 
-                    {/* Connector Line - hidden on mobile */}
-                    {index < activeSteps.length - 1 && (
+                    {index < stepConfigs.length - 1 && (
                       <StepperSeparator className="hidden sm:relative sm:mx-2 sm:mt-5 sm:flex sm:flex-1 sm:items-center sm:justify-center" />
                     )}
                   </Fragment>
@@ -520,7 +519,15 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                 </p>
               </div>
             ) : stepper.current.id === "wallet" ? (
-              <div className="flex flex-col gap-4 duration-300 animate-in fade-in slide-in-from-right-4">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (stepper.isLast && canProceedFromWallet) {
+                    await handleFinish();
+                  }
+                }}
+                className="flex flex-col gap-4 duration-300 animate-in fade-in slide-in-from-right-4"
+              >
                 <div className="mb-2 flex items-center gap-3">
                   <div className="rounded-lg bg-primary/10 p-2">
                     <Wallet className="h-4 w-4 text-primary" />
@@ -585,7 +592,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                     </p>
                   </div>
                 </div>
-              </div>
+              </form>
             ) : null}
           </div>
 

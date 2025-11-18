@@ -41,7 +41,7 @@ export default function ProfileSettings({...props}) {
     }
   }, [error]);
 
-  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string, id: string }, { message: string }>("/api/user", "POST");
+  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string }, { message: string }>("/api/user", "POST");
   if (!session) {
     return null;
   }
@@ -49,10 +49,7 @@ export default function ProfileSettings({...props}) {
   const saveBasicSettings = async () => {
     if (!userSettings) return;
     await saveUserSettingsMutation({
-      ...userSettings,
       email,
-      username,
-      id: session?.user?.id,
     });
     if (username) {
       await updateUser({

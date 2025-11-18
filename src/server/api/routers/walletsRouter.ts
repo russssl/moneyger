@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import db from "@/server/db";
 import { calculateTotalBalance, getCurrentExchangeRate } from "../services/wallets";
 import { transactions } from "@/server/db/transaction";
+import { HTTPException } from "hono/http-exception";
 
 const walletsRouter = new Hono<AuthVariables>();
 
@@ -94,7 +95,7 @@ walletsRouter.post("/", authenticated, zValidator(
     }).returning().execute().then((res) => res[0]);
 
     if (!wallet) {
-      throw new Error("Failed to create wallet");
+      throw new HTTPException(500, { message: "We couldn't create your wallet. Please try again." });
     }
 
     if (balance && balance !== 0) {
@@ -136,7 +137,7 @@ walletsRouter.post("/:id", authenticated, zValidator(
     )).returning().execute().then((res) => res[0]);
 
     if (!wallet) {
-      throw new Error("Failed to update wallet");
+      throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
     return wallet;
@@ -147,10 +148,15 @@ walletsRouter.post("/:id", authenticated, zValidator(
 walletsRouter.delete("/:id", authenticated, async (c) => {
   const { user } = await getUserData(c);
   const { id } = c.req.param();
-  await db.delete(wallets).where(and(
+  const deletedWallets = await db.delete(wallets).where(and(
     eq(wallets.userId, user.id),
     eq(wallets.id, id),
-  )).execute();
+  )).returning({ id: wallets.id }).execute();
+
+  if (!deletedWallets.length) {
+    throw new HTTPException(404, { message: "We couldn't find that wallet." });
+  }
+
   return c.json({ message: "Wallet deleted successfully" });
 });
 

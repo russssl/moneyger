@@ -1,6 +1,11 @@
 "use client";
 import { useEffect, useMemo, useReducer, useState } from "react";
-import { Modal, ModalContent, ModalHeader, ModalTitle } from "@/components/modal";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+} from "@/components/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
@@ -12,6 +17,7 @@ import { toast } from "sonner";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import LoadingButton from "../loading-button";
 import { useTranslations } from "next-intl";
+import { ErrorAlert } from "../error-alert";
 
 interface EditWalletModalProps {
   open: boolean;
@@ -39,7 +45,10 @@ const initialState: WalletFormState = {
   balance: null,
 };
 
-function walletFormReducer(state: WalletFormState, action: WalletFormAction): WalletFormState {
+function walletFormReducer(
+  state: WalletFormState,
+  action: WalletFormAction,
+): WalletFormState {
   switch (action.type) {
   case "SET_WALLET_NAME":
     return { ...state, walletName: action.payload };
@@ -64,12 +73,18 @@ export default function EditWalletModal({
   // Create mutations for wallet operations
   const t = useTranslations("finances");
   const createWallet = useMutation<any, NewWallet>("/api/wallets");
-  const updateWallet = useMutation<any, Wallet>("/api/wallets");
-  const deleteWallet = useMutation<any, void>("/api/wallets", "DELETE");
+  const updateWallet = useMutation<any, Wallet>(`/api/wallets/${id}`);
+  const {
+    mutateAsync: deleteWallet,
+    error: deleteError,
+    isPending: deletionIsPending,
+  } = useMutation<any, void>(`/api/wallets/${id}`, "DELETE");
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { data: walletData } = useFetch<Wallet>(id ? `/api/wallets/${id}` : null);
+  const { data: walletData } = useFetch<Wallet>(
+    id ? `/api/wallets/${id}` : null,
+  );
   useEffect(() => {
     if (open) {
       if (id && walletData) {
@@ -109,7 +124,7 @@ export default function EditWalletModal({
 
   const handleDeleteWallet = async (walletId: string) => {
     try {
-      await deleteWallet.mutateAsync({ id: walletId });
+      await deleteWallet({ id: walletId });
       onDelete?.(walletId);
       onOpenChange(false);
     } catch (error) {
@@ -117,8 +132,12 @@ export default function EditWalletModal({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!canSave) {
+      return;
+    }
 
     const payload = {
       name: state.walletName,
@@ -127,32 +146,32 @@ export default function EditWalletModal({
     };
 
     try {
-      if (!canSave) {
-        return;
-      }
-
       if (id) {
-        toast.promise(
-          updateWallet.mutateAsync({ ...payload, id }),
-          {
-            loading: t("updating_wallet"),
-            success: t("wallet_updated_successfully"),
-            error: (error) => error instanceof Error ? error.message : t("failed_to_update_wallet"),
-          }
-        );
+        toast.promise(updateWallet.mutateAsync({ ...payload, id }), {
+          loading: t("updating_wallet"),
+          success: t("wallet_updated_successfully"),
+          error: (error) =>
+            error instanceof Error
+              ? error.message
+              : t("failed_to_update_wallet"),
+        });
       } else {
         toast.promise(
           createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 }),
           {
             loading: t("creating_wallet"),
             success: t("wallet_created_successfully"),
-            error: (error) => error instanceof Error ? error.message : t("failed_to_create_wallet"),
-          }
+            error: (error) =>
+              error instanceof Error
+                ? error.message
+                : t("failed_to_create_wallet"),
+          },
         );
       }
       onSave();
       onOpenChange(false);
     } catch (error) {
+      // Error is already handled by toast.promise
       console.error("Error saving wallet:", error);
     }
   };
@@ -163,18 +182,32 @@ export default function EditWalletModal({
         <ModalHeader>
           <ModalTitle>{id ? t("edit_wallet") : t("create_wallet")}</ModalTitle>
         </ModalHeader>
-        {!isInitialized ? 
-          <div className="flex justify-center items-center h-full">
+        {!isInitialized ? (
+          <div className="flex h-full items-center justify-center">
             <LoadingSpinner />
           </div>
-          : <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-2">
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-2">
             <div className="flex flex-col gap-2">
+              {deleteError && (
+                <ErrorAlert
+                  error={
+                    deleteError instanceof Error
+                      ? deleteError.message
+                      : typeof deleteError === "string"
+                        ? deleteError
+                        : "Unknown error occurred"
+                  }
+                />
+              )}
               <Label htmlFor="wallet-name">{t("wallet_name")}</Label>
               <Input
                 id="wallet-name"
                 placeholder={t("wallet_name")}
                 value={state.walletName}
-                onChange={(e) => dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })}
+                onChange={(e) =>
+                  dispatch({ type: "SET_WALLET_NAME", payload: e.target.value })
+                }
                 required
                 className="w-full"
               />
@@ -189,24 +222,31 @@ export default function EditWalletModal({
             </div>
             {!id && (
               <div className="flex flex-col gap-2">
-                <Label htmlFor="initial-balance">{t("wallet_initial_balance")}</Label>
+                <Label htmlFor="initial-balance">
+                  {t("wallet_initial_balance")}
+                </Label>
                 <Input
                   id="initial-balance"
                   placeholder={t("wallet_initial_balance")}
                   type="number"
                   value={state.balance ?? ""}
-                  onChange={(e) => dispatch({ type: "SET_BALANCE", payload: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "SET_BALANCE",
+                      payload: parseFloat(e.target.value),
+                    })
+                  }
                   className="w-full"
                 />
               </div>
             )}
 
             {id ? (
-              <div className="flex flex-row justify-between items-center gap-3 mt-4">
+              <div className="mt-4 flex flex-row items-center justify-between gap-3">
                 {onDelete && (
                   <DeleteButton
                     onClick={() => handleDeleteWallet(id)}
-                    disabled={deleteWallet.isPending}
+                    disabled={deletionIsPending}
                   />
                 )}
                 <Button
@@ -222,12 +262,13 @@ export default function EditWalletModal({
                 type="submit"
                 loading={createWallet.isPending}
                 disabled={!canSave || createWallet.isPending}
-                className="w-full sm:w-auto sm:self-end sm:min-w-28 mt-4"
+                className="mt-4 w-full sm:w-auto sm:min-w-28 sm:self-end"
               >
                 Create
               </LoadingButton>
             )}
-          </form>}
+          </form>
+        )}
       </ModalContent>
     </Modal>
   );

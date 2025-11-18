@@ -7,6 +7,7 @@ import userRouter from "@/server/api/routers/userRouter"
 import walletsRouter from "@/server/api/routers/walletsRouter"
 import transactionsRouter from "@/server/api/routers/transactionsRouter"
 import statsRouter from "@/server/api/routers/statsRouter"
+import { HTTPException } from "hono/http-exception"
 const api = new Hono<AuthVariables>();
 
 // Configure CORS
@@ -32,6 +33,17 @@ api.route("/api/stats", statsRouter);
 api.route("/api/user", userRouter);
 api.route("/api/wallets", walletsRouter);
 api.route("/api/transactions", transactionsRouter);
+
+api.onError((err, c) => {
+  console.error(err);
+  if (err instanceof HTTPException) {
+    return c.json({ message: err.message || "Something went wrong. Please try again." }, err.status);
+  }
+
+  return c.json({ message: "Something went wrong. Please try again." }, 500);
+});
+
+api.notFound((c) => c.json({ message: "The requested resource could not be found." }, 404));
 
 export async function GET(req: NextRequest) { return api.fetch(req) }
 export async function POST(req: NextRequest) { return api.fetch(req) }
