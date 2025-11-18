@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { SquareTerminal } from "lucide-react"
+import { LayoutDashboard, PiggyBank } from "lucide-react"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
 import AppLogo from "@/components/app-logo"
@@ -16,20 +16,16 @@ import { type Session } from "@/hooks/use-session";
 const data = {
   navMain: [
     {
-      title: "Wallets",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Cards",
-          url: "#",
-        },
-        {
-          title: "Accounts",
-          url: "#",
-        },
-      ],
+      title: "Dashboard",
+      url: "/",
+      icon: LayoutDashboard,
+      isActive: false,
+    },
+    {
+      title: "Savings",
+      url: "/savings",
+      icon: PiggyBank,
+      isActive: false,
     },
   ],
 }

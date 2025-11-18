@@ -4,6 +4,9 @@ import { type Wallet } from "@/server/db/wallet";
 import EditWalletModal from "@/components/app/edit-wallet-modal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Progress } from "@/components/ui/progress";
+import { Target } from "lucide-react";
+import { useTranslations } from "next-intl";
 export default function DashboardWallets({ wallets, walletItemPadding, iconSize, textSizes, refetch }: { wallets: Wallet[], walletItemPadding: string, iconSize: string, textSizes: {
   walletName: string;
   walletCurrency: string;
@@ -12,6 +15,7 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const router = useRouter();
+  const t = useTranslations("finances");
 
   const openModal = (id: string) => {
     setSelectedId(id);
@@ -24,68 +28,102 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
   return (
     <>
       <div>
-        {wallets?.map((wallet) => (
-          <div
-            key={wallet.id}
-            onClick={() => openModal(wallet.id)}
+        {wallets?.map((wallet) => {
+          const isSavingAccount = wallet.isSavingAccount ?? false;
+          const goal = wallet.savingAccountGoal ?? 0;
+          const isGoalReached = goal > 0 && wallet.balance >= goal;
+          
+          return (
+            <div
+              key={wallet.id}
+              onClick={() => openModal(wallet.id)}
             className={cn(
-              "flex items-center justify-between",
+              "flex flex-col",
               "rounded-md border",
-              walletItemPadding,
+              "p-3",
               "hover:bg-accent/50",
               "border-border/50",
               "cursor-pointer",
-              "mb-2"
+              "mb-1",
+              isSavingAccount && "border-primary/20"
             )}
-          >
-            <div className="flex items-center gap-2.5">
-              {wallet.iconName ? (
-                <div className={cn(
-                  "flex items-center justify-center rounded-md",
-                  "bg-muted",
-                  iconSize
-                )}>
-                  <span className="text-sm">{wallet.iconName}</span>
+            >
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  {wallet.iconName ? (
+                    <div className={cn(
+                      "flex items-center justify-center rounded-md",
+                      "bg-muted",
+                      iconSize
+                    )}>
+                      <span className="text-sm">{wallet.iconName}</span>
+                    </div>
+                  ) : (
+                    <div className={cn(
+                      "flex items-center justify-center rounded-md",
+                      "bg-muted",
+                      iconSize
+                    )}>
+                      <span className="text-xs font-medium">
+                        {wallet.name?.[0] ?? "?"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className={cn(
+                          textSizes.walletName,
+                          "font-medium"
+                        )}>
+                          {wallet.name ?? "Unnamed Wallet"}
+                        </span>
+                        {isSavingAccount && (
+                          <Target className="h-3 w-3 text-primary" />
+                        )}
+                      </div>
+                      <span className={cn(
+                        textSizes.walletCurrency,
+                        "text-muted-foreground"
+                      )}>
+                        {wallet.currency}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div className={cn(
-                  "flex items-center justify-center rounded-md",
-                  "bg-muted",
-                  iconSize
-                )}>
-                  <span className="text-xs font-medium">
-                    {wallet.name?.[0] ?? "?"}
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className={cn(
+                    textSizes.balance,
+                    "font-medium"
+                  )}>
+                    {wallet.balance.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: wallet.currency
+                    })}
                   </span>
+                  {isSavingAccount && goal > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {goal.toLocaleString("en-US", {
+                        style: "currency",
+                        currency: wallet.currency
+                      })}
+                    </span>
+                  )}
                 </div>
-              )}
-              <div className="flex flex-col gap-0.5">
-                <span className={cn(
-                  textSizes.walletName,
-                  "font-medium"
-                )}>
-                  {wallet.name ?? "Unnamed Wallet"}
-                </span>
-                <span className={cn(
-                  textSizes.walletCurrency,
-                  "text-muted-foreground"
-                )}>
-                  {wallet.currency}
-                </span>
               </div>
+              {isSavingAccount && goal > 0 && (
+                <Progress 
+                  value={wallet.balance} 
+                  max={goal}
+                  className={cn(
+                    "h-1 mt-1",
+                    isGoalReached && "bg-green-500/20 [&>div]:bg-green-500"
+                  )}
+                />
+              )}
             </div>
-            <div className="flex flex-col items-end gap-0.5">
-              <span className={cn(
-                textSizes.balance,
-                "font-medium"
-              )}>
-                {wallet.balance.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: wallet.currency
-                })}
-              </span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <EditWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={handleDeleteWallet} />
     </>

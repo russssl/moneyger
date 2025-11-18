@@ -10,6 +10,7 @@
     "dashboard": "Dashboard",
     "transactions": "Transactions",
     "wallets": "Wallets",
+    "savings": "Savings",
     "categories": "Categories",
     "settings": "Settings"
   },
@@ -206,7 +207,23 @@
     "failed_to_update_wallet": "Failed to update wallet",
     "creating_wallet": "Creating wallet...",
     "wallet_created_successfully": "Wallet created successfully",
-    "failed_to_create_wallet": "Failed to create wallet"
+    "failed_to_create_wallet": "Failed to create wallet",
+    "saving_account": "Savings Account",
+    "saving_account_description": "Mark this wallet as a savings account to track your savings goals",
+    "saving_account_goal": "Savings Goal",
+    "saving_account_goal_placeholder": "0.00",
+    "saving_account_goal_description": "Set a target amount you want to save in this account",
+    "total_savings": "Total Savings",
+    "saving_accounts": "savings accounts",
+    "complete": "complete",
+    "goal_reached": "Goal reached",
+    "all_goals_reached": "All goals reached",
+    "savings_title": "Savings",
+    "savings_description": "Track your savings goals and progress",
+    "no_savings_accounts": "No savings accounts",
+    "no_savings_accounts_desc": "Create a savings account to start tracking your savings goals",
+    "goal": "Goal",
+    "remaining": "Remaining"
   },
   "categories": {
     "categories": "Categories",

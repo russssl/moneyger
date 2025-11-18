@@ -272,7 +272,7 @@ export default function EditTransactionModal({
             )}
           </div>
         </ModalBody>
-        <ModalFooter className="flex flex-row justify-between items-center gap-3">
+        <ModalFooter className="flex flex-row justify-between items-center gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-initial">
             {tService("cancel")}
           </Button>

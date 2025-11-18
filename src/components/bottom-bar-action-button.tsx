@@ -57,6 +57,18 @@ const actions = [
     stateName: "isWalletModalOpen",
   },
   {
+    icon: PiggyBank,
+    label: (t: any) => t("add_saving"),
+    id: "saving",
+    color: "text-purple-600",
+    bg: "bg-purple-50",
+    description: (t: any) => t("add_saving_description"),
+    gradient: "from-purple-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30",
+    iconColor: "text-purple",
+    stateName: "isWalletModalOpen",
+    disabled: false,
+  },
+  {
     icon: Target,
     id: "budget",
     label: (t: any) => t("add_budget"),
@@ -67,23 +79,13 @@ const actions = [
     iconColor: "text-yellow",
     disabled: true,
   },
-  {
-    icon: PiggyBank,
-    label: (t: any) => t("add_saving"),
-    id: "saving",
-    color: "text-purple-600",
-    bg: "bg-purple-50",
-    description: (t: any) => t("add_saving_description"),
-    gradient: "from-purple-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30",
-    iconColor: "text-purple",
-    disabled: true,
-  },
 ] as Action[]
 
 export function BottomBarActionButton({ updateList }: { updateList: () => void }) {
   const [isTransactionModalOpen, setTransactionModalOpen] = useState(false)
   const [isWalletModalOpen, setWalletModalOpen] = useState(false)
   const [transactionTab, setTransactionTab] = useState<"income" | "expense" | "transfer">("expense")
+  const [defaultIsSavingAccount, setDefaultIsSavingAccount] = useState(false)
 
   const handleActionClick = (action: Action) => {
     if (action.disabled) return
@@ -92,7 +94,13 @@ export function BottomBarActionButton({ updateList }: { updateList: () => void }
       setTransactionTab(action.defaultTab)
       setTransactionModalOpen(true)
     } else if (action.stateName === "isWalletModalOpen") {
-      setWalletModalOpen(true)
+      if (action.id === "saving") {
+        setDefaultIsSavingAccount(true)
+        setWalletModalOpen(true)
+      } else {
+        setDefaultIsSavingAccount(false)
+        setWalletModalOpen(true)
+      }
     }
   }
   const t = useTranslations("quick_actions")
@@ -172,6 +180,7 @@ export function BottomBarActionButton({ updateList }: { updateList: () => void }
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         onDelete={() => {}} // TODO: Add delete function
         onSave={updateList}
+        defaultIsSavingAccount={defaultIsSavingAccount}
       />
     </>
   )

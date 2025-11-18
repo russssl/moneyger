@@ -119,6 +119,8 @@ walletsRouter.post("/:id", authenticated, zValidator(
   z.object({
     name: z.string(),
     currency: z.string(),
+    isSavingAccount: z.boolean().optional(),
+    savingAccountGoal: z.number().optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);
@@ -126,11 +128,13 @@ walletsRouter.post("/:id", authenticated, zValidator(
   const wallet = await db.transaction(async (tx) => {
     const { id } = c.req.param();
   
-    const { name, currency } = c.req.valid("json");
+    const { name, currency, isSavingAccount, savingAccountGoal } = c.req.valid("json");
     
     const wallet = await tx.update(wallets).set({
       name,
       currency,
+      ...(isSavingAccount !== undefined && { isSavingAccount }),
+      ...(savingAccountGoal !== undefined && { savingAccountGoal: savingAccountGoal ?? 0 }),
     }).where(and(
       eq(wallets.userId, user.id),
       eq(wallets.id, id),

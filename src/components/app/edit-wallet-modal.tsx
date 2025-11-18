@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
+import { Switch } from "@/components/ui/switch";
 import CurrencySelect from "../currency-select";
 import { LoadingSpinner } from "../ui/loading";
 import DeleteButton from "../ui/delete-button";
@@ -18,6 +19,8 @@ import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import LoadingButton from "../loading-button";
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "../error-alert";
+import { currencies } from "@/hooks/currencies";
+import AddonInput from "../AddonInput";
 
 interface EditWalletModalProps {
   open: boolean;
@@ -25,24 +28,31 @@ interface EditWalletModalProps {
   onSave: () => void;
   id?: string;
   onDelete?: (id: string) => void;
+  defaultIsSavingAccount?: boolean;
 }
 
 type WalletFormState = {
   walletName: string;
   currency: string;
   balance: number | null;
+  isSavingAccount: boolean;
+  savingAccountGoal: number | null;
 };
 
 type WalletFormAction =
   | { type: "SET_WALLET_NAME"; payload: string }
   | { type: "SET_CURRENCY"; payload: string }
   | { type: "SET_BALANCE"; payload: number | null }
+  | { type: "SET_IS_SAVING_ACCOUNT"; payload: boolean }
+  | { type: "SET_SAVING_ACCOUNT_GOAL"; payload: number | null }
   | { type: "RESET"; payload: WalletFormState };
 
 const initialState: WalletFormState = {
   walletName: "",
   currency: "",
   balance: null,
+  isSavingAccount: false,
+  savingAccountGoal: null,
 };
 
 function walletFormReducer(
@@ -56,6 +66,10 @@ function walletFormReducer(
     return { ...state, currency: action.payload };
   case "SET_BALANCE":
     return { ...state, balance: action.payload };
+  case "SET_IS_SAVING_ACCOUNT":
+    return { ...state, isSavingAccount: action.payload };
+  case "SET_SAVING_ACCOUNT_GOAL":
+    return { ...state, savingAccountGoal: action.payload };
   case "RESET":
     return { ...action.payload };
   default:
@@ -69,6 +83,7 @@ export default function EditWalletModal({
   onSave,
   onDelete,
   id,
+  defaultIsSavingAccount = false,
 }: EditWalletModalProps) {
   // Create mutations for wallet operations
   const t = useTranslations("finances");
@@ -94,6 +109,8 @@ export default function EditWalletModal({
             walletName: walletData.name,
             currency: walletData.currency,
             balance: walletData.balance,
+            isSavingAccount: walletData.isSavingAccount ?? false,
+            savingAccountGoal: walletData.savingAccountGoal ?? null,
           },
         });
         setIsInitialized(true);
@@ -108,13 +125,15 @@ export default function EditWalletModal({
             walletName: "",
             currency: "",
             balance: null,
+            isSavingAccount: defaultIsSavingAccount,
+            savingAccountGoal: null,
           },
         });
         setIsInitialized(true);
       }
     }
     // Only run when modal is opened, id changes, or walletData changes
-  }, [open, id, walletData]);
+  }, [open, id, walletData, defaultIsSavingAccount]);
 
   const canSave = useMemo(() => {
     const hasValidName = state.walletName.trim().length > 0;
@@ -142,6 +161,8 @@ export default function EditWalletModal({
     const payload = {
       name: state.walletName,
       currency: state.currency,
+      isSavingAccount: state.isSavingAccount,
+      savingAccountGoal: state.savingAccountGoal ?? undefined,
       ...(id ? {} : { balance: state.balance ?? undefined }),
     };
 
@@ -240,6 +261,45 @@ export default function EditWalletModal({
                 />
               </div>
             )}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="saving-account">{t("saving_account")}</Label>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t("saving_account_description")}
+                </span>
+                <Switch
+                  id="saving-account"
+                  checked={state.isSavingAccount}
+                  onCheckedChange={(checked) =>
+                    dispatch({
+                      type: "SET_IS_SAVING_ACCOUNT",
+                      payload: checked,
+                    })
+                  }
+                />
+              </div>
+              {state.isSavingAccount && (
+                <div className="flex flex-col gap-2 pt-1">
+                  <Label htmlFor="saving-account-goal">
+                    {t("saving_account_goal")}
+                  </Label>
+                  <AddonInput
+                    value={state.savingAccountGoal ?? ""}
+                    setValue={(value) => {
+                      const numValue = value === "" ? null : parseFloat(value);
+                      dispatch({
+                        type: "SET_SAVING_ACCOUNT_GOAL",
+                        payload: numValue !== null && !isNaN(numValue) ? numValue : null,
+                      });
+                    }}
+                    addonText={currencies(state.currency)?.symbol}
+                    type="number"
+                    placeholder={t("saving_account_goal_placeholder")}
+                    className="w-full"
+                  />
+                </div>
+              )}
+            </div>
 
             {id ? (
               <div className="mt-4 flex flex-row items-center justify-between gap-3">
