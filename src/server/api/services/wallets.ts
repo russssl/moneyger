@@ -1,6 +1,6 @@
 import db from "@/server/db";
 import { type Transaction, transactions, transactions as transactionsSchema} from "@/server/db/transaction";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte, not } from "drizzle-orm";
 import { env } from "@/env";
 import { redis } from "@/server/api/cache/cache";
 import { type Wallet, wallets } from "@/server/db/wallet";
@@ -240,11 +240,7 @@ export async function getCurrentExchangeRate(fromCurrency: string, toCurrency: s
 
 type WalletsStats = {
   totalBalance: number;
-  walletsBalances: {
-    id: string;
-    name: string;
-    balance: number;
-  }[];
+  wallets: WalletWithTransactions[];
 }
 
 type WalletTrends = {
@@ -256,16 +252,16 @@ type WalletWithTransactions = Wallet & {
   transactions: Transaction[];
 }
 
-export async function calculateTotalBalance(userId: string, userMainCurrency: string, startDate?: Date | null, endDate?: Date | null): Promise<WalletsStats> {
+export async function calculateTotalBalance(userId: string, userMainCurrency: string, startDate?: Date | null, endDate?: Date | null, isSavingAccount = false): Promise<WalletsStats> {
   let totalBalance = 0;
   const res_wallets: WalletWithTransactions[] = await db.query.wallets.findMany({
-    where: eq(wallets.userId, userId),
+    where: and(eq(wallets.userId, userId), isSavingAccount ? eq(wallets.isSavingAccount, true) : undefined),
     with: {
       transactions: {
-        where: startDate ? and(
+        where: and(startDate ? and(
           lte(transactions.transaction_date, endDate ?? new Date()),
           gte(transactions.transaction_date, startDate)
-        ) : undefined,
+        ) : not(eq(transactions.type, "adjustment"))),
       },
     },
   });
@@ -286,13 +282,12 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
 
   return {
     totalBalance: Number(totalBalance.toFixed(2)),
-    walletsBalances: res_wallets.map((wallet) => ({
-      id: wallet.id,
-      name: wallet.name ?? "",
+    wallets: res_wallets.map((wallet) => ({
+      ...wallet,
       balance: startDate
         ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
         : wallet.balance,
-    })),
+    }))
   }
 }
 
@@ -320,8 +315,8 @@ export async function calculateWalletTrends(
   );
 
   // Calculate individual wallet trends
-  const walletTrends = currentBalance.walletsBalances.reduce((acc, currentWallet) => {
-    const pastWallet = pastBalance.walletsBalances.find(w => w.id === currentWallet.id);
+  const walletTrends = currentBalance.wallets.reduce((acc, currentWallet) => {
+    const pastWallet = pastBalance.wallets.find(w => w.id === currentWallet.id);
     
     // Calculate trend with 1 decimal place
     const trend = Number(

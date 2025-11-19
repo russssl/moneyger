@@ -7,6 +7,7 @@ import userRouter from "@/server/api/routers/userRouter"
 import walletsRouter from "@/server/api/routers/walletsRouter"
 import transactionsRouter from "@/server/api/routers/transactionsRouter"
 import statsRouter from "@/server/api/routers/statsRouter"
+import savingsRouter from "@/server/api/routers/savingsRouter"
 import { HTTPException } from "hono/http-exception"
 const api = new Hono<AuthVariables>();
 
@@ -33,7 +34,7 @@ api.route("/api/stats", statsRouter);
 api.route("/api/user", userRouter);
 api.route("/api/wallets", walletsRouter);
 api.route("/api/transactions", transactionsRouter);
-
+api.route("/api/savings", savingsRouter);
 api.onError((err, c) => {
   console.error(err);
   if (err instanceof HTTPException) {

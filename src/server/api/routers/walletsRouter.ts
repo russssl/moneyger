@@ -22,9 +22,6 @@ walletsRouter.get("/", authenticated, async (c) => {
 
 walletsRouter.get("/full", authenticated, async (c) => {
   const { user } = await getUserData(c);
-  const res_wallets = await db.query.wallets.findMany({
-    where: eq(wallets.userId, user.id),
-  });
 
   if (!user.currency) {
     // user still doesn't have a currency, return empty data
@@ -32,15 +29,48 @@ walletsRouter.get("/full", authenticated, async (c) => {
       totalBalance: 0,
       wallets: [],
       userMainCurrency: null,
+      savingsStats: null,
     });
   }
 
-  const totalBalance = await calculateTotalBalance(user.id, user.currency);
+  const { totalBalance, wallets } = await calculateTotalBalance(user.id, user.currency);
+
+  // Calculate savings stats with currency conversion
+  const savingsWallets = wallets.filter(w => w.isSavingAccount);
+  let savingsStats = null;
+  
+  if (savingsWallets.length > 0) {
+    // Get savings-only total balance (already converted)
+    const { totalBalance: savingsTotalBalance } = await calculateTotalBalance(user.id, user.currency, null, null, true);
+    
+    // Calculate amount left to goal with currency conversion
+    let amountLeftToGoal = 0;
+    for (const wallet of savingsWallets) {
+      if (wallet.savingAccountGoal && wallet.savingAccountGoal > 0) {
+        const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency);
+        const goalInMainCurrency = wallet.savingAccountGoal * exchangeRateData.rate;
+        const balanceInMainCurrency = wallet.balance * exchangeRateData.rate;
+        const remaining = Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
+        amountLeftToGoal += remaining;
+      }
+    }
+    
+    const totalGoal = savingsTotalBalance + amountLeftToGoal;
+    const progress = totalGoal > 0 ? Math.min((savingsTotalBalance / totalGoal) * 100, 100) : 0;
+    
+    savingsStats = {
+      totalSavings: savingsTotalBalance,
+      totalGoal,
+      progress,
+      amountLeftToGoal: Number(amountLeftToGoal.toFixed(2)),
+    };
+  }
 
   return c.json({
-    totalBalance: totalBalance.totalBalance,
-    wallets: res_wallets,
+    totalBalance: totalBalance,
+    wallets: wallets,
     userMainCurrency: user.currency,
+    savingsStats,
   });
 });
 

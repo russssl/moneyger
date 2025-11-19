@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
 import EditWalletModal from "@/components/app/edit-wallet-modal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { Target, Grid3x3, List } from "lucide-react";
@@ -14,13 +14,35 @@ import { NoItems } from "./no-items";
 import { PiggyBank } from "lucide-react";
 
 type ViewMode = "list" | "grid";
+const STORAGE_KEY = "savings-view-mode";
+
+function getInitialViewMode(): ViewMode {
+  if (typeof window === "undefined") {
+    return "list";
+  }
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved === "list" || saved === "grid" ? saved : "list";
+}
 
 export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], refetch: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
+  const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
   const t = useTranslations("finances");
+
+  // Mark as initialized after first render
+  useEffect(() => {
+    setIsInitialized(true);
+  }, []);
+
+  // Save view mode to localStorage whenever it changes (but not on initial mount)
+  useEffect(() => {
+    if (isInitialized && typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEY, viewMode);
+    }
+  }, [viewMode, isInitialized]);
 
   const openModal = (id: string) => {
     setSelectedId(id);
