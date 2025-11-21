@@ -9,12 +9,19 @@ client.on("error", (err) => {
   console.error("Redis Client Error", err);
 });
 
-let isConnected = false;
+let connectionPromise: Promise<RedisClientType> | null = null;
 
 export async function redis(): Promise<RedisClientType> {
-  if (!isConnected) {
-    await client.connect();
-    isConnected = true;
+  if (client.isOpen) {
+    return client as RedisClientType;
   }
-  return client as RedisClientType;
+
+  if (!connectionPromise) {
+    connectionPromise = (async () => {
+      await client.connect();
+      return client as RedisClientType;
+    })();
+  }
+
+  return connectionPromise;
 }
