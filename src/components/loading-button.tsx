@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner"
 
 export default function LoadingButton({
   children,
+  size = "default",
   loading,
   className,
   variant = "default",
@@ -13,6 +14,7 @@ export default function LoadingButton({
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading: boolean,
   variant?: "default" | "destructive" | "outline" | "secondary" | "success" | "ghost" | "link",
+  size?: "default" | "sm" | "lg" | "icon",
   toastText?: string
 }) {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -29,6 +31,7 @@ export default function LoadingButton({
       className={cn(className, "relative flex items-center justify-center")}
       disabled={loading}
       variant={variant}
+      size={size}
       {...props}
       onClick={handleClick}
     >

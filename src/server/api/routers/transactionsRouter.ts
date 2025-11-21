@@ -9,6 +9,7 @@ import { transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
 import { getCurrentExchangeRate } from "../services/wallets";
 import { type NewTransfer, transfers } from "@/server/db/transfer";
+import { HTTPException } from "hono/http-exception";
 
 const transactionsRouter = new Hono<AuthVariables>();
 
@@ -54,7 +55,7 @@ transactionsRouter.get("/:id", authenticated, zValidator("param", z.object({
   });
 
   if (!transactionData) {
-    throw new Error("Transaction not found");
+    throw new HTTPException(404, { message: "We couldn't find that transaction." });
   }
 
   return c.json(transactionData);
@@ -82,7 +83,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     });
 
     if (!wallet) {
-      throw new Error("Wallet not found");
+      throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
 
@@ -97,7 +98,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     }).returning().execute().then((res) => res[0]);
   
     if (!transaction) {
-      throw new Error("Transaction not created");
+      throw new HTTPException(500, { message: "We couldn't save your transaction. Please try again." });
     }
 
 
@@ -113,7 +114,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     }
     
     if (!toWalletId) {
-      throw new Error("To wallet ID is required");
+      throw new HTTPException(400, { message: "Select a destination wallet to create a transfer." });
     }
 
     const destinationWallet = await tx.query.wallets.findFirst({
@@ -124,7 +125,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     });
 
     if (!wallet?.currency || !destinationWallet?.currency) {
-      throw new Error("Source or destination wallet not found");
+      throw new HTTPException(404, { message: "We couldn't find one of the wallets needed for this transfer." });
     }
 
     let newSourceBalance, newDestinationBalance;
@@ -146,12 +147,12 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       transfer.amountReceived = amount;
       transfer.amountSent = amount;
     } else {
-      const exchangeRate = await getCurrentExchangeRate(wallet.currency, destinationWallet.currency);
+      const exchangeRateData = await getCurrentExchangeRate(wallet.currency, destinationWallet.currency);
       newSourceBalance = wallet.balance - amount;
-      newDestinationBalance = destinationWallet.balance + amount * exchangeRate;
+      newDestinationBalance = destinationWallet.balance + amount * exchangeRateData.rate;
       
-      transfer.exchangeRate = exchangeRate;
-      transfer.amountReceived = amount * exchangeRate;
+      transfer.exchangeRate = exchangeRateData.rate;
+      transfer.amountReceived = amount * exchangeRateData.rate;
       transfer.amountSent = amount;
     }
 
@@ -198,7 +199,7 @@ async (c) => {
     });
 
     if (!transaction) {
-      throw new Error("Transaction not found");
+      throw new HTTPException(404, { message: "We couldn't find that transaction." });
     }
 
     const updatedTransaction = await tx.update(transactions).set({
@@ -212,14 +213,14 @@ async (c) => {
     )).returning().execute().then((res) => res[0]);
 
     if (!updatedTransaction) {
-      throw new Error("Transaction not updated");
+      throw new HTTPException(500, { message: "We couldn't update this transaction. Please try again." });
     }
 
     return updatedTransaction;
   });
 
   if (!transactionData) {
-    throw new Error("Transaction not found");
+    throw new HTTPException(404, { message: "We couldn't find that transaction." });
   }
 
   return c.json(transactionData);
@@ -240,7 +241,7 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
     });
 
     if (!transaction) {
-      throw new Error("Transaction not found");
+      throw new HTTPException(404, { message: "We couldn't find that transaction." });
     }
 
     const wallet = await tx.query.wallets.findFirst({
@@ -251,7 +252,7 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
     });
   
     if (!wallet) {
-      throw new Error("Wallet not found");
+      throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
     if (transaction.type !== "transfer") {
@@ -279,7 +280,7 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
     });
 
     if (!transfer) {
-      throw new Error("Transfer not found");
+      throw new HTTPException(404, { message: "We couldn't find that transfer." });
     }
 
     const destinationWallet = await tx.query.wallets.findFirst({
@@ -290,7 +291,7 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
     });
   
     if (!destinationWallet) {
-      throw new Error("Destination wallet not found");
+      throw new HTTPException(404, { message: "We couldn't find the destination wallet for this transfer." });
     }
 
     const sourceBalance = wallet.balance + transfer.amountSent;

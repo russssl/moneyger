@@ -72,13 +72,13 @@ const ModalClose = ({ className, children, ...props }: ModalSectionProps & { dis
   )
 }
 
-const ModalContent = ({ className, children, onKeyDown, ...props }: ModalSectionProps & { onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void }) => {
+const ModalContent = ({ className, children, onKeyDown, disableClose = false, ...props }: ModalSectionProps & { onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void, disableClose?: boolean }) => {
   const isDesktop = !useIsMobile()
   const ModalContentComponent = isDesktop ? DialogContent : DrawerContent
 
   return (
     <div onKeyDown={onKeyDown} className="absolute inset-0 pointer-events-none">
-      <ModalContentComponent className={className} {...props}>
+      <ModalContentComponent className={className} disableClose={disableClose} {...props}>
         {children}
       </ModalContentComponent>
     </div>
@@ -124,7 +124,7 @@ const ModalTitle = ({ className, children, ...props }: ModalSectionProps) => {
 
 const ModalBody = ({ className, children, ...props }: ModalSectionProps) => {
   return (
-    <div className={cn("px-4 md:px-0", className)} {...props}>
+    <div className={cn("px-4 md:px-0 min-w-0 overflow-x-hidden", className)} {...props}>
       {children}
     </div>
   )

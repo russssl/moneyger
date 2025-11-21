@@ -3,14 +3,16 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    APP_URL: z.string().url().default("http://localhost:3000"),
     AUTH_SECRET: z.string(),
-    // DATABASE_URL: z.string().url(),
     POSTGRES_USER: z.string(),
     POSTGRES_PASSWORD: z.string(),
     POSTGRES_DB: z.string(),
     POSTGRES_HOST: z.string(),
     POSTGRES_PORT: z.string().default("5432"),
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
     REDIS_KV_URL: z.string().url().optional(),
     REDIS_KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
     REDIS_KV_REST_API_TOKEN: z.string().optional(),
@@ -20,15 +22,19 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
-    EXCHANGE_RATE_URL: z.string().optional(),
+    EXCHANGE_RATE_URL: z.string().url().default("https://api.fxratesapi.com/"),
     EXCHANGE_RATE_API_KEY: z.string().optional(),
-    REDIS_URL: z.string().url(),
+    REDIS_URL: z.string().url().default("redis://localhost:6379"),
     PORT: z.string().default("3000"),
   },
   client: {
-    NEXT_PUBLIC_NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    NEXT_PUBLIC_NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
+    NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   },
   runtimeEnv: {
+    APP_URL: process.env.APP_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
     POSTGRES_USER: process.env.POSTGRES_USER,
     POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
@@ -37,8 +43,10 @@ export const env = createEnv({
     POSTGRES_PORT: process.env.POSTGRES_PORT,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
-    REDIS_KV_REST_API_READ_ONLY_TOKEN: process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
+    REDIS_KV_REST_API_READ_ONLY_TOKEN:
+      process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
     REDIS_KV_REST_API_TOKEN: process.env.REDIS_KV_REST_API_TOKEN,
     REDIS_KV_REST_API_URL: process.env.REDIS_KV_REST_API_URL,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,

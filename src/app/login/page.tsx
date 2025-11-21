@@ -9,23 +9,25 @@ import GitHub from "@/components/icons/github";
 import Google from "@/components/icons/google";
 import { type SocialProvider } from "@/hooks/use-session";
 
-export const metadata: Metadata = {
-  title: "Login",
-  description: "Login to your account",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("register_login");
+  return {
+    title: t("login"),
+    description: t("login_description"),
+  };
+}
 
 export default async function Page() {
   const t = await getTranslations("register_login");
   const providerIcons: Record<string, React.ReactNode> = {
-    github: <GitHub />,
-    google: <Google />
+    github: <GitHub noBackground/>,
+    google: <Google noBackground/>
   };
 
   const providerNames: Record<string, string> = {
     github: "Github",
     google: "Google"
   };
-
   const availableProviders: SocialProvider[] = Object.keys(auth.options.socialProviders)
     .filter((provider): provider is "github" | "google" => 
       provider === "github" || provider === "google"

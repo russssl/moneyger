@@ -10,15 +10,29 @@ CREATE TABLE "account" (
 	"refresh_token_expires_at" timestamp,
 	"scope" text,
 	"password" text,
-	"created_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "passkey" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text,
+	"public_key" text NOT NULL,
+	"user_id" text NOT NULL,
+	"credential_id" text NOT NULL,
+	"counter" integer NOT NULL,
+	"device_type" text NOT NULL,
+	"backed_up" boolean NOT NULL,
+	"transports" text,
+	"created_at" timestamp,
+	"aaguid" text
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp NOT NULL,
 	"token" text NOT NULL,
-	"created_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp NOT NULL,
 	"ip_address" text,
 	"user_agent" text,
@@ -30,13 +44,13 @@ CREATE TABLE "user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
-	"email_verified" boolean NOT NULL,
-	"currency" text,
+	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
-	"created_at" timestamp NOT NULL,
-	"updated_at" timestamp NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"username" text,
 	"display_username" text,
+	"currency" text,
 	CONSTRAINT "user_email_unique" UNIQUE("email"),
 	CONSTRAINT "user_username_unique" UNIQUE("username")
 );
@@ -46,14 +60,14 @@ CREATE TABLE "verification" (
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp NOT NULL,
-	"created_at" timestamp,
-	"updated_at" timestamp
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "wallet" (
 	"id" varchar(255) PRIMARY KEY NOT NULL,
 	"user_id" varchar(255) NOT NULL,
-	"name" varchar(255),
+	"name" varchar(255) NOT NULL,
 	"balance" double precision DEFAULT 0 NOT NULL,
 	"is_saving_account" boolean DEFAULT false,
 	"saving_account_goal" double precision DEFAULT 0,
@@ -92,11 +106,12 @@ CREATE TABLE "transfer" (
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "passkey" ADD CONSTRAINT "passkey_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wallet" ADD CONSTRAINT "wallet_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transaction" ADD CONSTRAINT "transaction_wallet_id_wallet_id_fk" FOREIGN KEY ("wallet_id") REFERENCES "public"."wallet"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transfer" ADD CONSTRAINT "transfer_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transfer" ADD CONSTRAINT "transfer_transaction_id_transaction_id_fk" FOREIGN KEY ("transaction_id") REFERENCES "public"."transaction"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transfer" ADD CONSTRAINT "transfer_from_wallet_id_wallet_id_fk" FOREIGN KEY ("from_wallet_id") REFERENCES "public"."wallet"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "transfer" ADD CONSTRAINT "transfer_to_wallet_id_wallet_id_fk" FOREIGN KEY ("to_wallet_id") REFERENCES "public"."wallet"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "transaction" ADD CONSTRAINT "transaction_wallet_id_wallet_id_fk" FOREIGN KEY ("wallet_id") REFERENCES "public"."wallet"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "transfer" ADD CONSTRAINT "transfer_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "transfer" ADD CONSTRAINT "transfer_transaction_id_transaction_id_fk" FOREIGN KEY ("transaction_id") REFERENCES "public"."transaction"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "transfer" ADD CONSTRAINT "transfer_from_wallet_id_wallet_id_fk" FOREIGN KEY ("from_wallet_id") REFERENCES "public"."wallet"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "transfer" ADD CONSTRAINT "transfer_to_wallet_id_wallet_id_fk" FOREIGN KEY ("to_wallet_id") REFERENCES "public"."wallet"("id") ON DELETE cascade ON UPDATE cascade;

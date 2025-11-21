@@ -1,4 +1,9 @@
-import { pgTable, timestamp, varchar, doublePrecision } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  timestamp,
+  varchar,
+  doublePrecision,
+} from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { wallets } from "./wallet";
 import { relations } from "drizzle-orm";
@@ -10,10 +15,10 @@ export const transactions = pgTable("transaction", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: varchar("user_id", { length: 255 })
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
   walletId: varchar("wallet_id", { length: 255 })
     .notNull()
-    .references(() => wallets.id),
+    .references(() => wallets.id, { onDelete: "cascade", onUpdate: "cascade" }),
   amount: doublePrecision("amount").notNull(),
   transaction_date: timestamp("transaction_date"),
   description: varchar("description", { length: 255 }),
@@ -26,16 +31,18 @@ export const transactions = pgTable("transaction", {
 
 export const transactionsRelations = relations(transactions, ({ one }) => ({
   user: one(user, { fields: [transactions.userId], references: [user.id] }),
-  wallet: one(wallets, { 
-    fields: [transactions.walletId], 
+  wallet: one(wallets, {
+    fields: [transactions.walletId],
     references: [wallets.id],
-    relationName: "transactionWallet"
+    relationName: "transactionWallet",
   }),
 }));
 
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
-export type TransactionWithWallet = Transaction & { wallet: {
-  name: string | null;
-  currency: string | null;
-} };
+export type TransactionWithWallet = Transaction & {
+  wallet: {
+    name: string | null;
+    currency: string | null;
+  };
+};

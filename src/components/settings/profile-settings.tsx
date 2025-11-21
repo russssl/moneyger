@@ -41,8 +41,7 @@ export default function ProfileSettings({...props}) {
     }
   }, [error]);
 
-  const {mutateAsync: saveUserSettingsMutation, isPending} = useMutation<User>("/api/user");
-
+  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string }, { message: string }>("/api/user", "POST");
   if (!session) {
     return null;
   }
@@ -50,10 +49,7 @@ export default function ProfileSettings({...props}) {
   const saveBasicSettings = async () => {
     if (!userSettings) return;
     await saveUserSettingsMutation({
-      ...userSettings,
       email,
-      username,
-      id: session?.user?.id,
     });
     if (username) {
       await updateUser({
@@ -71,7 +67,7 @@ export default function ProfileSettings({...props}) {
   }
 
   return (
-    <Card {...props} className="sm:max-w-md">
+    <Card {...props} className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle className="flex items-center">
           <UserIcon className="h-5 w-5 mr-2" />
@@ -83,11 +79,11 @@ export default function ProfileSettings({...props}) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading}/>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="w-full"/>
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">{t("username")}</Label>
-            <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("username")} disabled={isLoading}/>
+            <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("username")} disabled={isLoading} className="w-full"/>
           </div>
           <div className="space-y-2">
             <LanguageSelect

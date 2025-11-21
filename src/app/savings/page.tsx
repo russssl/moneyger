@@ -1,12 +1,25 @@
-// savings page
+import { getTranslations } from "next-intl/server";
+import PagesHeader from "../pages-header";
+import SavingsPageContent from "./savings-content";
 
-import React from "react";
+export default async function SavingsPage() {
+  const t = await getTranslations("finances");
 
-export default function SavingsPage() {
   return (
-    <div style={{ textAlign: "center", marginTop: "20%" }}>
-      <h1 style={{ fontSize: "2.5em", color: "#555" }}>Savings Page</h1>
-      <p style={{ fontSize: "1.2em", color: "#888" }}>This page is not available yet. Please check back later.</p>
+    <div className="min-h-screen bg-background">
+      <PagesHeader />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+            {t("savings_title")}
+          </h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            {t("savings_description")}
+          </p>
+        </div>
+
+        <SavingsPageContent />
+      </div>
     </div>
   );
 }

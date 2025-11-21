@@ -30,8 +30,6 @@ export function LanguageSelect({language, setLanguage}: LanguageSelectProps) {
         <SelectContent>
           <SelectGroup>
             <SelectItem value="en">{t("english")}</SelectItem>
-            <SelectItem value="pl">{t("polish")}</SelectItem>
-            <SelectItem value="ua">{t("ukrainian")}</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
@@ -58,12 +56,6 @@ export function LanguageToggle() {
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setLocale("en")}>
           {t("english")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setLocale("pl")}>
-          {t("polish")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setLocale("ua")}>
-          {t("ukrainian")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

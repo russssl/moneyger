@@ -15,36 +15,44 @@ import { redirect } from "next/navigation"
 import db from "@/server/db"
 import { eq } from "drizzle-orm"
 import { account } from "@/server/db/user"
+import { getTranslations } from "next-intl/server"
 
 export default async function SettingsPage(
   props: {
     searchParams: Promise<{ category?: string }>
   }
 ) {
-  const categoryGroupStyle = "grid grid-cols-[repeat(auto-fit,350px)] gap-4 p-4 justify-center md:justify-start";
+  const categoryGroupStyle = "grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,350px)] gap-4 px-0 sm:px-4 justify-center md:justify-start w-full";
   const searchParams = await props.searchParams;
   const user = await auth.api.getSession({
     headers: await headers()
   })
+
   if (!user) {
     return redirect("/login");
   }
+
   const accounts = await db.query.account.findMany({
     where: eq(account.userId, user.session.userId),
   })
 
-  const passwordChangeAllowed = accounts.length > 0 && accounts.find((account) => account.providerId === "credential");
+  const passwordExists = accounts.length > 0 && accounts.find((account) => account.providerId === "credential") !== undefined;
 
   const selectedCategory = searchParams?.category || "account";
+  const t = await getTranslations("settings");
+
+  if (!user?.session?.userId) {
+    throw new Error(t("user_not_found"));
+  }
 
   return (
-    <div className="h-full gap-6 p-6">
+    <div className="h-full gap-6 p-4 sm:p-6">
       <PagesHeader />
-      <SettingsSelect className="mt-4 px-4"/>
+      <SettingsSelect className="mt-4"/>
       {selectedCategory === "account" && (
         <div className={categoryGroupStyle}>
           <ProfileSettings session={user.session ?? null}/>
-          <PasswordSettings passwordChangeAllowed={passwordChangeAllowed}/>
+          <PasswordSettings passwordExists={passwordExists ?? false} />
           <ConnectedAccountSettings accounts={accounts}/>
           <AccountSettings/>
         </div>
@@ -55,15 +63,15 @@ export default async function SettingsPage(
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Palette className="h-5 w-5 mr-2" />
-                  Theme
+                {t("theme")}
               </CardTitle>
-              <CardDescription>Customize the appearance of the app.</CardDescription>
+              <CardDescription>{t("customize_appearance")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <Label>Mode</Label>
+                <Label>{t("mode")}</Label>
                 <ThemeSwitch />
-                <p className="text-sm text-muted-foreground">Select a theme preference or use your system settings.</p>
+                <p className="text-sm text-muted-foreground">{t("select_theme_preference")}</p>
               </div>
             </CardContent>
           </Card>

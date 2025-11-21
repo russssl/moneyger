@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import db from "@/server/db";
 import { calculateTotalBalance, getCurrentExchangeRate } from "../services/wallets";
 import { transactions } from "@/server/db/transaction";
+import { HTTPException } from "hono/http-exception";
 
 const walletsRouter = new Hono<AuthVariables>();
 
@@ -21,9 +22,6 @@ walletsRouter.get("/", authenticated, async (c) => {
 
 walletsRouter.get("/full", authenticated, async (c) => {
   const { user } = await getUserData(c);
-  const res_wallets = await db.query.wallets.findMany({
-    where: eq(wallets.userId, user.id),
-  });
 
   if (!user.currency) {
     // user still doesn't have a currency, return empty data
@@ -31,15 +29,48 @@ walletsRouter.get("/full", authenticated, async (c) => {
       totalBalance: 0,
       wallets: [],
       userMainCurrency: null,
+      savingsStats: null,
     });
   }
 
-  const totalBalance = await calculateTotalBalance(user.id, user.currency);
+  const { totalBalance, wallets } = await calculateTotalBalance(user.id, user.currency);
+
+  // Calculate savings stats with currency conversion
+  const savingsWallets = wallets.filter(w => w.isSavingAccount);
+  let savingsStats = null;
+  
+  if (savingsWallets.length > 0) {
+    // Get savings-only total balance (already converted)
+    const { totalBalance: savingsTotalBalance } = await calculateTotalBalance(user.id, user.currency, null, null, true);
+    
+    // Calculate amount left to goal with currency conversion
+    let amountLeftToGoal = 0;
+    for (const wallet of savingsWallets) {
+      if (wallet.savingAccountGoal && wallet.savingAccountGoal > 0) {
+        const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency);
+        const goalInMainCurrency = wallet.savingAccountGoal * exchangeRateData.rate;
+        const balanceInMainCurrency = wallet.balance * exchangeRateData.rate;
+        const remaining = Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
+        amountLeftToGoal += remaining;
+      }
+    }
+    
+    const totalGoal = savingsTotalBalance + amountLeftToGoal;
+    const progress = totalGoal > 0 ? Math.min((savingsTotalBalance / totalGoal) * 100, 100) : 0;
+    
+    savingsStats = {
+      totalSavings: savingsTotalBalance,
+      totalGoal,
+      progress,
+      amountLeftToGoal: Number(amountLeftToGoal.toFixed(2)),
+    };
+  }
 
   return c.json({
-    totalBalance: totalBalance.totalBalance,
-    wallets: res_wallets,
+    totalBalance: totalBalance,
+    wallets: wallets,
     userMainCurrency: user.currency,
+    savingsStats,
   });
 });
 
@@ -50,7 +81,12 @@ walletsRouter.get("/exchange-rate", authenticated, zValidator("query", z.object(
 })), async (c) => {
   const { from, to } = c.req.valid("query");
   const res_exchange_rate = await getCurrentExchangeRate(from, to);
-  return c.json(res_exchange_rate);
+  console.log(res_exchange_rate);
+  return c.json({
+    rate: res_exchange_rate.rate.toFixed(2),
+    timestamp: res_exchange_rate.timestamp,
+    isStale: res_exchange_rate.isStale,
+  });
 });
 
 walletsRouter.get("/:id", authenticated, async (c) => {
@@ -89,7 +125,7 @@ walletsRouter.post("/", authenticated, zValidator(
     }).returning().execute().then((res) => res[0]);
 
     if (!wallet) {
-      throw new Error("Failed to create wallet");
+      throw new HTTPException(500, { message: "We couldn't create your wallet. Please try again." });
     }
 
     if (balance && balance !== 0) {
@@ -113,6 +149,8 @@ walletsRouter.post("/:id", authenticated, zValidator(
   z.object({
     name: z.string(),
     currency: z.string(),
+    isSavingAccount: z.boolean().optional(),
+    savingAccountGoal: z.number().optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);
@@ -120,18 +158,20 @@ walletsRouter.post("/:id", authenticated, zValidator(
   const wallet = await db.transaction(async (tx) => {
     const { id } = c.req.param();
   
-    const { name, currency } = c.req.valid("json");
+    const { name, currency, isSavingAccount, savingAccountGoal } = c.req.valid("json");
     
     const wallet = await tx.update(wallets).set({
       name,
       currency,
+      ...(isSavingAccount !== undefined && { isSavingAccount }),
+      ...(savingAccountGoal !== undefined && { savingAccountGoal: savingAccountGoal ?? 0 }),
     }).where(and(
       eq(wallets.userId, user.id),
       eq(wallets.id, id),
     )).returning().execute().then((res) => res[0]);
 
     if (!wallet) {
-      throw new Error("Failed to update wallet");
+      throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
     return wallet;
@@ -142,10 +182,15 @@ walletsRouter.post("/:id", authenticated, zValidator(
 walletsRouter.delete("/:id", authenticated, async (c) => {
   const { user } = await getUserData(c);
   const { id } = c.req.param();
-  await db.delete(wallets).where(and(
+  const deletedWallets = await db.delete(wallets).where(and(
     eq(wallets.userId, user.id),
     eq(wallets.id, id),
-  )).execute();
+  )).returning({ id: wallets.id }).execute();
+
+  if (!deletedWallets.length) {
+    throw new HTTPException(404, { message: "We couldn't find that wallet." });
+  }
+
   return c.json({ message: "Wallet deleted successfully" });
 });
 

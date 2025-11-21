@@ -1,4 +1,4 @@
-import { createClient } from "redis";
+import { createClient, type RedisClientType } from "redis";
 import { env } from "@/env";
 
 const client = createClient({
@@ -9,12 +9,19 @@ client.on("error", (err) => {
   console.error("Redis Client Error", err);
 });
 
-let isConnected = false;
+let connectionPromise: Promise<RedisClientType> | null = null;
 
-export async function redis() {
-  if (!isConnected) {
-    await client.connect();
-    isConnected = true;
+export async function redis(): Promise<RedisClientType> {
+  if (client.isOpen) {
+    return client as RedisClientType;
   }
-  return client;
+
+  if (!connectionPromise) {
+    connectionPromise = (async () => {
+      await client.connect();
+      return client as RedisClientType;
+    })();
+  }
+
+  return connectionPromise;
 }

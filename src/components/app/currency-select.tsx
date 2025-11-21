@@ -17,7 +17,7 @@ export default function CurrencySelect({wallets, selectedCurrency, label, onSele
       <Label>{label}</Label>
       <div className="flex rounded-lg shadow-xs">
         <Select onValueChange={(value) => onSelect(value)}>
-          <SelectTrigger className={cn("shadow-none", selectedCurrency ? "rounded-e-none" : "rounded")}>
+          <SelectTrigger className={cn("shadow-none w-full", selectedCurrency ? "rounded-e-none" : "rounded")}>
             <SelectValue placeholder={label} />
           </SelectTrigger>
           <SelectContent>

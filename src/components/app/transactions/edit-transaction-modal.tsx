@@ -11,13 +11,14 @@ import AutogrowingTextarea from "@/components/autogrowing-textarea";
 import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/AddonInput";
 import TransactionTypeSelect from "./transaction-type-select";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import CurrencySelect from "../currency-select";
 import { type Wallet as WalletType } from "@/server/db/wallet";
 import { type NewTransaction } from "@/server/db/transaction";
 import LoadingButton from "@/components/loading-button";
 import { LoadingSpinner } from "@/components/ui/loading";
+import { DateTime } from "luxon";
 type TransactionType = "income" | "expense" | "transfer";
 
 interface EditTransactionModalProps {
@@ -72,6 +73,7 @@ export default function EditTransactionModal({
   const tService = useTranslations("service");
   const tGeneral = useTranslations("general");
   const tCategory = useTranslations("categories");
+  const locale = useLocale();
   const [state, dispatch] = useReducer(reducer, initialState(defaultTab));
   const {
     date,
@@ -99,9 +101,8 @@ export default function EditTransactionModal({
   const fromCurrencyCode = firstWallet?.currency;
   
   const shouldFetchExchangeRate = open && transactionType === "transfer" && fromCurrencyCode && toCurrencyCode && fromCurrencyCode !== toCurrencyCode;
-  const { data: exchangeRateData } = useFetch<number>(shouldFetchExchangeRate ? `/api/wallets/exchange-rate?from=${fromCurrencyCode}&to=${toCurrencyCode}` : null);
-  const exchangeRate = exchangeRateData ?? 1;
-
+  const { data: exchangeRateData } = useFetch<{ rate: number; timestamp: number; isStale: boolean }>(shouldFetchExchangeRate ? `/api/wallets/exchange-rate?from=${fromCurrencyCode}&to=${toCurrencyCode}` : null);
+  const { rate, timestamp, isStale } = exchangeRateData ?? { rate: 1, timestamp: 0, isStale: false };
   useEffect(() => {
     if (!open) {
       dispatch({ type: "reset", payload: defaultTab });
@@ -162,7 +163,7 @@ export default function EditTransactionModal({
           <ModalDescription>{t("transaction_description")}</ModalDescription>
         </ModalHeader>
         <ModalBody>
-          <div className="grid gap-3">
+          <div className="grid gap-3 w-full min-w-0">
             {!open ? null : (
               isLoadingWallets ? (
                 <div className="p-4 flex justify-center items-center h-full">
@@ -176,8 +177,8 @@ export default function EditTransactionModal({
                     value={transactionType}
                     setValue={setTransactionType}
                   />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full min-w-0">
+                    <div className="min-w-0">
                       <Label>{tGeneral("date")}</Label>
                       <DatePicker
                         value={date}
@@ -185,7 +186,7 @@ export default function EditTransactionModal({
                         placeholder={tGeneral("select_date")}
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <Label>{tGeneral("amount")}</Label>
                       <AddonInput
                         value={amount}
@@ -202,14 +203,19 @@ export default function EditTransactionModal({
                     label={transactionType === "transfer" ? tGeneral("from_wallet") : tGeneral("wallet")}
                     onSelect={(value) => dispatch({ type: "set", field: "selectedFirstWallet", value })}
                   />
-                  {transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && exchangeRate !== 1 && (
+                  {transactionType === "transfer" && selectedFirstWallet && selectedSecondWallet && rate !== 1 && (
                     <div className="mt-2 p-2 bg-blue-50 rounded-md text-blue-700 text-sm font-medium">
                       <p>
-                  1 {fromCurrencyCode} = {exchangeRate} {toCurrencyCode}
+                        {`1 ${fromCurrencyCode} = ${rate} ${toCurrencyCode}`}
                       </p>
                       {amount > 0 && (
                         <p>
-                          {t("you_will_receive")}: {(amount * exchangeRate).toFixed(2)} {toCurrencyCode}
+                          {t("you_will_receive")}: {(amount * rate).toFixed(2)} {toCurrencyCode}
+                        </p>
+                      )}
+                      {isStale && timestamp && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          {t("last_updated")}: {DateTime.fromMillis(timestamp).setLocale(locale).toFormat("LLL dd, y 'at' HH:mm")}
                         </p>
                       )}
                     </div>
@@ -229,20 +235,21 @@ export default function EditTransactionModal({
                       {t("same_wallet_warning")}
                     </div>
                   )}
-                  <div>
+                  <div className="min-w-0">
                     <Label>{tGeneral("description")}</Label>
                     <Input
                       placeholder={tGeneral("enter_description")}
                       value={description}
                       onChange={(e) => dispatch({ type: "set", field: "description", value: e.target.value })}
+                      className="w-full"
                     />
                   </div>
 
                   {transactionType !== "transfer" && (
-                    <div>
+                    <div className="min-w-0">
                       <Label>{tGeneral("category")}</Label>
                       <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder={tGeneral("select_category")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -256,7 +263,7 @@ export default function EditTransactionModal({
                     </div>
                   )}
 
-                  <div>
+                  <div className="min-w-0 w-full">
                     <Label>{tGeneral("notes")}</Label>
                     <AutogrowingTextarea placeholder={tGeneral("notes_description")} />
                   </div>
@@ -265,12 +272,18 @@ export default function EditTransactionModal({
             )}
           </div>
         </ModalBody>
-        <ModalFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <ModalFooter className="flex flex-row justify-between items-center gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 sm:flex-initial">
             {tService("cancel")}
           </Button>
           {wallets.length > 0 && (
-            <LoadingButton onClick={addTransaction} disabled={!canSave} loading={createTransaction.isPending} variant="success">
+            <LoadingButton 
+              onClick={addTransaction} 
+              disabled={!canSave} 
+              loading={createTransaction.isPending} 
+              variant="success"
+              className="flex-1 sm:flex-initial sm:min-w-28"
+            >
               {tService("save")}
             </LoadingButton>
           )}

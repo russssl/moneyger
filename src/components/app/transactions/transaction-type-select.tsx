@@ -27,37 +27,48 @@ export default function TransactionTypeSelect({ value, setValue }: { value: Tran
     transfer: "T",
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="flex gap-2 p-1 bg-muted rounded-lg">
+    <div className="flex gap-2 p-1 bg-muted rounded-lg w-full min-w-0">
       <Button
         variant={value === "expense" ? "destructive" : "ghost"}
-        className="flex-1 gap-2 relative"
+        className="flex-1 gap-1 sm:gap-2 relative min-w-0 flex-col sm:flex-row"
         onClick={() => setValue("expense")}
         type="button"
+        aria-label={t("expense")}
       >
-        <ArrowUpIcon className="h-4 w-4" />
-        {t("expense")}
-        {!useIsMobile() && <ShortcutBadge shortcut={keyIndicators.expense} ariaLabel="Shortcut E" />}
+        <ArrowUpIcon className="h-4 w-4 flex-shrink-0" />
+        <span className="text-xs sm:text-sm">
+          {isMobile ? t("expense_short") : t("expense")}
+        </span>
+        {!isMobile && <ShortcutBadge shortcut={keyIndicators.expense} ariaLabel="Shortcut E" />}
       </Button>
       <Button
         variant={value === "income" ? "success" : "ghost"}
-        className="flex-1 gap-2 relative"
+        className="flex-1 gap-1 sm:gap-2 relative min-w-0 flex-col sm:flex-row"
         onClick={() => setValue("income")}
         type="button"
+        aria-label={t("income")}
       >
-        <ArrowDownIcon className="h-4 w-4" />
-        {t("income")}
-        {!useIsMobile() && <ShortcutBadge shortcut={keyIndicators.income} ariaLabel="Shortcut I" />}
+        <ArrowDownIcon className="h-4 w-4 flex-shrink-0" />
+        <span className="text-xs sm:text-sm">
+          {isMobile ? t("income_short") : t("income")}
+        </span>
+        {!isMobile && <ShortcutBadge shortcut={keyIndicators.income} ariaLabel="Shortcut I" />}
       </Button>
       <Button
         variant={value === "transfer" ? "darkBlue" : "ghost"}
-        className="flex-1 gap-2 relative"
+        className="flex-1 gap-1 sm:gap-2 relative min-w-0 flex-col sm:flex-row"
         onClick={() => setValue("transfer")}
         type="button"
+        aria-label={t("transfer")}
       >
-        <ArrowLeftRightIcon className="h-4 w-4" />
-        {t("transfer")}
-        {!useIsMobile() && <ShortcutBadge shortcut={keyIndicators.transfer} ariaLabel="Shortcut T" />}
+        <ArrowLeftRightIcon className="h-4 w-4 flex-shrink-0" />
+        <span className="text-xs sm:text-sm">
+          {isMobile ? t("transfer_short") : t("transfer")}
+        </span>
+        {!isMobile && <ShortcutBadge shortcut={keyIndicators.transfer} ariaLabel="Shortcut T" />}
       </Button>
     </div>
   );

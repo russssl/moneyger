@@ -44,7 +44,7 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
         <SidebarProvider>
           <AppSidebar session={session} className="hidden md:flex" />
           <SidebarInset>
-            <div className="pb-12">{children}</div>
+            <div className="pb-safe-area md:pb-12">{children}</div>
           </SidebarInset>
           <div className="md:hidden fixed bottom-0 left-0 w-full">
             <BottomBar updateList={reload} />
@@ -52,7 +52,7 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
           <PersistentModals />
         </SidebarProvider>
       ) : (
-        <div className="pb-12">{children}</div>
+        <div className="pb-safe-area md:pb-12">{children}</div>
       )}
     </div>
   );

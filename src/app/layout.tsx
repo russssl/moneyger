@@ -8,8 +8,8 @@ import { ThemeProvider } from "next-themes";
 import { PostHogProvider, ReactQueryProvider } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import PersistentModals from "@/components/persistent-modals";
 import { Toaster } from "@/components/ui/sonner"
+import { AttackModeBanner } from "@/components/attack-mode-banner"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -44,6 +44,7 @@ export default async function RootLayout({
           <ReactQueryProvider>
             <NextIntlClientProvider locale={locale} messages={messages}>
               <SessionWrapper>
+                <AttackModeBanner />
                 <Toaster richColors invert closeButton/>
                 <PostHogProvider>
                   {children}

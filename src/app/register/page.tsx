@@ -1,13 +1,17 @@
 import { type Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import RegisterForm from "./register-form";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "Register",
-  description: "Register for a new account",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("register_login");
+  return {
+    title: t("register"),
+    description: t("register_modal_description"),
+  };
+}
 
 export default async function Component() {
   const loggedInUser = await auth.api.getSession({

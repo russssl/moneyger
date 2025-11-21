@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
 import LoadingButton from "./loading-button";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Key } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/hooks/use-session";
 import { Button } from "./ui/button";
@@ -13,14 +13,10 @@ import Link from "next/link";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
-function ProviderButton({ provider, onClick, last }: { provider: SocialProvider, onClick: () => void, last: boolean }) {
+function ProviderButton({ provider, onClick, last, t }: { provider: SocialProvider, onClick: () => void, last: boolean, t: (key: string) => string }) {
   return (
-    <Button 
-      type="button" 
-      onClick={onClick} 
-      variant="outline"
-      className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden"
-    >
+    <Button  type="button" onClick={onClick}  variant="outline"
+      className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
           {provider.icon}
@@ -30,24 +26,42 @@ function ProviderButton({ provider, onClick, last }: { provider: SocialProvider,
       {last && (
         <div className="absolute right-3 flex items-center gap-1">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-xs text-green-600 font-medium">Last used</span>
+          <span className="text-xs text-green-600 font-medium">{t("last_used")}</span>
         </div>
       )}
     </Button>
   );
 }
 
+function PasskeyButton({ onClick, t }: { onClick: () => void, t: (key: string) => string }) {
+  return (
+    <Button variant="outline" onClick={onClick} className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+          <Key size={16} />
+        </div>
+        <span className="font-medium text-sm">{t("passkey")}</span>
+      </div>
+    </Button>
+  );
+}
 export default function LoginProviders({ providers }: { providers: SocialProvider[] }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
 
   const t = useTranslations("register_login");
   const router = useRouter();
-  const lastLoginMethod = getLastUsedLoginMethod();
-  console.log(lastLoginMethod);
+
+  useEffect(() => {
+    // Only get the last login method on the client side to avoid hydration issues
+    const lastMethod = getLastUsedLoginMethod();
+    setLastLoginMethod(lastMethod);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -55,7 +69,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
       setError("");
 
       if (!email || !password) {
-        setError("Please provide both email and password.");
+        setError(t("please_provide_email_password"));
         return;
       }
 
@@ -66,10 +80,10 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
         return;
       }
 
-      router.push("/");
+      router.push("/dashboard");
     } catch (e) {
       console.error(e);
-      setError("An unknown error occurred");
+      setError(t("unknown_error"));
     } finally {
       setLoading(false);
     }
@@ -81,18 +95,32 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     });
   }
 
+  const logInWithPasskey = async () => {
+    await signIn.passkey({
+      autoFill: false,
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/dashboard");
+        },
+        onError: (ctx) => {
+          setError(ctx.error.message ?? t("unknown_error"));
+        },
+      },
+    });
+  }
+
   return (
     <>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div>
           <div className="space-y-1">
             <Label htmlFor="email">
-              Email
+              {t("email")}
               <span className="text-destructive ms-1">*</span>
             </Label>
             <Input
               id="email"
-              placeholder="Email"
+              placeholder={t("email")}
               type="email"
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -116,7 +144,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
                 className={passwordButtonStyle}
                 type="button"
                 onClick={() => setIsVisible(!isVisible)}
-                aria-label={isVisible ? "Hide password" : "Show password"}
+                aria-label={isVisible ? t("hide_password") : t("show_password")}
                 aria-pressed={isVisible}
                 aria-controls="password"
               >
@@ -143,27 +171,27 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
           </div>
         </div>
       </form>
-      {providers && providers.length > 0 && (
-        <div className="relative mt-6 mb-2">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-background px-2 text-muted-foreground">
-              {t("or_continue_with")}
-            </span>
-          </div>
+      <div className="relative mt-6 mb-2">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
         </div>
-      )}
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-background px-2 text-muted-foreground">
+            {t("or_continue_with")}
+          </span>
+        </div>
+      </div>
       <div className="space-y-2">
         {providers.map((provider) => (
           <ProviderButton 
             key={provider.provider} 
             provider={provider} 
             onClick={() => signInWithProvider(provider)} 
-            last={lastLoginMethod === provider.provider} 
+            last={lastLoginMethod === provider.provider}
+            t={t}
           />
         ))}
+        <PasskeyButton onClick={() => logInWithPasskey()} t={t} />
       </div>
     </>
   );

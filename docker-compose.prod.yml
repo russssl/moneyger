@@ -15,7 +15,7 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       
       # Redis configuration
-      REDIS_KV_URL: ${REDIS_URL}
+      REDIS_URL: ${REDIS_URL}
       
       # OAuth providers (optional)
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}

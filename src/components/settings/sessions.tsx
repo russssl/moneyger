@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardTitle, CardDescription, CardContent, CardHeader } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 
 export default async function Sessions() {
+  const t = await getTranslations("settings");
   const authHeaders: any = await headers();
   const sessions = await auth.api.listSessions({
     headers: authHeaders
@@ -15,9 +17,9 @@ export default async function Sessions() {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Shield className="h-5 w-5 mr-2" />
-            Sessions
+          {t("sessions")}
         </CardTitle>
-        <CardDescription>Manage your active sessions.</CardDescription>
+        <CardDescription>{t("manage_active_sessions")}</CardDescription>
       </CardHeader>
       <CardContent>
       </CardContent>
@@ -27,7 +29,7 @@ export default async function Sessions() {
           // onClick={handleRevokeAllOtherSessions}
           disabled={sessions.length <= 1}
         >
-          Revoke All Other Sessions
+          {t("revoke_all_other_sessions")}
         </Button>
       </CardFooter>
     </Card>

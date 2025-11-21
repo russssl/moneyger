@@ -6,7 +6,7 @@ export default getRequestConfig(async () => {
   let locale = (await cookies())?.get("locale")?.value;
   if (!locale) {
     const navigatorLocale = "en";
-    const supportedLocales = ["en", "pl", "ua"];
+    const supportedLocales = ["en"];
     if (navigatorLocale && supportedLocales.includes(navigatorLocale)) {
       locale = navigatorLocale;
     } else {

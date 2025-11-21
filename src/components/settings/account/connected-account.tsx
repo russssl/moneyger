@@ -1,9 +1,10 @@
 "use client"
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@/hooks/use-api";
-import { type Provider, signIn } from "@/hooks/use-session";
+import { type SocialProvider, signIn } from "@/hooks/use-session";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 type ExtendedProvider = {
     id: string;
@@ -12,10 +13,11 @@ type ExtendedProvider = {
 }
 
 export default function ConnectedAccount({ accounts, provider }: { accounts: any[], provider: ExtendedProvider }) {
+  const t = useTranslations("settings");
   const [localAccounts, setLocalAccounts] = useState(accounts);
-  const removeAccountMutation = useMutation("/api/user/accounts/");
+  const removeAccountMutation = useMutation<string, any>("/api/user/accounts/", "DELETE");
 
-  const signInWithProvider = async (providerName: Provider) => {
+  const signInWithProvider = async (providerName: SocialProvider["provider"]) => {
     try {
       await signIn.social({
         provider: providerName,
@@ -23,7 +25,8 @@ export default function ConnectedAccount({ accounts, provider }: { accounts: any
       }, {
         onSuccess: () => {
           setLocalAccounts(prev => [...prev, { providerId: provider.id, name: provider.name }]);
-          toast.success(`Successfully connected with ${provider.name}`, {
+          const message = t("successfully_connected_with", { provider: provider.name });
+          toast.success(String(message), {
             duration: 3000,
           });
         }
@@ -36,10 +39,10 @@ export default function ConnectedAccount({ accounts, provider }: { accounts: any
   const handleConnection = async (providerId: string) => {
     const accountExists = localAccounts.find(account => account.providerId === providerId);
     if (accountExists) {
-      removeAccountMutation.mutate({ providerId });
+      removeAccountMutation.mutate(providerId);
       setLocalAccounts(prev => prev.filter(account => account.providerId !== providerId));
     } else {
-      await signInWithProvider(provider.id as Provider);
+      await signInWithProvider(provider.id as SocialProvider["provider"]);
     }
   };
 
@@ -54,13 +57,13 @@ export default function ConnectedAccount({ accounts, provider }: { accounts: any
         <div>
           <p className="font-medium">{provider.name}</p>
           <p className="text-sm text-muted-foreground">
-            {account ? "Connected" : "Not connected"}
+            {account ? t("connected") : t("not_connected")}
           </p>
         </div>
       </div>
 
       <Button variant="outline" size="sm" onClick={() => handleConnection(provider.id)}>
-        {account ? "Disconnect" : "Connect"}
+        {account ? t("disconnect") : t("connect")}
       </Button>
     </div>
   )
