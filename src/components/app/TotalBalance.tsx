@@ -10,7 +10,6 @@ import { LoadingSpinner } from "../ui/loading";
 import { type Wallet } from "@/server/db/wallet";
 import { useTranslations } from "next-intl";
 
-const WALLET_ITEM_PADDING = "p-2 sm:p-3";
 const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";
 const TEXT_SIZES = {
   title: "text-sm",
@@ -90,7 +89,7 @@ export default function TotalBalance() {
                 </div>
               ) : (
                 <>
-                  <DashboardWallets wallets={wallets} walletItemPadding={WALLET_ITEM_PADDING} iconSize={ICON_SIZE} textSizes={TEXT_SIZES} refetch={refetch}/>
+                  <DashboardWallets wallets={wallets} iconSize={ICON_SIZE} textSizes={TEXT_SIZES} refetch={refetch}/>
                 </>
               )}
             </div>
