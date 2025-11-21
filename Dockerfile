@@ -1,15 +1,15 @@
 FROM oven/bun:1 AS builder
 
+# Set environment variables for build time (before any code is copied)
+ENV SKIP_ENV_VALIDATION=true
+
 WORKDIR /app
 
 COPY package.json bun.lock ./
 
-COPY . .
-
 RUN bun install --frozen-lockfile
 
-# Set environment variables for build time
-ENV SKIP_ENV_VALIDATION=true
+COPY . .
 
 RUN bun run build
 

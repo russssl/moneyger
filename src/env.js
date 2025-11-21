@@ -59,6 +59,6 @@ export const env = createEnv({
     REDIS_URL: process.env.REDIS_URL,
     PORT: process.env.PORT,
   },
-  skipValidation: process.env.CI === "true",
+  skipValidation: process.env.CI === "true" || process.env.SKIP_ENV_VALIDATION === "true",
   emptyStringAsUndefined: true,
 });
