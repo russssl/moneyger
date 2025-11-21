@@ -76,7 +76,7 @@ export async function checkRateLimitForNextjs(
 
       if (result.retryAfter !== undefined && result.retryAfter > 0) {
         headers["Retry-After"] = result.retryAfter.toString();
-        await recordRateLimitViolation(identifier).catch(() => {});
+        void recordRateLimitViolation(identifier);
         console.warn(`Session rate limit exceeded: ${identifier} on ${method} ${path}`);
 
         return {
@@ -141,9 +141,7 @@ export async function checkRateLimitForNextjs(
       headers["Retry-After"] = result.retryAfter.toString();
 
       // Record violation for attack detection
-      await recordRateLimitViolation(identifier).catch(() => {
-        // Silently fail
-      });
+      void recordRateLimitViolation(identifier);
 
       console.warn(`Auth rate limit exceeded: ${identifier} on ${method} ${path}`);
 

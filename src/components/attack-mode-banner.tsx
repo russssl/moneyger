@@ -26,7 +26,7 @@ export function AttackModeBanner() {
       } else {
         setIsUnderAttack(false)
       }
-    } catch (error) {
+    } catch {
       setIsUnderAttack(false)
     } finally {
       setIsChecking(false)
@@ -34,7 +34,7 @@ export function AttackModeBanner() {
   }, [])
 
   useEffect(() => {
-    checkAttackStatus()
+    void checkAttackStatus()
   }, [checkAttackStatus])
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function AttackModeBanner() {
     if (!isUnderAttack) return
 
     const interval = setInterval(() => {
-      checkAttackStatus()
+      void checkAttackStatus()
     }, 60000)
 
     return () => clearInterval(interval)
@@ -73,7 +73,9 @@ export function AttackModeBanner() {
   }, [isUnderAttack])
 
   return (
-    <Dialog open={isUnderAttack} onOpenChange={() => {}}>
+    <Dialog open={isUnderAttack} onOpenChange={() => {
+      // Prevent closing - modal should only close when attack is resolved
+    }}>
       <DialogContent 
         className="sm:max-w-[500px] border-2 border-destructive z-[10000] [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}

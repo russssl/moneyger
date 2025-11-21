@@ -7,9 +7,8 @@ import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { Target, Grid3x3, List } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LoadingSpinner } from "../ui/loading";
 import { NoItems } from "./no-items";
 import { PiggyBank } from "lucide-react";
 

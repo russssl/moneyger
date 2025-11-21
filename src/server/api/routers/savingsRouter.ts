@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { type AuthVariables } from "../authenticate";
 import { authenticated, getUserData } from "../authenticate";
-import db from "@/server/db";
-import { z } from "zod";
-import { and, eq, not } from "drizzle-orm";
-import { wallets } from "@/server/db/wallet";
-import { transactions } from "@/server/db/transaction";
+// import db from "@/server/db";
+// import { z } from "zod";
+// import { and, eq, not } from "drizzle-orm";
+// import { wallets } from "@/server/db/wallet";
+// import { transactions } from "@/server/db/transaction";
 import { calculateTotalBalance, getCurrentExchangeRate } from "../services/wallets";
 
 const savingsRouter = new Hono<AuthVariables>();

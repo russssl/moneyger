@@ -1,6 +1,6 @@
 "use client"
 import { Card, CardTitle, CardHeader, CardContent } from "../ui/card";
-import { Briefcase, PiggyBank } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DashboardWallets from "./dashboard-wallets";
 import { useFetch } from "@/hooks/use-api";
@@ -9,8 +9,6 @@ import { NoItems } from "./no-items";
 import { LoadingSpinner } from "../ui/loading";
 import { type Wallet } from "@/server/db/wallet";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
-import { Button } from "../ui/button";
 
 const WALLET_ITEM_PADDING = "p-2 sm:p-3";
 const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";

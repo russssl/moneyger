@@ -1,11 +1,13 @@
 import { createClient, type RedisClientType } from "redis";
 import { env } from "@/env";
 
-let client: RedisClientType | null = null;
-let isConnecting = false;
-let connectionPromise: Promise<RedisClientType> | null = null;
+type RedisClient = ReturnType<typeof createClient>;
 
-async function createRedisClient(): Promise<RedisClientType> {
+let client: RedisClient | null = null;
+let isConnecting = false;
+let connectionPromise: Promise<RedisClient> | null = null;
+
+async function createRedisClient(): Promise<RedisClient> {
   if (client && client.isOpen) {
     return client;
   }
@@ -62,13 +64,9 @@ async function createRedisClient(): Promise<RedisClientType> {
 
 export async function redis(): Promise<RedisClientType> {
   try {
-    return await createRedisClient();
+    return await createRedisClient() as RedisClientType;
   } catch (error) {
     console.error("Failed to get Redis client:", error);
     throw error;
   }
-}
-
-export function isRedisAvailable(): boolean {
-  return client !== null && client.isOpen;
 }

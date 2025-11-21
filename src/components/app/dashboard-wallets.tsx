@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { Target } from "lucide-react";
-import { useTranslations } from "next-intl";
-export default function DashboardWallets({ wallets, walletItemPadding, iconSize, textSizes, refetch }: { wallets: Wallet[], walletItemPadding: string, iconSize: string, textSizes: {
+
+export default function DashboardWallets({ wallets, iconSize, textSizes, refetch }: { wallets: Wallet[], iconSize: string, textSizes: {
   walletName: string;
   walletCurrency: string;
   balance: string;
@@ -15,7 +15,6 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const router = useRouter();
-  const t = useTranslations("finances");
 
   const openModal = (id: string) => {
     setSelectedId(id);
@@ -37,16 +36,16 @@ export default function DashboardWallets({ wallets, walletItemPadding, iconSize,
             <div
               key={wallet.id}
               onClick={() => openModal(wallet.id)}
-            className={cn(
-              "flex flex-col",
-              "rounded-md border",
-              "p-3",
-              "hover:bg-accent/50",
-              "border-border/50",
-              "cursor-pointer",
-              "mb-1",
-              isSavingAccount && "border-primary/20"
-            )}
+              className={cn(
+                "flex flex-col",
+                "rounded-md border",
+                "p-3",
+                "hover:bg-accent/50",
+                "border-border/50",
+                "cursor-pointer",
+                "mb-1",
+                isSavingAccount && "border-primary/20"
+              )}
             >
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">

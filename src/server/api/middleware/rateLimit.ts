@@ -1,9 +1,9 @@
 import { type MiddlewareHandler } from "hono";
 import { type AuthVariables } from "../authenticate";
-import { redis, isRedisAvailable } from "@/server/api/cache/cache";
+import { redis } from "@/server/api/cache/cache";
 import { HTTPException } from "hono/http-exception";
 import { createHash } from "crypto";
-import { recordRateLimitViolation, isUnderAttack } from "./attackDetection";
+import { recordRateLimitViolation } from "./attackDetection";
 
 export interface RateLimitConfig {
   windowMs: number;
@@ -94,7 +94,7 @@ export async function checkRateLimit(
     if (count >= maxRequests) {
       const oldest = await client.zRange(key, 0, 0);
       const oldestTimestamp = oldest.length > 0 
-        ? parseInt(oldest[0] as string) 
+        ? parseInt(oldest[0]!) 
         : now;
       const retryAfter = Math.ceil((oldestTimestamp + windowMs - now) / 1000);
 
@@ -163,7 +163,7 @@ export function rateLimit(config: RateLimitConfig): MiddlewareHandler<AuthVariab
           c.header("Retry-After", result.retryAfter.toString());
         }
 
-        await recordRateLimitViolation(identifier).catch(() => {});
+        void recordRateLimitViolation(identifier);
 
         if (config.onLimitReached) {
           config.onLimitReached(identifier, path);
