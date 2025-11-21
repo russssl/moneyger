@@ -120,10 +120,10 @@ export function TransactionList() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{tGeneral("date")}</TableHead>
-                      <TableHead className="text-right">{tGeneral("amount")}</TableHead>
-                      <TableHead className="text-right">{tGeneral("wallet")}</TableHead>
-                      <TableHead className="text-right">{tGeneral("type")}</TableHead>
-                      <TableHead></TableHead>
+                      <TableHead className="text-right w-32">{tGeneral("amount")}</TableHead>
+                      <TableHead className="text-right w-32">{tGeneral("wallet")}</TableHead>
+                      <TableHead className="text-center w-20">{tGeneral("type")}</TableHead>
+                      <TableHead className="w-16" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -136,11 +136,11 @@ export function TransactionList() {
                             "-"
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right w-32">
                           {transaction.amount ? formatCurrency(transaction.amount, transaction.wallet.currency) : null}
                         </TableCell>
-                        <TableCell className="text-right">{transaction.wallet.name}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-right w-32 truncate">{transaction.wallet.name}</TableCell>
+                        <TableCell className="text-center w-20">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -154,7 +154,7 @@ export function TransactionList() {
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center w-16">
                           <Button variant="destructive" size="icon" onClick={async () => await removeTransaction(transaction.id)} disabled={removeTransactionMutation.isPending}>
                             {removeTransactionMutation.isPending ? <LoadingSpinner className="w-4 h-4 text-white" /> : <TrashIcon className="w-4 h-4 text-white" />}
                           </Button>
