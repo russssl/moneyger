@@ -52,8 +52,74 @@ export async function checkRateLimitForNextjs(
     };
   }
 
-  const identifier = getClientIdentifier(req);
   const path = new URL(req.url).pathname;
+  
+  // get-session is called frequently by useSession hook and shouldn't be rate limited as strictly
+  // Use more lenient limits for session checks
+  if (path.includes("/get-session")) {
+    const identifier = getClientIdentifier(req);
+    const method = req.method;
+    const key = generateKey(identifier, path, method);
+
+    try {
+      const result = await checkRateLimitInternal(
+        key,
+        RATE_LIMITS.authenticated.windowMs,
+        RATE_LIMITS.authenticated.maxRequests
+      );
+
+      const headers: Record<string, string> = {
+        "X-RateLimit-Limit": result.limit.toString(),
+        "X-RateLimit-Remaining": Math.max(0, result.remaining).toString(),
+        "X-RateLimit-Reset": result.reset.toString(),
+      };
+
+      if (result.retryAfter !== undefined && result.retryAfter > 0) {
+        headers["Retry-After"] = result.retryAfter.toString();
+        await recordRateLimitViolation(identifier).catch(() => {});
+        console.warn(`Session rate limit exceeded: ${identifier} on ${method} ${path}`);
+
+        return {
+          allowed: false,
+          response: NextResponse.json(
+            {
+              message: `Rate limit exceeded. Please try again in ${result.retryAfter || 1} seconds.`,
+            },
+            {
+              status: 429,
+              headers,
+            }
+          ),
+          headers,
+        };
+      }
+
+      return {
+        allowed: true,
+        headers,
+      };
+    } catch (error) {
+      if (error instanceof Error && (
+        error.message.includes("connect") ||
+        error.message.includes("ECONNREFUSED") ||
+        error.message.includes("Redis")
+      )) {
+        return {
+          allowed: false,
+          response: NextResponse.json(
+            {
+              message: "Rate limiting service is temporarily unavailable. Please try again later.",
+            },
+            { status: 503 }
+          ),
+        };
+      }
+      throw error;
+    }
+  }
+
+  // Strict rate limiting for other auth endpoints (login, signup, etc.)
+  const identifier = getClientIdentifier(req);
   const method = req.method;
   const key = generateKey(identifier, path, method);
 
