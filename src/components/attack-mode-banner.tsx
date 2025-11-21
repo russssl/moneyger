@@ -27,7 +27,6 @@ export function AttackModeBanner() {
         setIsUnderAttack(false)
       }
     } catch (error) {
-      // If we can't check, assume not under attack
       setIsUnderAttack(false)
     } finally {
       setIsChecking(false)
@@ -35,16 +34,9 @@ export function AttackModeBanner() {
   }, [])
 
   useEffect(() => {
-    // Check on mount
     checkAttackStatus()
-
-    // Check every 10 seconds
-    const interval = setInterval(checkAttackStatus, 10000)
-
-    return () => clearInterval(interval)
   }, [checkAttackStatus])
 
-  // Also listen for 503 errors from API calls
   useEffect(() => {
     const handleApiError = (event: Event) => {
       const customEvent = event as CustomEvent
@@ -57,6 +49,16 @@ export function AttackModeBanner() {
     window.addEventListener("api-error", handleApiError)
     return () => window.removeEventListener("api-error", handleApiError)
   }, [])
+
+  useEffect(() => {
+    if (!isUnderAttack) return
+
+    const interval = setInterval(() => {
+      checkAttackStatus()
+    }, 60000)
+
+    return () => clearInterval(interval)
+  }, [isUnderAttack, checkAttackStatus])
 
   // Prevent body scroll when modal is open
   useEffect(() => {
