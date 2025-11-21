@@ -37,6 +37,17 @@ async function buildApiError(response: Response) {
     message = defaultMessage
   }
 
+  // If it's a 503 with attack message, dispatch event for attack mode banner
+  if (response.status === 503 && typeof message === "string" && message.includes("not available")) {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("api-error", {
+          detail: { status: 503, message, details },
+        })
+      )
+    }
+  }
+
   return new APIError(message, response.status, details)
 }
 export async function fetchWithToken(

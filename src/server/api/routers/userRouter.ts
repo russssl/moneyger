@@ -6,6 +6,7 @@ import { authenticated, type AuthVariables, getUserData } from "../authenticate"
 import { zValidator } from "@hono/zod-validator";
 import db from "@/server/db";
 import { auth } from "@/lib/auth";
+import { createRateLimiter } from "../middleware/rateLimit";
 
 const userRouter = new Hono<AuthVariables>();
 
@@ -22,7 +23,7 @@ userRouter.get("/me", authenticated, async (c) => {
   return c.json(userData);
 });
 
-userRouter.post("/setPassword", authenticated, zValidator("json", z.object({
+userRouter.post("/setPassword", authenticated, createRateLimiter("sensitive"), zValidator("json", z.object({
   password: z.string(),
   confirmPassword: z.string(),
 })), async (c) => {
@@ -75,7 +76,7 @@ userRouter.post("/", authenticated, zValidator("json", z.object({
   return c.json({ message: "User updated successfully" });
 });
 
-userRouter.post("/updatePassword", authenticated, zValidator("json", z.object({
+userRouter.post("/updatePassword", authenticated, createRateLimiter("sensitive"), zValidator("json", z.object({
   oldPassword: z.string(),
   newPassword: z.string(),
 })), async (c) => {
@@ -152,7 +153,7 @@ userRouter.delete("/accounts", authenticated, zValidator("query", z.object({
   return c.json({ message: "Account deleted successfully" });
 });
 
-userRouter.delete("/", authenticated, async (c) => {
+userRouter.delete("/", authenticated, createRateLimiter("sensitive"), async (c) => {
   const { user: currentUser } = await getUserData(c);
 
   await db.delete(users).where(eq(users.id, currentUser.id)).execute();
