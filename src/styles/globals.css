@@ -89,3 +89,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .pb-safe-area {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  
+  @media (min-width: 768px) {
+    .pb-safe-area {
+      padding-bottom: 0;
+    }
+  }
+}
