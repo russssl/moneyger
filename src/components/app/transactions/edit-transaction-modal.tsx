@@ -17,7 +17,7 @@ import CurrencySelect from "../currency-select";
 import { type Wallet as WalletType } from "@/server/db/wallet";
 import { type NewTransaction } from "@/server/db/transaction";
 import LoadingButton from "@/components/loading-button";
-import { LoadingSpinner } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime } from "luxon";
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -166,8 +166,34 @@ export default function EditTransactionModal({
           <div className="grid gap-3 w-full min-w-0">
             {!open ? null : (
               isLoadingWallets ? (
-                <div className="p-4 flex justify-center items-center h-full">
-                  <LoadingSpinner />
+                <div className="grid gap-3 w-full min-w-0">
+                  <Skeleton className="h-10 w-full" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full min-w-0">
+                    <div className="min-w-0 space-y-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                    <div className="min-w-0 space-y-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  </div>
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="min-w-0 space-y-2">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
                 </div>
               ) : wallets.length === 0 ? (
                 <div className="p-4 bg-red-100 text-red-800 rounded-lg">{t("no_wallet_warning")}</div>

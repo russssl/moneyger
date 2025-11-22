@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 import { Switch } from "@/components/ui/switch";
 import CurrencySelect from "../currency-select";
-import { LoadingSpinner } from "../ui/loading";
+import { Skeleton } from "../ui/skeleton";
 import DeleteButton from "../ui/delete-button";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { toast } from "sonner";
@@ -216,9 +216,32 @@ export default function EditWalletModal({
           <ModalTitle>{id ? t("edit_wallet") : t("create_wallet")}</ModalTitle>
         </ModalHeader>
         {!isInitialized ? (
-          <div className="flex h-full items-center justify-center">
-            <LoadingSpinner />
-          </div>
+          <form className="flex flex-col gap-4 pb-2">
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-28" />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-6 w-11 rounded-full" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-full sm:w-auto sm:min-w-28 sm:self-end mt-4" />
+          </form>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pb-2">
             <div className="flex flex-col gap-2">
