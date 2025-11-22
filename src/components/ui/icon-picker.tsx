@@ -6,18 +6,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { LucideProps, LucideIcon } from 'lucide-react';
-import { DynamicIcon, dynamicIconImports, IconName } from 'lucide-react/dynamic';
+import { type LucideProps, type LucideIcon } from "lucide-react";
+import { DynamicIcon, dynamicIconImports, type IconName } from "lucide-react/dynamic";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { iconsData } from "./icons-data";
-import { useVirtualizer, VirtualItem } from '@tanstack/react-virtual';
+import { type iconsData } from "./icons-data";
+import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
 import { Skeleton } from "@/components/ui/skeleton";
-import Fuse from 'fuse.js';
+import Fuse from "fuse.js";
 import { useDebounceValue } from "usehooks-ts";
 
 export type IconData = typeof iconsData[number];
 
-interface IconPickerProps extends Omit<React.ComponentPropsWithoutRef<typeof PopoverTrigger>, 'onSelect' | 'onOpenChange'> {
+interface IconPickerProps extends Omit<React.ComponentPropsWithoutRef<typeof PopoverTrigger>, "onSelect" | "onOpenChange"> {
   value?: IconName
   defaultValue?: IconName
   onValueChange?: (value: IconName) => void
@@ -44,9 +44,9 @@ const IconsColumnSkeleton = () => {
       <div className="grid grid-cols-5 gap-2 w-full">
         {
           Array.from({ length: 40 }).map((_, i) => (
-          <Skeleton key={i} className="h-10 w-10 rounded-md" />
-        ))
-      }
+            <Skeleton key={i} className="h-10 w-10 rounded-md" />
+          ))
+        }
       </div>
     </div>
   )
@@ -62,7 +62,7 @@ const useIconsData = () => {
     const loadIcons = async () => {
       setIsLoading(true);
 
-      const { iconsData } = await import('./icons-data');
+      const { iconsData } = await import("./icons-data");
       if (isMounted) {
         setIcons(iconsData.filter((icon: IconData) => {
           return icon.name in dynamicIconImports;
@@ -71,7 +71,7 @@ const useIconsData = () => {
       }
     };
 
-    loadIcons();
+    void loadIcons();
     
     return () => {
       isMounted = false;
@@ -111,7 +111,7 @@ const IconPicker = React.forwardRef<
   
   const fuseInstance = useMemo(() => {
     return new Fuse(iconsToUse, {
-      keys: ['name', 'tags', 'categories'],
+      keys: ["name", "tags", "categories"],
       threshold: 0.3,
       ignoreLocation: true,
       includeScore: true,
@@ -158,14 +158,14 @@ const IconPicker = React.forwardRef<
 
   const virtualItems = useMemo(() => {
     const items: Array<{
-      type: 'category' | 'row';
+      type: "category" | "row";
       categoryIndex: number;
       rowIndex?: number;
       icons?: IconData[];
     }> = [];
 
     categorizedIcons.forEach((category, categoryIndex) => {
-      items.push({ type: 'category', categoryIndex });
+      items.push({ type: "category", categoryIndex });
       
       const rows = [];
       for (let i = 0; i < category.icons.length; i += 5) {
@@ -175,7 +175,7 @@ const IconPicker = React.forwardRef<
       
       rows.forEach((rowIcons, rowIndex) => {
         items.push({ 
-          type: 'row', 
+          type: "row", 
           categoryIndex, 
           rowIndex, 
           icons: rowIcons 
@@ -190,8 +190,8 @@ const IconPicker = React.forwardRef<
     const indices: Record<string, number> = {};
     
     virtualItems.forEach((item, index) => {
-      if (item.type === 'category') {
-        indices[categorizedIcons[item.categoryIndex].name] = index;
+      if (item.type === "category") {
+        indices[categorizedIcons[item.categoryIndex]?.name ?? ""] = index;
       }
     });
     
@@ -203,7 +203,7 @@ const IconPicker = React.forwardRef<
   const virtualizer = useVirtualizer({
     count: virtualItems.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => virtualItems[index].type === 'category' ? 25 : 40,
+    estimateSize: (index) => virtualItems[index]?.type === "category" ? 25 : 40,
     paddingEnd: 2,
     gap: 10,
     overscan: 5,
@@ -256,8 +256,8 @@ const IconPicker = React.forwardRef<
     
     if (categoryIndex !== undefined && virtualizer) {
       virtualizer.scrollToIndex(categoryIndex, { 
-        align: 'start',
-        behavior: 'smooth'
+        align: "start",
+        behavior: "smooth"
       });
     }
   }, [categoryIndices, virtualizer]);
@@ -326,15 +326,15 @@ const IconPicker = React.forwardRef<
           if (!item) return null;
           
           const itemStyle = {
-            position: 'absolute' as const,
+            position: "absolute" as const,
             top: 0,
             left: 0,
-            width: '100%',
+            width: "100%",
             height: `${virtualItem.size}px`,
             transform: `translateY(${virtualItem.start}px)`,
           };
           
-          if (item.type === 'category') {
+          if (item.type === "category") {
             return (
               <div
                 key={virtualItem.key}
@@ -342,7 +342,7 @@ const IconPicker = React.forwardRef<
                 className="top-0 bg-background z-10"
               >
                 <h3 className="font-medium text-sm capitalize">
-                  {categorizedIcons[item.categoryIndex].name}
+                  {categorizedIcons[item.categoryIndex]?.name ?? ""}
                 </h3>
                 <div className="h-[1px] bg-foreground/10 w-full" />
               </div>
@@ -409,14 +409,14 @@ const IconPicker = React.forwardRef<
         onPointerDownOutside={(e) => {
           // Prevent closing when clicking on modal overlay
           const target = e.target as HTMLElement;
-          if (target.closest('[role="dialog"]') || target.closest('[data-radix-dialog-overlay]')) {
+          if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
             e.preventDefault();
           }
         }}
         onInteractOutside={(e) => {
           // Prevent closing when interacting with modal
           const target = e.target as HTMLElement;
-          if (target.closest('[role="dialog"]') || target.closest('[data-radix-dialog-overlay]')) {
+          if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
             e.preventDefault();
           }
         }}>
@@ -439,7 +439,7 @@ const IconPicker = React.forwardRef<
           <div
             ref={parentRef}
             className="max-h-60 overflow-auto"
-            style={{ scrollbarWidth: 'thin' }}
+            style={{ scrollbarWidth: "thin" }}
           >
             {isLoading ? (
               <IconsColumnSkeleton />
@@ -454,7 +454,7 @@ const IconPicker = React.forwardRef<
 });
 IconPicker.displayName = "IconPicker";
 
-interface IconProps extends Omit<LucideProps, 'ref'> {
+interface IconProps extends Omit<LucideProps, "ref"> {
   name: IconName;
 }
 
