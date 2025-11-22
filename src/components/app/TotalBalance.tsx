@@ -65,7 +65,7 @@ export default function TotalBalance() {
               <>
                 <div className="flex items-baseline justify-between">
                   <div className="flex flex-col gap-0.5">
-                    <Skeleton className="h-8 sm:h-10 md:h-12 lg:h-14 w-48 sm:w-64" />
+                    <Skeleton className="h-10 sm:h-6 md:h-8 w-48 sm:w-40" />
                   </div>
                 </div>
                 <div className="space-y-1.5 flex-1 flex flex-col">
@@ -89,7 +89,7 @@ export default function TotalBalance() {
                   <div className="flex items-baseline justify-between">
                     <div className="flex flex-col gap-0.5">
                       <div className={cn(
-                        "text-2xl sm:text-3xl md:text-4xl lg:text-5xl",
+                        "text-3xl sm:text-xl md:text-2xl",
                         "font-semibold"
                       )}>
                         {totalBalance ? totalBalance.toLocaleString("en-US", {
