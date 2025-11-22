@@ -186,6 +186,8 @@
     "no_wallets_found": "No wallets found",
     "no_wallets_found_desc": "Start by adding a wallet to track your balances and see your total here.",
     "wallet_name": "Wallet name",
+    "wallet_icon": "Icon",
+    "select_icon": "Select an icon",
     "wallet_initial_balance": "Initial balance",
     "transactions_title": "Transactions",
     "add_transaction": "Add new transaction",

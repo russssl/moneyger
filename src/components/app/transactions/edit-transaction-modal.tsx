@@ -244,7 +244,6 @@ export default function EditTransactionModal({
                       className="w-full"
                     />
                   </div>
-
                   {transactionType !== "transfer" && (
                     <div className="min-w-0">
                       <Label>{tGeneral("category")}</Label>

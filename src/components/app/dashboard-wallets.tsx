@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Progress } from "@/components/ui/progress";
 import { Target } from "lucide-react";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 
 export default function DashboardWallets({ wallets, iconSize, textSizes, refetch }: { wallets: Wallet[], iconSize: string, textSizes: {
   walletName: string;
@@ -58,7 +59,7 @@ export default function DashboardWallets({ wallets, iconSize, textSizes, refetch
                       "bg-muted",
                       iconSize
                     )}>
-                      <span className="text-sm">{wallet.iconName}</span>
+                      <Icon name={wallet.iconName as IconName} className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                   ) : (
                     <div className={cn(

@@ -16,6 +16,7 @@ walletsRouter.get("/", authenticated, async (c) => {
   const { user } = await getUserData(c);
   const res_wallets = await db.query.wallets.findMany({
     where: eq(wallets.userId, user.id),
+    orderBy: (wallets, { asc }) => [asc(wallets.name)],
   });
   return c.json(res_wallets);
 });
@@ -109,12 +110,13 @@ walletsRouter.post("/", authenticated, zValidator(
     isSavingAccount: z.boolean().optional(),
     savingAccountGoal: z.number().optional(),
     balance: z.number().optional(),
+    iconName: z.string().optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);
 
   const wallet = await db.transaction(async (tx) => {
-    const { name, currency, isSavingAccount, balance, savingAccountGoal } = c.req.valid("json");
+    const { name, currency, isSavingAccount, balance, savingAccountGoal, iconName } = c.req.valid("json");
     const wallet = await tx.insert(wallets).values({
       userId: user.id,
       name,
@@ -122,6 +124,7 @@ walletsRouter.post("/", authenticated, zValidator(
       isSavingAccount: isSavingAccount ?? false,
       savingAccountGoal: savingAccountGoal ?? 0,
       balance: balance ?? 0,
+      iconName: iconName ?? undefined,
     }).returning().execute().then((res) => res[0]);
 
     if (!wallet) {
@@ -151,6 +154,7 @@ walletsRouter.post("/:id", authenticated, zValidator(
     currency: z.string(),
     isSavingAccount: z.boolean().optional(),
     savingAccountGoal: z.number().optional(),
+    iconName: z.string().optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);
@@ -158,13 +162,14 @@ walletsRouter.post("/:id", authenticated, zValidator(
   const wallet = await db.transaction(async (tx) => {
     const { id } = c.req.param();
   
-    const { name, currency, isSavingAccount, savingAccountGoal } = c.req.valid("json");
+    const { name, currency, isSavingAccount, savingAccountGoal, iconName } = c.req.valid("json");
     
     const wallet = await tx.update(wallets).set({
       name,
       currency,
       ...(isSavingAccount !== undefined && { isSavingAccount }),
       ...(savingAccountGoal !== undefined && { savingAccountGoal: savingAccountGoal ?? 0 }),
+      ...(iconName !== undefined && { iconName: iconName ?? undefined }),
     }).where(and(
       eq(wallets.userId, user.id),
       eq(wallets.id, id),

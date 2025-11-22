@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 import { ErrorAlert } from "../error-alert";
 import { currencies } from "@/hooks/currencies";
 import AddonInput from "../AddonInput";
+import { IconPicker, type IconName } from "../ui/icon-picker";
 
 interface EditWalletModalProps {
   open: boolean;
@@ -37,6 +38,7 @@ type WalletFormState = {
   balance: number | null;
   isSavingAccount: boolean;
   savingAccountGoal: number | null;
+  iconName: IconName | undefined;
 };
 
 type WalletFormAction =
@@ -45,6 +47,7 @@ type WalletFormAction =
   | { type: "SET_BALANCE"; payload: number | null }
   | { type: "SET_IS_SAVING_ACCOUNT"; payload: boolean }
   | { type: "SET_SAVING_ACCOUNT_GOAL"; payload: number | null }
+  | { type: "SET_ICON_NAME"; payload: IconName | undefined }
   | { type: "RESET"; payload: WalletFormState };
 
 const initialState: WalletFormState = {
@@ -53,6 +56,7 @@ const initialState: WalletFormState = {
   balance: null,
   isSavingAccount: false,
   savingAccountGoal: null,
+  iconName: undefined,
 };
 
 function walletFormReducer(
@@ -70,6 +74,8 @@ function walletFormReducer(
     return { ...state, isSavingAccount: action.payload };
   case "SET_SAVING_ACCOUNT_GOAL":
     return { ...state, savingAccountGoal: action.payload };
+  case "SET_ICON_NAME":
+    return { ...state, iconName: action.payload };
   case "RESET":
     return { ...action.payload };
   default:
@@ -114,6 +120,7 @@ export default function EditWalletModal({
             balance: walletData.balance,
             isSavingAccount: walletData.isSavingAccount ?? false,
             savingAccountGoal: walletData.savingAccountGoal ?? null,
+            iconName: walletData.iconName as IconName | undefined,
           },
         });
         setIsInitialized(true);
@@ -130,6 +137,7 @@ export default function EditWalletModal({
             balance: null,
             isSavingAccount: defaultIsSavingAccount,
             savingAccountGoal: null,
+            iconName: undefined,
           },
         });
         setIsInitialized(true);
@@ -166,6 +174,7 @@ export default function EditWalletModal({
       currency: state.currency,
       isSavingAccount: state.isSavingAccount,
       savingAccountGoal: state.savingAccountGoal ?? undefined,
+      iconName: state.iconName ?? undefined,
       ...(id ? {} : { balance: state.balance ?? undefined }),
     };
 
@@ -242,6 +251,17 @@ export default function EditWalletModal({
                 setSelectedCurrency={(currency) =>
                   dispatch({ type: "SET_CURRENCY", payload: currency ?? "" })
                 }
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>{t("wallet_icon")}</Label>
+              <IconPicker
+                value={state.iconName}
+                onValueChange={(icon) =>
+                  dispatch({ type: "SET_ICON_NAME", payload: icon })
+                }
+                triggerPlaceholder={t("select_icon")}
+                modal={true}
               />
             </div>
             {!id && (

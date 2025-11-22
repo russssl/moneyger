@@ -264,6 +264,7 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
         ) : not(eq(transactions.type, "adjustment"))),
       },
     },
+    orderBy: (wallets, { asc }) => [asc(wallets.name)],
   });
 
   if (!userMainCurrency) {

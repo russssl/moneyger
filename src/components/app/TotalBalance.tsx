@@ -6,7 +6,6 @@ import DashboardWallets from "./dashboard-wallets";
 import { useFetch } from "@/hooks/use-api";
 import { useEffect, useState } from "react";
 import { NoItems } from "./no-items";
-import { LoadingSpinner } from "../ui/loading";
 import { type Wallet } from "@/server/db/wallet";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "../ui/skeleton";
