@@ -93,7 +93,10 @@ export default function EditWalletModal({
     mutateAsync: deleteWallet,
     error: deleteError,
     isPending: deletionIsPending,
-  } = useMutation<any, void>(`/api/wallets/${id}`, "DELETE");
+  } = useMutation<{id: string}, void>(
+    (data) => `/api/wallets/${data.id}`,
+    "DELETE"
+  );
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
 

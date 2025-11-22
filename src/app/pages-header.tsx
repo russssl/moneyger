@@ -5,6 +5,7 @@ import {useIsMobile} from "@/hooks/use-mobile";
 import { useContext } from "react";
 
 function SafeSidebarTrigger() {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const context = useContext(SidebarContext);
   if (!context) {
     return null;

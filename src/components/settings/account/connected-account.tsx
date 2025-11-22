@@ -15,7 +15,13 @@ type ExtendedProvider = {
 export default function ConnectedAccount({ accounts, provider }: { accounts: any[], provider: ExtendedProvider }) {
   const t = useTranslations("settings");
   const [localAccounts, setLocalAccounts] = useState(accounts);
-  const removeAccountMutation = useMutation<string, any>("/api/user/accounts/", "DELETE");
+  const removeAccountMutation = useMutation<{providerId: string}, any>(
+    (data) => {
+      const params = new URLSearchParams({ providerId: data.providerId });
+      return `/api/user/accounts?${params.toString()}`;
+    },
+    "DELETE"
+  );
 
   const signInWithProvider = async (providerName: SocialProvider["provider"]) => {
     try {
@@ -39,7 +45,7 @@ export default function ConnectedAccount({ accounts, provider }: { accounts: any
   const handleConnection = async (providerId: string) => {
     const accountExists = localAccounts.find(account => account.providerId === providerId);
     if (accountExists) {
-      removeAccountMutation.mutate(providerId);
+      removeAccountMutation.mutate({ providerId });
       setLocalAccounts(prev => prev.filter(account => account.providerId !== providerId));
     } else {
       await signInWithProvider(provider.id as SocialProvider["provider"]);

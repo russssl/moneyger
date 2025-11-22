@@ -1,14 +1,12 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, TrashIcon, PlusCircle } from "lucide-react"
+import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, PlusCircle } from "lucide-react"
 import { useState } from "react"
 import { type TransactionWithWallet } from "@/server/db/transaction"
 import { Button } from "../ui/button"
 import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
 import { formatCurrency } from "@/hooks/currencies"
-import { LoadingSpinner } from "../ui/loading"
-import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import { useIsMobile } from "@/hooks/use-mobile"
 
@@ -21,30 +19,38 @@ import {
 import { useFetch, useMutation } from "@/hooks/use-api"
 import { NoItems } from "./no-items"
 import { Skeleton } from "../ui/skeleton"
+import { TransactionItem, TransactionDeleteButton } from "./transaction-item"
+import { toast } from "sonner"
 
 export function TransactionList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const fetchTransactions = useFetch<TransactionWithWallet[]>("/api/transactions");
   const { isLoading, error, refetch, data: transactions } = fetchTransactions;
-  const removeTransactionMutation = useMutation<{id: string}, any>("/api/transactions/", "DELETE")
   
-
   const t = useTranslations("finances")
   const tGeneral = useTranslations("general")
   const isMobile = useIsMobile()
-
-  async function removeTransaction(id: string) {
-    if (removeTransactionMutation.isPending) return
-      
-    toast.promise(removeTransactionMutation.mutateAsync({ id: id }), {
-      loading: t("removing_transaction"),
-      success: t("transaction_removed_successfully"),
-      error: (error) => error instanceof Error ? error.message : t("failed_to_remove_transaction"),
-    })
   
-    await refetch()
+  const removeTransactionMutation = useMutation<{id: string}, any>(
+    (data) => `/api/transactions/${data.id}`,
+    "DELETE"
+  )
+  
+  async function handleDeleteTransaction(id: string) {
+    if (removeTransactionMutation.isPending) return
+    
+    const toastId = toast.loading(t("removing_transaction"))
+    
+    try {
+      await removeTransactionMutation.mutateAsync({ id })
+      toast.success(t("transaction_removed_successfully"), { id: toastId })
+      await refetch()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("failed_to_remove_transaction"), { id: toastId })
+    }
   }
+  
 
   const getTransactionTypeIcon = (type: string | null) => {
     if (!type) return null;
@@ -113,39 +119,12 @@ export function TransactionList() {
               {isMobile ? (
                 <div className="flex flex-col gap-2.5">
                   {transactions?.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-2.5 sm:p-3 border rounded-lg bg-card active:bg-accent/50 transition-colors">
-                      <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          {getTransactionTypeIcon(transaction.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5 sm:mb-1 flex-wrap">
-                            <span className="font-medium text-sm truncate">
-                              {transaction.amount ? formatCurrency(transaction.amount, transaction.wallet.currency) : "-"}
-                            </span>
-                            <span className="text-xs text-muted-foreground truncate">
-                              {transaction.wallet.name}
-                            </span>
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {transaction.transaction_date ? (
-                              new Date(transaction.transaction_date).toLocaleDateString()
-                            ) : (
-                              "-"
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="destructive" 
-                        size="icon" 
-                        className="flex-shrink-0 ml-2 h-8 w-8 sm:h-10 sm:w-10"
-                        onClick={async () => await removeTransaction(transaction.id)} 
-                        disabled={removeTransactionMutation.isPending}
-                      >
-                        {removeTransactionMutation.isPending ? <LoadingSpinner className="w-4 h-4 text-white" /> : <TrashIcon className="w-4 h-4 text-white" />}
-                      </Button>
-                    </div>
+                    <TransactionItem
+                      key={transaction.id}
+                      transaction={transaction}
+                      onDelete={handleDeleteTransaction}
+                      isDeleting={removeTransactionMutation.isPending}
+                    />
                   ))}
                 </div>
               ) : (
@@ -188,9 +167,11 @@ export function TransactionList() {
                           </TooltipProvider>
                         </TableCell>
                         <TableCell className="text-center w-16">
-                          <Button variant="destructive" size="icon" onClick={async () => await removeTransaction(transaction.id)} disabled={removeTransactionMutation.isPending}>
-                            {removeTransactionMutation.isPending ? <LoadingSpinner className="w-4 h-4 text-white" /> : <TrashIcon className="w-4 h-4 text-white" />}
-                          </Button>
+                          <TransactionDeleteButton
+                            transactionId={transaction.id}
+                            onDelete={handleDeleteTransaction}
+                            isDeleting={removeTransactionMutation.isPending}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

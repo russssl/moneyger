@@ -119,19 +119,22 @@ export function useFetch<T>(
 }
 
 export function useMutation<TInput = { id?: string } & Record<string, unknown>, TResponse = TInput>(
-  url: string,
+  url: string | ((data: TInput) => string),
   method: "POST" | "PUT" | "DELETE" = "POST"
 ) {
   const [mutationError, setMutationError] = useState<Error | null>(null);
 
   const { mutate, mutateAsync, isPending, error } = useTanstackMutation<TResponse, Error, TInput>({
     mutationFn: async (data: TInput) => {
-      const finalUrl = url;
-      const bodyData: TInput = data;
+      // Construct URL - either use the function or the string
+      const finalUrl = typeof url === "function" ? url(data) : url;
+      
+      // For DELETE requests, don't send body (ID is in URL)
+      const bodyData = method === "DELETE" ? undefined : data;
 
       const response = await fetchWithToken(finalUrl, {
         method,
-        body: JSON.stringify(bodyData),
+        body: bodyData ? JSON.stringify(bodyData) : undefined,
       });
 
       if (!response.ok) {
