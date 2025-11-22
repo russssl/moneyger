@@ -44,7 +44,7 @@ export default function DashboardWallets({ wallets, iconSize, textSizes, refetch
                 "border-border/50",
                 "cursor-pointer",
                 "mb-1",
-                isSavingAccount && "border-primary/20"
+                "border-primary/20"
               )}
             >
               <div className="flex items-center justify-between w-full">

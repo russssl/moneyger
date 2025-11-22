@@ -68,7 +68,7 @@ walletsRouter.get("/full", authenticated, async (c) => {
 
   return c.json({
     totalBalance: totalBalance,
-    wallets: wallets,
+    wallets: wallets.slice(0, 5), // TODO: improve this, add pagination for full page, also leaving for now since db limit is not applicable since we still need all wallets for total balance calculation
     userMainCurrency: user.currency,
     savingsStats,
   });

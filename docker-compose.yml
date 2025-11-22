@@ -23,8 +23,6 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
     ports:
       - 5432:5432
-    networks:
-      - dokploy-network
     volumes:
       - pgdata:/var/lib/postgresql/data
   memcached:

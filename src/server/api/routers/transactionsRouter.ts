@@ -16,10 +16,16 @@ const transactionsRouter = new Hono<AuthVariables>();
 transactionsRouter.get("/", authenticated, zValidator("query", z.object({
   walletId: z.string().optional(),
   transaction_date: z.string().optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional(),
 })), async (c) => {
   const { user } = await getUserData(c);
-  const { walletId, transaction_date } = c.req.valid("query");
+  const { walletId, transaction_date, limit, offset } = c.req.valid("query");
 
+  const pagination = {
+    limit: limit ? limit : 5, // 5 for main page
+    offset: offset ?? 0,
+  }
   const transactionsData = await db.query.transactions.findMany({
     where: and(
       eq(transactions.userId, user.id),
@@ -35,6 +41,7 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
         },
       },
     },
+    ...pagination,
     orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
   });
 

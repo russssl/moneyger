@@ -41,7 +41,7 @@ export const auth = betterAuth({
       currency: {
         type: "string",
         required: false,
-        default: null,
+        defaultValue: "USD",
       }
     }
   },

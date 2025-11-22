@@ -22,23 +22,23 @@ export interface RateLimitResult {
   retryAfter?: number;
   requestTimestamp?: number;
 }
-
+const isProduction = process.env.NODE_ENV === "production";
 export const RATE_LIMITS = {
   auth: {
     windowMs: 15 * 60 * 1000,
-    maxRequests: 3,
+    maxRequests: isProduction ? 1000 : 3, // Increased from 3 for dev/testing
   },
   authenticated: {
     windowMs: 60 * 1000,
-    maxRequests: 60,
+    maxRequests: isProduction ? 1000 : 60, // Increased from 60 for dev/testing
   },
   public: {
     windowMs: 60 * 1000,
-    maxRequests: 100,
+    maxRequests: isProduction ? 1000 : 100, // Increased from 100 for dev/testing
   },
   sensitive: {
     windowMs: 60 * 60 * 1000,
-    maxRequests: 5,
+    maxRequests: isProduction ? 1000 : 5, // Increased from 5 for dev/testing
   },
 } as const;
 
@@ -239,4 +239,3 @@ export function createRateLimiter(
     ...options,
   });
 }
-

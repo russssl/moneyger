@@ -14,6 +14,7 @@
     "db:migrate": "bun run drizzle-kit migrate",
     "db:push": "bun run drizzle-kit push",
     "db:studio": "bun run drizzle-kit studio",
+    "db:seed": "bun scripts/seed.ts",
     "dev": "bun run next dev --turbo",
     "dev:debug": "NODE_OPTIONS='--inspect' bun run next dev --turbo",
     "format:check": "bun run prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
