@@ -11,9 +11,9 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   plugins: [haveIBeenPwned(), lastLoginMethod(), passkey({
-    rpID: process.env.NODE_ENV === "production" ? new URL(env.APP_URL).hostname : "localhost",
+    rpID: process.env.NODE_ENV === "production" ? new URL(env.APP_URL || "http://localhost:3000").hostname : "localhost",
     rpName: "Moneyger",
-    origin: process.env.NODE_ENV === "production" ? env.APP_URL : "http://localhost:3000",
+    origin: process.env.NODE_ENV === "production" ? (env.APP_URL || "http://localhost:3000") : "http://localhost:3000",
     authenticatorSelection: {
       authenticatorAttachment: "platform",
       residentKey: "preferred",
@@ -34,7 +34,7 @@ export const auth = betterAuth({
     }
   },
   trustedOrigins: [
-    process.env.NODE_ENV === "production" ? env.APP_URL : "http://localhost:3000",
+    process.env.NODE_ENV === "production" ? (env.APP_URL || "http://localhost:3000") : "http://localhost:3000",
   ],
   user: {
     additionalFields: {
