@@ -191,7 +191,7 @@ export default function PasskeySettingsModal({
           <div>
             {existingPasskeys && existingPasskeys.length > 0 ? (
               <>
-                <ul className="divide-y divide-border mt-2 border border-border rounded-md overflow-hidden">
+                <ul className="divide-y divide-border mt-2 border border-border rounded-md overflow-hidden -mx-4 md:mx-0">
                   {existingPasskeys.map((pk, idx) => (
                     <li key={pk.id} className="flex items-center justify-between px-4 py-3 bg-background hover:bg-accent transition-colors">
                       <div className="flex flex-col gap-0.5">
@@ -224,8 +224,8 @@ export default function PasskeySettingsModal({
             )}
           </div>
         </ModalBody>
-        <ModalFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <ModalFooter className="px-4 md:px-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
             {tService("close")}
           </Button>
         </ModalFooter>

@@ -27,17 +27,10 @@ export function BottomBar({ updateList }: { updateList: () => void }) {
               <ChartLine className="h-5 w-5" />
               <span className="text-[10px] mt-0.5 font-medium">Stats</span>
             </Link>
-            <div>
-              <div className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
-                {/* <SettingsModal trigger={
-                  <Settings className="h-5 w-5" />
-                }/> */}
-                <Link href="/settings" className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
-                  <Settings className="h-5 w-5" />
-                </Link>
-                <span className="text-[10px] mt-0.5 font-medium">{t("settings")}</span>
-              </div>
-            </div>
+            <Link href="/settings" className="flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground">
+              <Settings className="h-5 w-5" />
+              <span className="text-[10px] mt-0.5 font-medium">{t("settings")}</span>
+            </Link>
           </div>
         </div>
       </div>

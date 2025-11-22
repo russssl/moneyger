@@ -39,12 +39,15 @@ export default function DashboardWallets({ wallets, iconSize, textSizes, refetch
               className={cn(
                 "flex flex-col",
                 "rounded-md border",
-                "p-3",
+                "p-2.5 sm:p-3",
                 "hover:bg-accent/50",
+                "active:bg-accent/70",
                 "border-border/50",
                 "cursor-pointer",
                 "mb-1",
-                "border-primary/20"
+                "border-primary/20",
+                "transition-colors",
+                "touch-manipulation"
               )}
             >
               <div className="flex items-center justify-between w-full">

@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NoItems } from "./no-items";
 import { PiggyBank } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type ViewMode = "list" | "grid";
 const STORAGE_KEY = "savings-view-mode";
@@ -30,6 +31,7 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
   const [isInitialized, setIsInitialized] = useState(false);
   const router = useRouter();
   const t = useTranslations("finances");
+  const isMobile = useIsMobile();
 
   // Mark as initialized after first render
   useEffect(() => {
@@ -82,30 +84,30 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
           isGoalReached && "border-green-500/30"
         )}
       >
-        <CardContent className="p-4">
-          <div className={cn("flex w-full", viewMode === "grid" ? "flex-col gap-3 mb-3" : "items-center justify-between mb-3")}>
-            <div className={cn("flex items-center gap-3", viewMode === "grid" && "flex-col text-center")}>
+        <CardContent className={cn("p-3", viewMode === "list" && "p-3")}>
+          <div className={cn("flex w-full", viewMode === "grid" ? "flex-col gap-2 mb-2" : "items-center justify-between mb-2")}>
+            <div className={cn("flex items-center gap-2", viewMode === "grid" && "flex-col text-center")}>
               {wallet.iconName ? (
-                <div className="flex items-center justify-center rounded-md bg-muted h-10 w-10">
+                <div className="flex items-center justify-center rounded-md bg-muted h-9 w-9">
                   <span className="text-sm">{wallet.iconName}</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center rounded-md bg-muted h-10 w-10">
+                <div className="flex items-center justify-center rounded-md bg-muted h-9 w-9">
                   <span className="text-xs font-medium">
                     {wallet.name?.[0] ?? "?"}
                   </span>
                 </div>
               )}
               <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{wallet.name ?? "Unnamed Wallet"}</span>
-                  <Target className="h-4 w-4 text-primary" />
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-sm">{wallet.name ?? "Unnamed Wallet"}</span>
+                  <Target className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <span className="text-sm text-muted-foreground">{wallet.currency}</span>
+                <span className="text-xs text-muted-foreground">{wallet.currency}</span>
               </div>
             </div>
             <div className={cn("flex flex-col", viewMode === "grid" ? "items-center" : "items-end")}>
-              <span className="font-semibold text-lg">
+              <span className="font-semibold text-base">
                 {wallet.balance.toLocaleString("en-US", {
                   style: "currency",
                   currency: wallet.currency
@@ -122,16 +124,16 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
             </div>
           </div>
           {goal > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Progress 
                 value={wallet.balance} 
                 max={goal}
                 className={cn(
-                  "h-2",
+                  "h-1.5",
                   isGoalReached && "bg-green-500/20 [&>div]:bg-green-500"
                 )}
               />
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between text-xs">
                 <span className={cn(
                   "text-muted-foreground",
                   isGoalReached && "text-green-600 font-medium"
@@ -162,31 +164,31 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
 
   return (
     <>
-      <div className="flex items-center justify-end mb-4">
-        <div className="flex gap-1 p-1 bg-muted rounded-lg">
+      <div className="flex items-center justify-end mb-2">
+        <div className={cn("flex gap-0.5 bg-muted rounded-lg", isMobile ? "p-0.5" : "p-1")}>
           <Button
             variant={viewMode === "list" ? "default" : "ghost"}
             size="icon"
             onClick={() => setViewMode("list")}
-            className="h-8 w-8"
+            className={cn(isMobile ? "h-7 w-7" : "h-8 w-8")}
             aria-label="List view"
           >
-            <List className="h-4 w-4" />
+            <List className={cn(isMobile ? "h-3.5 w-3.5" : "h-4 w-4")} />
           </Button>
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}
             size="icon"
             onClick={() => setViewMode("grid")}
-            className="h-8 w-8"
+            className={cn(isMobile ? "h-7 w-7" : "h-8 w-8")}
             aria-label="Grid view"
           >
-            <Grid3x3 className="h-4 w-4" />
+            <Grid3x3 className={cn(isMobile ? "h-3.5 w-3.5" : "h-4 w-4")} />
           </Button>
         </div>
       </div>
       <div className={cn(
         viewMode === "grid" 
-          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" 
+          ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" 
           : "space-y-2"
       )}>
         {savingsWallets.map((wallet) => (

@@ -77,12 +77,12 @@ export function QuickActions({ className }: { className?: string }) {
 
   return (
     <div className={cn("relative", className)}>
-      <div className="mb-3 sm:mb-4">
-        <h3 className="font-semibold text-base sm:text-lg">{t("title")}</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground">{t("add_transaction_description")}</p>
+      <div className="mb-2 sm:mb-3 md:mb-4">
+        <h3 className="font-semibold text-sm sm:text-base md:text-lg">{t("title")}</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("add_transaction_description")}</p>
       </div>
       <div className="relative">
-        <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+        <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory -mx-1 px-1">
           {quickActions.map((action) => (
             <div key={action.id} className="snap-start flex-shrink-0">
               <QuickActionButton action={action} />

@@ -23,20 +23,20 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <PagesHeader />
-      <div className="max-w-[1700px] mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-2">
+      <div className="max-w-[1700px] mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-6 md:py-8 pb-20 md:pb-12">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-1 sm:mb-2">
             {t(getWelcomeMessage(), { name: session?.user.name ?? "" })}
           </h1>
-          <p className="text-muted-foreground text-base sm:text-lg">
+          <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
             {t("welcome_subtitle")}
           </p>
         </div>
         
-        <div className="mb-6 sm:mb-8 hidden sm:block">
+        <div className="mb-4 sm:mb-6 md:mb-8 hidden sm:block">
           <QuickActions />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 items-stretch">
           <div className="flex flex-col h-full">
             <TotalBalance />
           </div>

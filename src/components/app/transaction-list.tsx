@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip"
 import { useFetch, useMutation } from "@/hooks/use-api"
 import { NoItems } from "./no-items"
+import { Skeleton } from "../ui/skeleton"
 
 export function TransactionList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -62,35 +63,67 @@ export function TransactionList() {
   return (
     <>
       <Card className="w-full h-full flex flex-col">
-        <CardHeader>
-          <CardTitle>{t("transactions_title")}</CardTitle>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="text-base sm:text-lg">{t("transactions_title")}</CardTitle>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col">
+        <CardContent className="flex-1 flex flex-col px-4 sm:px-6">
           {error && (
             <div className="p-4 text-center text-muted-foreground flex-1 flex justify-center items-center">
               <p>{error.message}</p>
             </div>
           )}
           {isLoading ? (
-            <div className="p-4 text-center text-muted-foreground flex-1 flex justify-center items-center">
-              <LoadingSpinner className="w-6 h-6" />
+            <div className="flex-1 flex flex-col">
+              {isMobile ? (
+                <div className="flex flex-col gap-2.5">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-2.5 sm:p-3 border rounded-lg">
+                      <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+                        <Skeleton className="h-4 w-4 rounded flex-shrink-0" />
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-8 rounded flex-shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="flex items-center gap-4 p-2 border-b">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-20 ml-auto" />
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-4 mx-auto" />
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : transactions && transactions.length > 0 && !isLoading ? (
             <div className="flex-1 flex flex-col">
               {isMobile ? (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2.5">
                   {transactions?.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div key={transaction.id} className="flex items-center justify-between p-2.5 sm:p-3 border rounded-lg bg-card active:bg-accent/50 transition-colors">
+                      <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                         <div className="flex-shrink-0">
                           {getTransactionTypeIcon(transaction.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-0.5 sm:mb-1 flex-wrap">
                             <span className="font-medium text-sm truncate">
                               {transaction.amount ? formatCurrency(transaction.amount, transaction.wallet.currency) : "-"}
                             </span>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground truncate">
                               {transaction.wallet.name}
                             </span>
                           </div>
@@ -106,7 +139,7 @@ export function TransactionList() {
                       <Button 
                         variant="destructive" 
                         size="icon" 
-                        className="flex-shrink-0 ml-2"
+                        className="flex-shrink-0 ml-2 h-8 w-8 sm:h-10 sm:w-10"
                         onClick={async () => await removeTransaction(transaction.id)} 
                         disabled={removeTransactionMutation.isPending}
                       >
@@ -164,8 +197,8 @@ export function TransactionList() {
                   </TableBody>
                 </Table>
               )}
-              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t">
-                <Button onClick={() => setIsModalOpen(true)} className="w-full">
+              <div className="mt-3 sm:mt-4 md:mt-6 pt-3 sm:pt-4 border-t">
+                <Button onClick={() => setIsModalOpen(true)} className="w-full h-10 sm:h-11">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   {t("add_transaction")}
                 </Button>

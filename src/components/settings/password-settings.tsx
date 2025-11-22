@@ -48,7 +48,6 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
   const getPasskeys = async () => {
     const {data: passkeys, error} = await passkeyClient.listUserPasskeys();
     if (error) {
-      console.error(error);
       return [];
     }
     return passkeys ?? [];
