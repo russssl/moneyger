@@ -30,6 +30,9 @@ services:
       EXCHANGE_RATE_URL: ${EXCHANGE_RATE_URL}
       EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
       
+      # SSL
+      POSTGRES_SSL: false
+      
       # Environment
       NODE_ENV: production
     labels:
