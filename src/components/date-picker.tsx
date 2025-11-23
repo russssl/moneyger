@@ -55,8 +55,31 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="pb-3 pt-2 px-2 flex flex-wrap gap-2">
+        <PopoverContent 
+          className="w-auto p-0 z-[100] pointer-events-auto" 
+          align="start"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerDownOutside={(e) => {
+            // Prevent closing when clicking on modal overlay
+            const target = e.target as HTMLElement;
+            if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            // Prevent closing when interacting with modal
+            const target = e.target as HTMLElement;
+            if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <div 
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="pb-3 pt-2 px-2 flex flex-wrap gap-2"
+          >
             <div className="flex flex-row gap-2">
               <Button
                 variant={ isPresetSelected(value, "today") ? "default" : "secondary" }
