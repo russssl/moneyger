@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { NoItems } from "./no-items";
 import { PiggyBank } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
 
 type ViewMode = "list" | "grid";
 const STORAGE_KEY = "savings-view-mode";
@@ -88,9 +89,7 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
           <div className={cn("flex w-full", viewMode === "grid" ? "flex-col gap-2 mb-2" : "items-center justify-between mb-2")}>
             <div className={cn("flex items-center gap-2", viewMode === "grid" && "flex-col text-center")}>
               {wallet.iconName ? (
-                <div className="flex items-center justify-center rounded-md bg-muted h-9 w-9">
-                  <span className="text-sm">{wallet.iconName}</span>
-                </div>
+                <Icon name={wallet.iconName as IconName} className="h-9 w-9" />
               ) : (
                 <div className="flex items-center justify-center rounded-md bg-muted h-9 w-9">
                   <span className="text-xs font-medium">
