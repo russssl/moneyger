@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
 import type{ Viewport, Metadata } from "next";
+import { cookies } from "next/headers";
 
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "next-themes";
@@ -36,6 +37,8 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
 
   return (
     <html lang={locale} className={GeistSans.variable} suppressHydrationWarning>
@@ -43,7 +46,7 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ReactQueryProvider>
             <NextIntlClientProvider locale={locale} messages={messages}>
-              <SessionWrapper>
+              <SessionWrapper defaultOpen={defaultOpen}>
                 <AttackModeBanner />
                 <Toaster richColors invert closeButton/>
                 <PostHogProvider>

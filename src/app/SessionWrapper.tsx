@@ -8,7 +8,7 @@ import { useAuthSession } from "@/hooks/use-session";
 import { usePathname } from "next/navigation";
 import PersistentModals from "@/components/persistent-modals";
 
-export default function SessionWrapper({ children }: { children: ReactNode }) {
+export default function SessionWrapper({ children, defaultOpen }: { children: ReactNode, defaultOpen?: boolean }) {
   const { data: session, isPending } = useAuthSession();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -41,7 +41,7 @@ export default function SessionWrapper({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-x-hidden">
       {session ? (
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={defaultOpen}>
           <AppSidebar session={session} className="hidden md:flex" />
           <SidebarInset>
             <div className="pb-safe-area md:pb-12">{children}</div>
