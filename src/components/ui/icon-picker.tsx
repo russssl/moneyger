@@ -214,7 +214,7 @@ const IconPicker = React.forwardRef<
       setSelectedIcon(icon)
     }
     onValueChange?.(icon)
-  }, [value, onValueChange]);
+  }, [value, onValueChange, setSelectedIcon]);
 
   const handleOpenChange = useCallback((newOpen: boolean) => {
     setSearch("");
@@ -231,7 +231,7 @@ const IconPicker = React.forwardRef<
         setIsLoading(false);
       }, 1);
     }
-  }, [open, onOpenChange, virtualizer]);
+  }, [open, onOpenChange, virtualizer, setSearch]);
 
   const handleIconClick = useCallback((iconName: IconName, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -239,7 +239,7 @@ const IconPicker = React.forwardRef<
     handleValueChange(iconName);
     setIsOpen(false);
     setSearch("");
-  }, [handleValueChange]);
+  }, [handleValueChange, setIsOpen, setSearch]);
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -249,7 +249,7 @@ const IconPicker = React.forwardRef<
     }
     
     virtualizer.scrollToOffset(0);
-  }, [virtualizer]);
+  }, [virtualizer, setSearch]);
 
   const scrollToCategory = useCallback((categoryName: string) => {
     const categoryIndex = categoryIndices[categoryName];

@@ -152,12 +152,12 @@ export function useMutation<TInput = { id?: string } & Record<string, unknown>, 
       setMutationError(null);
       return response.json() as Promise<TResponse>;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // Invalidate specified query keys after successful mutation
       if (options?.invalidates && options.invalidates.length > 0) {
-        options.invalidates.forEach((key) => {
-          queryClient.invalidateQueries({ queryKey: key });
-        });
+        await Promise.all(options.invalidates.map((key) => 
+          queryClient.invalidateQueries({ queryKey: key })
+        ));
       }
     },
   });
