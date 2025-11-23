@@ -25,7 +25,9 @@ import { toast } from "sonner"
 export function TransactionList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const fetchTransactions = useFetch<TransactionWithWallet[]>("/api/transactions");
+  const fetchTransactions = useFetch<TransactionWithWallet[]>("/api/transactions", {
+    queryKey: ["transactions"],
+  });
   const { isLoading, error, refetch, data: transactions } = fetchTransactions;
   
   const t = useTranslations("finances")
@@ -34,7 +36,10 @@ export function TransactionList() {
   
   const removeTransactionMutation = useMutation<{id: string}, any>(
     (data) => `/api/transactions/${data.id}`,
-    "DELETE"
+    "DELETE",
+    {
+      invalidates: [["transactions"], ["wallets"]],
+    }
   )
   
   async function handleDeleteTransaction(id: string) {
@@ -203,7 +208,6 @@ export function TransactionList() {
       <EditTransactionModal 
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        onSave={async () => await refetch()}
       />
     </>
   )

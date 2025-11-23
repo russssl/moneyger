@@ -1,4 +1,4 @@
-import { useQuery, useMutation as useTanstackMutation } from "@tanstack/react-query"
+import { useQuery, useMutation as useTanstackMutation, useQueryClient, type QueryKey } from "@tanstack/react-query"
 import { getSession } from "./use-session"
 import { useState } from "react";
 
@@ -93,10 +93,13 @@ export async function fetchWithToken(
 }
 
 export function useFetch<T>(
-  url: string | null, 
+  url: string | null,
+  options?: {
+    queryKey?: QueryKey;
+  }
 ) {
   const { data, isLoading, error, refetch } = useQuery<T | null>({
-    queryKey: [url],
+    queryKey: options?.queryKey ?? [url],
     queryFn: async () => {
       if (!url) {
         return null;
@@ -120,9 +123,13 @@ export function useFetch<T>(
 
 export function useMutation<TInput = { id?: string } & Record<string, unknown>, TResponse = TInput>(
   url: string | ((data: TInput) => string),
-  method: "POST" | "PUT" | "DELETE" = "POST"
+  method: "POST" | "PUT" | "DELETE" = "POST",
+  options?: {
+    invalidates?: QueryKey[];
+  }
 ) {
   const [mutationError, setMutationError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
   const { mutate, mutateAsync, isPending, error } = useTanstackMutation<TResponse, Error, TInput>({
     mutationFn: async (data: TInput) => {
@@ -144,6 +151,14 @@ export function useMutation<TInput = { id?: string } & Record<string, unknown>, 
       }
       setMutationError(null);
       return response.json() as Promise<TResponse>;
+    },
+    onSuccess: () => {
+      // Invalidate specified query keys after successful mutation
+      if (options?.invalidates && options.invalidates.length > 0) {
+        options.invalidates.forEach((key) => {
+          queryClient.invalidateQueries({ queryKey: key });
+        });
+      }
     },
   });
 

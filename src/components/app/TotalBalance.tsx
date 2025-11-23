@@ -35,7 +35,9 @@ export default function TotalBalance() {
       progress: number;
       amountLeftToGoal: number;
     } | null;
-  }>("/api/wallets/full");
+  }>("/api/wallets/full", {
+    queryKey: ["wallets"],
+  });
 
   useEffect(() => {
     if (data) {

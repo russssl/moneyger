@@ -93,15 +93,22 @@ export default function EditWalletModal({
 }: EditWalletModalProps) {
   // Create mutations for wallet operations
   const t = useTranslations("finances");
-  const createWallet = useMutation<any, NewWallet>("/api/wallets");
-  const updateWallet = useMutation<any, Wallet>(`/api/wallets/${id}`);
+  const createWallet = useMutation<any, NewWallet>("/api/wallets", "POST", {
+    invalidates: [["wallets"]],
+  });
+  const updateWallet = useMutation<any, Wallet>(`/api/wallets/${id}`, "PUT", {
+    invalidates: [["wallets"]],
+  });
   const {
     mutateAsync: deleteWallet,
     error: deleteError,
     isPending: deletionIsPending,
   } = useMutation<{id: string}, void>(
     (data) => `/api/wallets/${data.id}`,
-    "DELETE"
+    "DELETE",
+    {
+      invalidates: [["wallets"]],
+    }
   );
   const [state, dispatch] = useReducer(walletFormReducer, initialState);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -162,7 +169,7 @@ export default function EditWalletModal({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!canSave) {
@@ -180,7 +187,8 @@ export default function EditWalletModal({
 
     try {
       if (id) {
-        toast.promise(updateWallet.mutateAsync({ ...payload, id }), {
+        const mutation = updateWallet.mutateAsync({ ...payload, id });
+        toast.promise(mutation, {
           loading: t("updating_wallet"),
           success: t("wallet_updated_successfully"),
           error: (error) =>
@@ -188,18 +196,17 @@ export default function EditWalletModal({
               ? error.message
               : t("failed_to_update_wallet"),
         });
+        await mutation;
       } else {
-        toast.promise(
-          createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 }),
-          {
-            loading: t("creating_wallet"),
-            success: t("wallet_created_successfully"),
-            error: (error) =>
-              error instanceof Error
-                ? error.message
-                : t("failed_to_create_wallet"),
-          },
-        );
+        const mutation = createWallet.mutateAsync({ ...payload, balance: state.balance ?? 0 });
+        toast.promise(mutation, {
+          loading: t("creating_wallet"),
+          success: t("wallet_created_successfully"),
+          error: (error) =>
+            error instanceof Error
+              ? error.message
+              : t("failed_to_create_wallet"),
+        });
       }
       onSave();
       onOpenChange(false);

@@ -24,7 +24,7 @@ type TransactionType = "income" | "expense" | "transfer";
 interface EditTransactionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (transaction: any) => void;
+  onSave?: (transaction: any) => void;
   defaultTab?: TransactionType;
 }
 
@@ -87,7 +87,9 @@ export default function EditTransactionModal({
 
   const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null);
 
-  const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST");
+  const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST", {
+    invalidates: [["transactions"], ["wallets"]],
+  } );
   
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
   const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;
@@ -124,7 +126,7 @@ export default function EditTransactionModal({
       },
       {
         onSuccess: (result) => {
-          onSave(result);
+          onSave?.(result);
           onOpenChange(false);
         },
       }
