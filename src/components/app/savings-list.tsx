@@ -4,15 +4,14 @@ import { type Wallet } from "@/server/db/wallet";
 import EditWalletModal from "@/components/app/edit-wallet-modal";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Progress } from "@/components/ui/progress";
-import { Target, Grid3x3, List } from "lucide-react";
+import { Grid3x3, List } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NoItems } from "./no-items";
 import { PiggyBank } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Icon, type IconName } from "@/components/ui/icon-picker";
+import WalletItem from "./wallet-item";
 
 type ViewMode = "list" | "grid";
 const STORAGE_KEY = "savings-view-mode";
@@ -71,95 +70,6 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
     );
   }
 
-  const SavingsCard = ({ wallet }: { wallet: Wallet }) => {
-    const goal = wallet.savingAccountGoal ?? 0;
-    const progress = goal > 0 ? Math.min((wallet.balance / goal) * 100, 100) : 0;
-    const isGoalReached = goal > 0 && wallet.balance >= goal;
-    const remaining = goal > 0 ? Math.max(goal - wallet.balance, 0) : 0;
-
-    return (
-      <Card
-        onClick={() => openModal(wallet.id)}
-        className={cn(
-          "flex flex-col cursor-pointer hover:bg-accent/50 transition-colors",
-          isGoalReached && "border-green-500/30"
-        )}
-      >
-        <CardContent className={cn("p-3", viewMode === "list" && "p-3")}>
-          <div className={cn("flex w-full", viewMode === "grid" ? "flex-col gap-2 mb-2" : "items-center justify-between mb-2")}>
-            <div className={cn("flex items-center gap-2", viewMode === "grid" && "flex-col text-center")}>
-              {wallet.iconName ? (
-                <Icon name={wallet.iconName as IconName} className="h-9 w-9" />
-              ) : (
-                <div className="flex items-center justify-center rounded-md bg-muted h-9 w-9">
-                  <span className="text-xs font-medium">
-                    {wallet.name?.[0] ?? "?"}
-                  </span>
-                </div>
-              )}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-medium text-sm">{wallet.name ?? "Unnamed Wallet"}</span>
-                  <Target className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <span className="text-xs text-muted-foreground">{wallet.currency}</span>
-              </div>
-            </div>
-            <div className={cn("flex flex-col", viewMode === "grid" ? "items-center" : "items-end")}>
-              <span className="font-semibold text-base">
-                {wallet.balance.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: wallet.currency
-                })}
-              </span>
-              {goal > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  {t("goal")}: {goal.toLocaleString("en-US", {
-                    style: "currency",
-                    currency: wallet.currency
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
-          {goal > 0 && (
-            <div className="space-y-1.5">
-              <Progress 
-                value={wallet.balance} 
-                max={goal}
-                className={cn(
-                  "h-1.5",
-                  isGoalReached && "bg-green-500/20 [&>div]:bg-green-500"
-                )}
-              />
-              <div className="flex items-center justify-between text-xs">
-                <span className={cn(
-                  "text-muted-foreground",
-                  isGoalReached && "text-green-600 font-medium"
-                )}>
-                  {progress.toFixed(1)}% {t("complete")}
-                </span>
-                <div className="flex items-center gap-2">
-                  {isGoalReached ? (
-                    <span className="text-green-600 font-medium text-xs">
-                      {t("goal_reached")}!
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">
-                      {t("remaining")}: {remaining.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: wallet.currency
-                      })}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
 
   return (
     <>
@@ -191,7 +101,23 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
           : "space-y-2"
       )}>
         {savingsWallets.map((wallet) => (
-          <SavingsCard key={wallet.id} wallet={wallet} />
+          <Card
+            key={wallet.id}
+            className={cn(
+              "cursor-pointer hover:bg-accent/50 transition-colors",
+              (wallet.savingAccountGoal ?? 0) > 0 && wallet.balance >= (wallet.savingAccountGoal ?? 0) && "border-green-500/30"
+            )}
+          >
+            <CardContent className="p-0">
+              <WalletItem
+                wallet={wallet}
+                onClick={openModal}
+                layout={viewMode}
+                showProgressDetails={true}
+                className="border-0 mb-0"
+              />
+            </CardContent>
+          </Card>
         ))}
       </div>
       <EditWalletModal 
