@@ -79,7 +79,7 @@ export default function WalletItem({
               iconSize
             )}>
               <Icon name={wallet.iconName as IconName} className={cn(
-                isGrid ? "h-9 w-9" : "h-4 w-4 sm:h-5 sm:w-5"
+                isGrid ? "h-6 w-6" : "h-4 w-4 sm:h-5 sm:w-5"
               )} />
             </div>
           ) : (
