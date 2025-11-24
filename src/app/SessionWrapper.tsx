@@ -1,12 +1,12 @@
 "use client";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { type ReactNode, useEffect, useState } from "react";
 import { LoadingSpinner } from "@/components/ui/loading";
-import { BottomBar } from "@/components/bottom-bar";
+import { BottomBar } from "@/components/layout/bottom-bar";
 import { useAuthSession } from "@/hooks/use-session";
 import { usePathname } from "next/navigation";
-import PersistentModals from "@/components/persistent-modals";
+import PersistentModals from "@/components/common/persistent-modals";
 
 export default function SessionWrapper({ children, defaultOpen }: { children: ReactNode, defaultOpen?: boolean }) {
   const { data: session, isPending } = useAuthSession();

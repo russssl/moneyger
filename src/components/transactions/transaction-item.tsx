@@ -1,9 +1,9 @@
 "use client"
-import { Button } from "../ui/button"
+import { Button } from "@/components/ui/button"
 import { TrashIcon, ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 import { type TransactionWithWallet } from "@/server/db/transaction"
 import { formatCurrency } from "@/hooks/currencies"
-import { LoadingSpinner } from "../ui/loading"
+import { LoadingSpinner } from "@/components/ui/loading"
 
 interface TransactionItemProps {
   transaction: TransactionWithWallet

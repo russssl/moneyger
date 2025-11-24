@@ -3,8 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { QuickActions } from "./quick-actions/quick-actions";
 import PagesHeader from "../pages-header";
-import TotalBalance from "@/components/app/TotalBalance";
-import { TransactionList } from "@/components/app/transaction-list";
+import TotalBalance from "@/components/wallets/total-balance";
+import { TransactionList } from "@/components/transactions/transaction-list";
 
 function getWelcomeMessage() {
   const hour = new Date().getHours();

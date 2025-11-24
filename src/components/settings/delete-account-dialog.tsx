@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle, ModalTrigger, ModalBody } from "@/components/modal"
+import { Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle, ModalTrigger, ModalBody } from "@/components/common/modal"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl"
 import { useMutation } from "@/hooks/use-api"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import LoadingButton from "../loading-button"
+import LoadingButton from "@/components/common/loading-button"
 
 export default function DeleteAccountDialog() {
   const t = useTranslations("settings")

@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import SendResetPasswordEmailForm from "@/components/send-reset-password-email";
+import SendResetPasswordEmailForm from "@/components/auth/send-reset-password-email";
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("register_login");
   return {

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
 import { toast } from "sonner"; // Add this import
 import { Spinner } from "@/components/ui/spinner"
 

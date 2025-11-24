@@ -1,22 +1,22 @@
 import {
   Modal, ModalBody, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle,
-} from "@/components/modal";
+} from "@/components/common/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import DatePicker from "@/components/date-picker";
+import DatePicker from "@/components/common/date-picker";
 import { useReducer, useEffect } from "react";
-import AutogrowingTextarea from "@/components/autogrowing-textarea";
+import AutogrowingTextarea from "@/components/common/autogrowing-textarea";
 import { currencies, type Currency } from "@/hooks/currencies";
-import AddonInput from "@/components/AddonInput";
+import AddonInput from "@/components/common/addon-input";
 import TransactionTypeSelect from "./transaction-type-select";
 import { useTranslations, useLocale } from "next-intl";
 import { useFetch, useMutation } from "@/hooks/use-api";
-import CurrencySelect from "../currency-select";
+import CurrencySelect from "@/components/wallets/wallet-select";
 import { type Wallet as WalletType } from "@/server/db/wallet";
 import { type NewTransaction } from "@/server/db/transaction";
-import LoadingButton from "@/components/loading-button";
+import LoadingButton from "@/components/common/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime } from "luxon";
 type TransactionType = "income" | "expense" | "transfer";

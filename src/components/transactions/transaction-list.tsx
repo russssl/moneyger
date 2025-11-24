@@ -4,8 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, PlusCircle } from "lucide-react"
 import { useState } from "react"
 import { type TransactionWithWallet } from "@/server/db/transaction"
-import { Button } from "../ui/button"
-import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
+import { Button } from "@/components/ui/button"
+import EditTransactionModal from "@/components/transactions/edit-transaction-modal"
 import { formatCurrency } from "@/hooks/currencies"
 import { useTranslations } from "next-intl"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -17,8 +17,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useFetch, useMutation } from "@/hooks/use-api"
-import { NoItems } from "./no-items"
-import { Skeleton } from "../ui/skeleton"
+import { NoItems } from "@/components/common/no-items"
+import { Skeleton } from "@/components/ui/skeleton"
 import { TransactionItem, TransactionDeleteButton } from "./transaction-item"
 import { toast } from "sonner"
 

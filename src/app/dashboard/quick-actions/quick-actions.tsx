@@ -7,10 +7,10 @@ import {
 } from "lucide-react"
 import QuickActionButton, { type QuickAction } from "./quick-action-button"
 import { useTranslations } from "next-intl"
-import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
+import EditTransactionModal from "@/components/transactions/edit-transaction-modal"
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import EditWalletModal from "@/components/app/edit-wallet-modal";
+import EditWalletModal from "@/components/wallets/edit-wallet-modal";
 
 export function QuickActions({ className }: { className?: string }) {
   const t = useTranslations("quick_actions")

@@ -1,10 +1,10 @@
-import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "./ui/drawer"
-import { Button } from "./ui/button"
+import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer"
+import { Button } from "@/components/ui/button"
 import { Wallet, Plus, ArrowRightLeft, Target, PiggyBank } from "lucide-react"
 import { cn } from "@/lib/utils"
-import EditTransactionModal from "@/components/app/transactions/edit-transaction-modal"
+import EditTransactionModal from "@/components/transactions/edit-transaction-modal"
 import { useState } from "react"
-import EditWalletModal from "@/components/app/edit-wallet-modal"
+import EditWalletModal from "@/components/wallets/edit-wallet-modal"
 import { useTranslations } from "next-intl"
 
 type Action = {

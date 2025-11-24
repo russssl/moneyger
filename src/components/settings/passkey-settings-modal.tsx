@@ -1,16 +1,16 @@
 "use client"
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "../modal"
-import { Button } from "../ui/button"
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/components/common/modal"
+import { Button } from "@/components/ui/button"
 import { Key, Plus, Trash, X } from "lucide-react"
 import { passkey } from "@/hooks/use-session"
 import { toast } from "sonner"
 import { useTranslations } from "next-intl"
 import { useState, useEffect, useCallback } from "react"
-import LoadingButton from "../loading-button"
-import { NoItems } from "../app/no-items"
+import LoadingButton from "@/components/common/loading-button"
+import { NoItems } from "@/components/common/no-items"
 import { type Passkey } from "better-auth/plugins/passkey"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function PasskeySettingsModal({
   open,

@@ -1,14 +1,14 @@
 "use client"
-import { Card, CardTitle, CardHeader, CardContent } from "../ui/card";
+import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DashboardWallets from "./dashboard-wallets";
 import { useFetch } from "@/hooks/use-api";
 import { useEffect, useState } from "react";
-import { NoItems } from "./no-items";
+import { NoItems } from "@/components/common/no-items";
 import { type Wallet } from "@/server/db/wallet";
 import { useTranslations } from "next-intl";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";
 const TEXT_SIZES = {

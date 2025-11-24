@@ -1,13 +1,13 @@
 "use client"
 import { useState } from "react";
 import PasswordsInput from "./passwords-input";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
-import LoadingButton from "./loading-button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import LoadingButton from "@/components/common/loading-button";
 import { resetPassword } from "@/hooks/use-session";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import {ErrorAlert} from "@/components/error-alert";
+import {ErrorAlert} from "@/components/common/error-alert";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation"
 

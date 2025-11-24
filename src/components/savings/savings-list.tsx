@@ -1,7 +1,7 @@
 "use client"
 import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
-import EditWalletModal from "@/components/app/edit-wallet-modal";
+import EditWalletModal from "@/components/wallets/edit-wallet-modal";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Grid3x3, List } from "lucide-react";

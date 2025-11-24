@@ -10,7 +10,7 @@ import { PostHogProvider, ReactQueryProvider } from "./providers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Toaster } from "@/components/ui/sonner"
-import { AttackModeBanner } from "@/components/attack-mode-banner"
+import { AttackModeBanner } from "@/components/layout/attack-mode-banner"
 
 export const viewport: Viewport = {
   width: "device-width",

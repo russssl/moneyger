@@ -8,11 +8,11 @@ import Link from "next/link"
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from "@/hooks/use-session";
-import LoadingButton from "@/components/loading-button";
-import {ThemeToggle} from "@/components/theme-toggle";
-import {LanguageToggle} from "@/components/language-select";
+import LoadingButton from "@/components/common/loading-button";
+import {ThemeToggle} from "@/components/common/theme-toggle";
+import {LanguageToggle} from "@/components/common/language-select";
 import { useTranslations } from "next-intl";
-import PasswordsInput from "@/components/passwords-input";
+import PasswordsInput from "@/components/auth/passwords-input";
 
 export default function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)

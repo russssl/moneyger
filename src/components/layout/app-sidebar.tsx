@@ -1,9 +1,9 @@
 "use client"
 import * as React from "react"
 import { LayoutDashboard, PiggyBank } from "lucide-react"
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import AppLogo from "@/components/app-logo"
+import { NavMain } from "@/components/layout/nav-main"
+import { NavUser } from "@/components/layout/nav-user"
+import AppLogo from "@/components/layout/app-logo"
 import {
   Sidebar,
   SidebarContent,

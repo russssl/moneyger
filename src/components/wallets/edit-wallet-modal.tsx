@@ -5,23 +5,23 @@ import {
   ModalContent,
   ModalHeader,
   ModalTitle,
-} from "@/components/modal";
+} from "@/components/common/modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "../ui/label";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import CurrencySelect from "../currency-select";
-import { Skeleton } from "../ui/skeleton";
-import DeleteButton from "../ui/delete-button";
+import CurrencySelect from "@/components/common/currency-select";
+import { Skeleton } from "@/components/ui/skeleton";
+import DeleteButton from "@/components/ui/delete-button";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { toast } from "sonner";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
-import LoadingButton from "../loading-button";
+import LoadingButton from "@/components/common/loading-button";
 import { useTranslations } from "next-intl";
-import { ErrorAlert } from "../error-alert";
+import { ErrorAlert } from "@/components/common/error-alert";
 import { currencies } from "@/hooks/currencies";
-import AddonInput from "../AddonInput";
-import { IconPicker, type IconName } from "../ui/icon-picker";
+import AddonInput from "@/components/common/addon-input";
+import { IconPicker, type IconName } from "@/components/ui/icon-picker";
 
 interface EditWalletModalProps {
   open: boolean;

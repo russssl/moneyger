@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import SavingsList from "@/components/app/savings-list";
+import SavingsList from "@/components/savings/savings-list";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type ViewMode = "list" | "grid";

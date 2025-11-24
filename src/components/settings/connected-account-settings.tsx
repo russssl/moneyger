@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import ConnectedAccount from "./account/connected-account"
 import GitHub from "../icons/github"
 import Google from "../icons/google"

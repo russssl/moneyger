@@ -25,7 +25,7 @@ const chartData = [
   { month: "June", expenses: 214, income: 2000 },
 ]
 
-import { DatePickerWithRange } from "../ui/date-range-picker"
+import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 import { type DateRange } from "react-day-picker"
 
 const chartConfig = {

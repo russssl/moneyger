@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { ResetPasswordEmailTemplate } from "@/components/email-template";
+import { ResetPasswordEmailTemplate } from "@/components/common/email-template";
 import { Resend } from "resend";
 
 export async function sendResetPasswordEmail(

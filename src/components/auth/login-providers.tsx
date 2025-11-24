@@ -1,14 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Alert, AlertDescription } from "./ui/alert";
-import LoadingButton from "./loading-button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import LoadingButton from "@/components/common/loading-button";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Key } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/hooks/use-session";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";

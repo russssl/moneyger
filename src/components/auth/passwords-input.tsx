@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { checkStrength, getStrengthColor, getStrengthText } from "@/hooks/passwordUtil";
 import { Label } from "@/components/ui/label";
-import PasswordInput from "@/components/password-input";
+import PasswordInput from "@/components/auth/password-input";
 import { AlertCircle, Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 

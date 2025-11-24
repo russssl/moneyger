@@ -17,7 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { LoadingSpinner } from "./ui/loading"
+import { LoadingSpinner } from "@/components/ui/loading"
 import { useTranslations } from "next-intl"
 import { type Session, signOut } from "@/hooks/use-session";
 function CurrentThemeIcon() {

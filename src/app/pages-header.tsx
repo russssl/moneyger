@@ -1,5 +1,5 @@
 "use client";
-import MainBreadcrumb from "@/components/main-breadcrumb";
+import MainBreadcrumb from "@/components/layout/main-breadcrumb";
 import { SidebarTrigger, SidebarContext } from "@/components/ui/sidebar";
 import {useIsMobile} from "@/hooks/use-mobile";
 import { useContext } from "react";

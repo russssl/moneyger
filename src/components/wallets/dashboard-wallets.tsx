@@ -1,6 +1,6 @@
 "use client"
 import { type Wallet } from "@/server/db/wallet";
-import EditWalletModal from "@/components/app/edit-wallet-modal";
+import EditWalletModal from "@/components/wallets/edit-wallet-modal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import WalletItem from "./wallet-item";

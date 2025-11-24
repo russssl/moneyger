@@ -1,5 +1,5 @@
 "use client"
-import { useSidebar } from "./ui/sidebar"
+import { useSidebar } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 export default function AppLogo() {

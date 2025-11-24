@@ -1,8 +1,8 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import LoginProviders from "@/components/login-providers";
+import LoginProviders from "@/components/auth/login-providers";
 import Link from "next/link"
 import { type Metadata } from "next";
-import {ThemeToggle} from "@/components/theme-toggle";
+import {ThemeToggle} from "@/components/common/theme-toggle";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import GitHub from "@/components/icons/github";

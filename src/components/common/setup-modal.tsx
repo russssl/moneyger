@@ -6,7 +6,7 @@ import {
   ModalDescription,
   ModalHeader,
   ModalTitle,
-} from "@/components/modal";
+} from "@/components/common/modal";
 import { useEffect, useState, useReducer, Fragment } from "react";
 import CurrencySelect from "./currency-select";
 import { useTranslations } from "next-intl";
@@ -27,7 +27,7 @@ import {
   StepperTitle,
   StepperDescription,
   StepperSeparator,
-} from "./ui/stepper";
+} from "@/components/ui/stepper";
 import LoadingButton from "./loading-button";
 import { useTranslations as useServiceTranslations } from "next-intl";
 
