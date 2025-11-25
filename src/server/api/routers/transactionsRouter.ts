@@ -40,6 +40,14 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
           currency: true,
         },
       },
+      category: {
+        columns: {
+          id: true,
+          name: true,
+          iconName: true,
+          type: true,
+        },
+      },
     },
     ...pagination,
     orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
@@ -74,11 +82,11 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
   amount: z.number(),
   transaction_date: z.coerce.date(),
   description: z.string(),
-  category: z.string(),
+  categoryId: z.string().optional(),
   type: z.string(),
 })), async (c) => {
   const { user } = await getUserData(c);
-  const { walletId, toWalletId, amount, transaction_date, description, category, type } = c.req.valid("json");
+  const { walletId, toWalletId, amount, transaction_date, description, categoryId, type } = c.req.valid("json");
 
   const transactionData = await db.transaction(async (tx) => {
 
@@ -100,7 +108,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       amount,
       transaction_date,
       description,
-      category,
+      categoryId: categoryId ?? null,
       type,
     }).returning().execute().then((res) => res[0]);
   
@@ -190,12 +198,12 @@ transactionsRouter.post("/:id", authenticated, zValidator("param", z.object({
   amount: z.number(),
   transaction_date: z.coerce.date(),
   description: z.string(),
-  category: z.string(),
+  categoryId: z.string().optional(),
 })),
 async (c) => {
   const { user } = await getUserData(c);
   const { id } = c.req.valid("param");
-  const { amount, transaction_date, description, category } = c.req.valid("json");
+  const { amount, transaction_date, description, categoryId } = c.req.valid("json");
   
   const transactionData = await db.transaction(async (tx) => {
     const transaction = await tx.query.transactions.findFirst({
@@ -213,7 +221,7 @@ async (c) => {
       amount,
       transaction_date,
       description,
-      category,
+      categoryId: categoryId ?? null,
     }).where(and(
       eq(transactions.id, id),
       eq(transactions.userId, user.id),

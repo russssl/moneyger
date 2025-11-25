@@ -1,4 +1,4 @@
-import { user, wallets, transactions, transfers } from "../db/schema";
+import { user, wallets, transactions, transfers, categories } from "../db/schema";
 import db from "../db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -82,8 +82,25 @@ async function seedDemoUser() {
   const walletsToInsert: typeof wallets.$inferInsert[] = [];
   const transactionsToInsert: typeof transactions.$inferInsert[] = [];
   const transfersToInsert: typeof transfers.$inferInsert[] = [];
-
+  
   console.log("🧠 Generating data in memory...");
+
+  // Insert Categories first
+  const categoriesData: typeof categories.$inferInsert[] = [
+    { name: "Salary", type: "income", iconName: "banknote", createdBy: demoUser.id },
+    { name: "Investment", type: "income", iconName: "trending-up", createdBy: demoUser.id },
+    { name: "Gifts", type: "income", iconName: "gift", createdBy: demoUser.id },
+    { name: "Groceries", type: "expense", iconName: "shopping-cart", createdBy: demoUser.id },
+    { name: "Housing", type: "expense", iconName: "home", createdBy: demoUser.id },
+    { name: "Transport", type: "expense", iconName: "car", createdBy: demoUser.id },
+    { name: "Entertainment", type: "expense", iconName: "gamepad-2", createdBy: demoUser.id },
+    { name: "Health", type: "expense", iconName: "heart-pulse", createdBy: demoUser.id },
+    { name: "Shopping", type: "expense", iconName: "shopping-bag", createdBy: demoUser.id },
+    { name: "Dining", type: "expense", iconName: "utensils", createdBy: demoUser.id },
+  ];
+
+  console.log("💾 Inserting categories...");
+  const insertedCategories = await db.insert(categories).values(categoriesData).returning();
 
   // Generate 10 Wallets
   for (let i = 0; i < 10; i++) {
@@ -117,52 +134,20 @@ async function seedDemoUser() {
       const date = new Date();
       date.setDate(date.getDate() - Math.floor(Math.random() * 60));
 
+      const validCategories = insertedCategories.filter(c => c.type === type);
+      const randomCategory = validCategories[Math.floor(Math.random() * validCategories.length)];
+
       transactionsToInsert.push({
         userId: demoUser.id,
         walletId: walletId, // Link to the ID we just generated
         amount: amount,
         type: type,
-        category: category,
+        categoryId: randomCategory!.id,
         description: `${type === "income" ? "Received" : "Paid"} ${category}`,
         transaction_date: date,
       });
     }
   }
-
-  // Generate Transfers (Only if we have at least 2 wallets)
-  // if (walletsToInsert.length >= 2) {
-  //   for (let k = 0; k < 10; k++) {
-  //     const fromIndex = Math.floor(Math.random() * walletsToInsert.length);
-  //     let toIndex = Math.floor(Math.random() * walletsToInsert.length);
-      
-  //     // Ensure distinct wallets
-  //     while (toIndex === fromIndex) {
-  //       toIndex = Math.floor(Math.random() * walletsToInsert.length);
-  //     }
-
-  //     const fromWallet = walletsToInsert[fromIndex];
-  //     const toWallet = walletsToInsert[toIndex];
-
-  //     if (!fromWallet || !toWallet) {
-  //       console.error("❌ Error: From or to wallet not found.");
-  //       return;
-  //     }
-  //     // FIX: Ensure we don't push undefined if logic fails (Double check)
-  //     if (fromWallet && toWallet) {
-  //       // Explicitly assert that fromWallet.id and toWallet.id are strings to fix type error
-  //       transfersToInsert.push({
-  //         userId: demoUser.id,
-  //         fromWalletId: fromWallet.id!,
-  //         toWalletId: toWallet.id!,
-  //         amountSent: Math.floor(Math.random() * 500) + 50,
-  //         amountReceived: Math.floor(Math.random() * 500) + 50, // or = amountSent for no FX
-  //         exchangeRate: 1,
-  //         description: `Transfer from ${fromWallet.name} to ${toWallet.name}`,
-  //       });
-  //       });
-  //     }
-  //   }
-  // }
 
   // --- 6. Execute Inserts with GUARDS ---
   

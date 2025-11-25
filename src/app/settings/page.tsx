@@ -3,6 +3,7 @@ import SettingsSelect from "@/components/settings/settings-select"
 import ProfileSettings from "@/components/settings/profile-settings"
 import PasswordSettings from "@/components/settings/password-settings"
 import AccountSettings from "@/components/settings/account-settings"
+import CategoriesSettings from "@/components/settings/categories-settings"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Palette } from "lucide-react"
@@ -75,6 +76,11 @@ export default async function SettingsPage(
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+      {selectedCategory === "categories" && (
+        <div className={categoryGroupStyle}>
+          <CategoriesSettings />
         </div>
       )}
     </div>

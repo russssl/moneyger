@@ -1,12 +1,13 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import { TrashIcon, ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon } from "lucide-react"
-import { type TransactionWithWallet } from "@/server/db/transaction"
+import { type TransactionWithCategory } from "@/server/db/transaction"
 import { formatCurrency } from "@/hooks/currencies"
 import { LoadingSpinner } from "@/components/ui/loading"
+import { Icon, type IconName } from "@/components/ui/icon-picker"
 
 interface TransactionItemProps {
-  transaction: TransactionWithWallet
+  transaction: TransactionWithCategory
   onDelete: (id: string) => Promise<void>
   isDeleting: boolean
 }
@@ -49,6 +50,14 @@ export function TransactionItem({ transaction, onDelete, isDeleting }: Transacti
             <span className="text-xs text-muted-foreground truncate">
               {transaction.wallet.name}
             </span>
+            {transaction.category && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                {transaction.category.iconName && (
+                  <Icon name={transaction.category.iconName as IconName} className="w-3 h-3" />
+                )}
+                <span className="truncate">{transaction.category.name}</span>
+              </span>
+            )}
           </div>
           <div className="text-xs text-muted-foreground">
             {transaction.transaction_date ? (

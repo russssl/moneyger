@@ -19,6 +19,9 @@ import { type NewTransaction } from "@/server/db/transaction";
 import LoadingButton from "@/components/common/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime } from "luxon";
+import { Category } from "@/server/db/category";
+import { Icon, type IconName } from "@/components/ui/icon-picker";
+
 type TransactionType = "income" | "expense" | "transfer";
 
 interface EditTransactionModalProps {
@@ -86,7 +89,7 @@ export default function EditTransactionModal({
   } = state;
 
   const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null);
-
+  const { data: categoriesData } = useFetch<Category[]>(open ? "/api/categories" : null);
   const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST", {
     invalidates: [["transactions"], ["wallets"]],
   } );
@@ -101,6 +104,7 @@ export default function EditTransactionModal({
   const currencyData: Currency | undefined = firstWallet?.currency ? currencies(firstWallet.currency) : undefined;
   const toCurrencyCode = secondWallet?.currency;
   const fromCurrencyCode = firstWallet?.currency;
+  const selectedCategoryData = categoriesData?.find((c) => c.id === selectedCategory);
   
   const shouldFetchExchangeRate = open && transactionType === "transfer" && fromCurrencyCode && toCurrencyCode && fromCurrencyCode !== toCurrencyCode;
   const { data: exchangeRateData } = useFetch<{ rate: number; timestamp: number; isStale: boolean }>(shouldFetchExchangeRate ? `/api/wallets/exchange-rate?from=${fromCurrencyCode}&to=${toCurrencyCode}` : null);
@@ -121,7 +125,7 @@ export default function EditTransactionModal({
         amount,
         transaction_date: date,
         description,
-        category: transactionType === "transfer" ? "Transfer" : selectedCategory ?? "other",
+        categoryId: transactionType === "transfer" ? undefined : selectedCategory,
         type: transactionType,
       },
       {
@@ -275,16 +279,32 @@ export default function EditTransactionModal({
                   {transactionType !== "transfer" && (
                     <div className="min-w-0">
                       <Label>{tGeneral("category")}</Label>
-                      <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
+                      <Select value={selectedCategory} onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={tGeneral("select_category")} />
+                          {selectedCategoryData ? (
+                            <div className="flex items-center gap-2">
+                              {selectedCategoryData.iconName && (
+                                <Icon name={selectedCategoryData.iconName as IconName} className="w-4 h-4" />
+                              )}
+                              <SelectValue placeholder={tGeneral("select_category")} />
+                            </div>
+                          ) : (
+                            <SelectValue placeholder={tGeneral("select_category")} />
+                          )}
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
-                          <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
-                          <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
-                          <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
-                          <SelectItem value="other">{tCategory("other")}</SelectItem>
+                          {categoriesData
+                            ?.filter((c) => c.type === transactionType)
+                            .map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                <div className="flex items-center gap-2">
+                                  {category.iconName && (
+                                    <Icon name={category.iconName as IconName} className="w-4 h-4" />
+                                  )}
+                                  <span>{category.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
