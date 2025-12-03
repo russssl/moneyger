@@ -138,7 +138,7 @@ walletsRouter.post("/", authenticated, zValidator(
         type: "adjustment",
         transaction_date: new Date(),
         description: "Initial balance", // TODO: improve this. maybe distinguish initials more
-        category: "Initial Balance",
+        categoryId: null,
       }).execute();
     }
     return wallet;
