@@ -8,10 +8,10 @@ import { Grid3x3, List } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { NoItems } from "./no-items";
+import { NoItems } from "@/components/common/no-items";
 import { PiggyBank } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import WalletItem from "./wallet-item";
+import WalletItem from "@/components/wallets/wallet-item";
 
 type ViewMode = "list" | "grid";
 const STORAGE_KEY = "savings-view-mode";

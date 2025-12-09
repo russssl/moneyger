@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
-import LoadingButton from "./loading-button"
+import LoadingButton from "@/components/common/loading-button"
 import Link from "next/link"
 import { useState } from "react"
 import { forgetPassword } from "@/hooks/use-session"
