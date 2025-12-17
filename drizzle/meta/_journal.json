@@ -8,6 +8,13 @@
       "when": 1766001470852,
       "tag": "0000_useful_grey_gargoyle",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766002224453,
+      "tag": "0001_cold_leader",
+      "breakpoints": true
     }
   ]
 }
