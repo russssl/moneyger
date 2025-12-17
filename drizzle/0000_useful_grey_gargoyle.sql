@@ -50,7 +50,7 @@ CREATE TABLE "user" (
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"username" text,
 	"display_username" text,
-	"currency" text,
+	"currency" text DEFAULT 'USD',
 	CONSTRAINT "user_email_unique" UNIQUE("email"),
 	CONSTRAINT "user_username_unique" UNIQUE("username")
 );

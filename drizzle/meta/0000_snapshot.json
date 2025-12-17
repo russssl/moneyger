@@ -1,5 +1,5 @@
 {
-  "id": "9aa54b13-a08b-49e5-b4ea-ac1b37c0aaa9",
+  "id": "3fde2f3c-d4db-4b19-908d-ed780be69023",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -352,7 +352,8 @@
           "name": "currency",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'USD'"
         }
       },
       "indexes": {},
