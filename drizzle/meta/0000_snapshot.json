@@ -568,11 +568,17 @@
           "primaryKey": false,
           "notNull": false
         },
-        "category_id": {
-          "name": "category_id",
+        "note": {
+          "name": "note",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
         },
         "type": {
           "name": "type",
@@ -616,19 +622,6 @@
           "tableTo": "wallet",
           "columnsFrom": [
             "wallet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "transaction_category_id_category_id_fk": {
-          "name": "transaction_category_id_category_id_fk",
-          "tableFrom": "transaction",
-          "tableTo": "category",
-          "columnsFrom": [
-            "category_id"
           ],
           "columnsTo": [
             "id"
@@ -757,79 +750,6 @@
           "tableTo": "wallet",
           "columnsFrom": [
             "to_wallet_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.category": {
-      "name": "category",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar(255)",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "icon_name": {
-          "name": "icon_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "''"
-        },
-        "type": {
-          "name": "type",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'expense'"
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "category_created_by_user_id_fk": {
-          "name": "category_created_by_user_id_fk",
-          "tableFrom": "category",
-          "tableTo": "user",
-          "columnsFrom": [
-            "created_by"
           ],
           "columnsTo": [
             "id"
