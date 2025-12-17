@@ -21,4 +21,4 @@ COPY --from=builder /app ./
 
 EXPOSE 4000
 
-CMD bun run db:migrate && bun start
+CMD sh -c 'if [ "$SKIP_MIGRATE" != "true" ]; then bun run db:migrate && bun start; else bun start; fi'
