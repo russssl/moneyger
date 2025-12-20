@@ -116,7 +116,8 @@ walletsRouter.post("/", authenticated, zValidator(
 
   const wallet = await db.transaction(async (tx) => {
     const { name, currency, isSavingAccount, balance, savingAccountGoal, iconName } = c.req.valid("json");
-    const wallet = await tx.insert(wallets).values({
+    
+    const result = await tx.insert(wallets).values({
       userId: user.id,
       name,
       currency,
@@ -124,7 +125,9 @@ walletsRouter.post("/", authenticated, zValidator(
       savingAccountGoal: savingAccountGoal ?? 0,
       balance: balance ?? 0,
       iconName: iconName ?? undefined,
-    }).returning().execute().then((res) => res[0]);
+    }).returning();
+
+    const wallet = result[0];
 
     if (!wallet) {
       throw new HTTPException(500, { message: "We couldn't create your wallet. Please try again." });
@@ -137,7 +140,7 @@ walletsRouter.post("/", authenticated, zValidator(
         amount: balance,
         type: "adjustment",
         transaction_date: new Date(),
-        description: "Initial balance", // TODO: improve this. maybe distinguish initials more
+        description: "Initial balance",
         categoryId: null,
       }).execute();
     }
