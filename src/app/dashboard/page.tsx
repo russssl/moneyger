@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { QuickActions } from "./quick-actions/quick-actions";
 import PagesHeader from "../pages-header";
 import TotalBalance from "@/components/wallets/total-balance";
@@ -18,6 +19,10 @@ export default async function HomePage() {
   const session = await auth.api.getSession({
     headers: await headers()
   });
+
+  if (!session) {
+    redirect("/login");
+  }
 
   const t = await getTranslations("HomePage");
   return (
