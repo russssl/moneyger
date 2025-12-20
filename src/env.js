@@ -5,7 +5,6 @@ export const env = createEnv({
   server: {
     AUTH_SECRET: z.string(),
     // Support both DATABASE_URL and individual postgres vars
-    DATABASE_URL: z.string().url().optional(),
     POSTGRES_USER: z.string(),
     POSTGRES_PASSWORD: z.string(),
     POSTGRES_DB: z.string(),
@@ -36,7 +35,6 @@ export const env = createEnv({
   },
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    DATABASE_URL: process.env.DATABASE_URL,
     POSTGRES_USER: process.env.POSTGRES_USER,
     POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
     POSTGRES_DB: process.env.POSTGRES_DB,
