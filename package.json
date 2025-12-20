@@ -22,7 +22,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "preview": "bun run next build && bun run next start",
-    "start": "PORT=4000 bun run next start",
+    "start": "bun run next start",
     "typecheck": "bun run tsc --noEmit"
   },
   "dependencies": {

@@ -2,64 +2,69 @@ version: '3.8'
 
 services:
   app:
-    image: registry.moneyger.dev/moneyger-blog-api:latest
+    image: registry.moneyger.dev/moneyger:latest
     environment:
-      # Database configuration
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      
-      # Authentication
       AUTH_SECRET: ${AUTH_SECRET}
-      
-      # Redis configuration
-      REDIS_URL: ${REDIS_URL}
-      
-      # OAuth providers (optional)
+      NEXT_PUBLIC_APP_URL: https://moneyger.dev
+      REDIS_URL: redis://redis:6379
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      
-      # Email service
-      # RESEND_API_KEY: ${RESEND_API_KEY} // for now we are ignoring this
-      
-      # Exchange rates (optional)
       EXCHANGE_RATE_URL: ${EXCHANGE_RATE_URL}
       EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
-      
-      # SSL
       POSTGRES_SSL: false
-      
-      # Environment
       NODE_ENV: production
+      PORT: ${PORT:-4000}
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.moneyger.rule=Host(`moneyger.dev`)"
       - "traefik.http.routers.moneyger.entrypoints=web,websecure"
       - "traefik.http.routers.moneyger.tls=true"
       - "traefik.http.routers.moneyger.tls.certresolver=myresolver"
       - "traefik.http.services.moneyger.loadbalancer.server.scheme=http"
       - "traefik.http.services.moneyger.loadbalancer.server.port=4000"
-      - "traefik.http.middlewares.moneyger-retry.retry.attempts=3"
-      - "traefik.http.middlewares.moneyger-retry.retry.initialinterval=100ms"
-      - "traefik.http.routers.moneyger.middlewares=moneyger-retry"
-      - "traefik.docker.network=traefik"
-      - "traefik.http.routers.moneyger.middlewares=rate-limit"
-      - "traefik.http.middlewares.rate-limit.ratelimit.average=300"
-      - "traefik.http.middlewares.rate-limit.ratelimit.burst=500"
-      - "traefik.http.middlewares.rate-limit.ratelimit.period=1m"
     networks:
       - traefik
       - moneyger
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "${APP_PORT:-4000}:${PORT:-4000}"
+
+  adminer:
+    image: adminer:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.adminer.rule=Host(`db.moneyger.dev`)"
+      - "traefik.http.routers.adminer.entrypoints=web,websecure"
+      - "traefik.http.routers.adminer.tls=true"
+      - "traefik.http.routers.adminer.tls.certresolver=myresolver"
+      - "traefik.http.services.adminer.loadbalancer.server.scheme=http"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+    networks:
+      - traefik
+      - moneyger
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_DRIVER: pgsql
+      ADMINER_DEFAULT_USERNAME: ${POSTGRES_USER}
+      ADMINER_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMINER_DEFAULT_DB: ${POSTGRES_DB}
+      ADMINER_LOGIN: ${ADMINER_USER}
+      ADMINER_PASSWORD: ${ADMINER_PASSWORD}
 
   redis:
     image: redis:7-alpine
@@ -71,16 +76,33 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - moneyger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
-  postgres_data:
   redis_data:
+  postgres_data:
 
 networks:
   traefik:
     external: true
   moneyger:
-    external: true 
+    external: true

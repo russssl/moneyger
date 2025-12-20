@@ -1,6 +1,6 @@
 FROM oven/bun:1 AS builder
 
-# Set environment variables for build time (before any code is copied)
+# Set environment variables for build time
 ENV SKIP_ENV_VALIDATION=true
 
 WORKDIR /app
@@ -19,6 +19,7 @@ WORKDIR /app
 
 COPY --from=builder /app ./
 
-EXPOSE 4000
+# prod and staging ports
+EXPOSE 4000 4001 
 
-CMD sh -c 'if [ "$SKIP_MIGRATE" != "true" ]; then bun run db:migrate && bun start; else bun start; fi'
+CMD sh -c 'bun run db:migrate && bun start'
