@@ -82,7 +82,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
   amount: z.number(),
   transaction_date: z.coerce.date(),
   description: z.string(),
-  categoryId: z.string().optional(),
+  categoryId: z.string(),
   type: z.string(),
 })), async (c) => {
   const { user } = await getUserData(c);
@@ -101,7 +101,6 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
-
     const transactionValues = {
       userId: user.id,
       walletId,
@@ -109,7 +108,7 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       transaction_date,
       description,
       type,
-      ...(categoryId && { categoryId }),
+      categoryId,
     };
     const transaction = await tx.insert(transactions).values(transactionValues).returning().execute().then((res) => res[0]);
   
