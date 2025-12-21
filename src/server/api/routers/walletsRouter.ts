@@ -134,15 +134,15 @@ walletsRouter.post("/", authenticated, zValidator(
     }
 
     if (balance && balance !== 0) {
-      await tx.insert(transactions).values({
+      const transactionValues = {
         userId: user.id,
         walletId: wallet.id,
         amount: balance,
         type: "adjustment",
         transaction_date: new Date(),
         description: "Initial balance",
-        categoryId: null,
-      }).execute();
+      } as typeof transactions.$inferInsert;
+      await tx.insert(transactions).values(transactionValues).execute();
     }
     return wallet;
   });

@@ -102,15 +102,16 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
     }
 
 
-    const transaction = await tx.insert(transactions).values({
+    const transactionValues = {
       userId: user.id,
       walletId,
       amount,
       transaction_date,
       description,
-      categoryId: categoryId ?? null,
       type,
-    }).returning().execute().then((res) => res[0]);
+      ...(categoryId && { categoryId }),
+    };
+    const transaction = await tx.insert(transactions).values(transactionValues).returning().execute().then((res) => res[0]);
   
     if (!transaction) {
       throw new HTTPException(500, { message: "We couldn't save your transaction. Please try again." });
@@ -217,12 +218,13 @@ async (c) => {
       throw new HTTPException(404, { message: "We couldn't find that transaction." });
     }
 
-    const updatedTransaction = await tx.update(transactions).set({
+    const updateValues = {
       amount,
       transaction_date,
       description,
-      categoryId: categoryId ?? null,
-    }).where(and(
+      ...(categoryId !== undefined && { categoryId: categoryId || undefined }),
+    };
+    const updatedTransaction = await tx.update(transactions).set(updateValues as Partial<typeof transactions.$inferInsert>).where(and(
       eq(transactions.id, id),
       eq(transactions.userId, user.id),
     )).returning().execute().then((res) => res[0]);
