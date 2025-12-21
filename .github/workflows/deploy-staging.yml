@@ -30,4 +30,5 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
+            ${{ secrets.REG_URL }}/moneyger:staging-latest
             ${{ secrets.REG_URL }}/moneyger:staging-${{ github.ref_name }}-${{ steps.vars.outputs.sha_short }}

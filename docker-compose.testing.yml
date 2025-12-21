@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  app:
+    image: registry.moneyger.dev/moneyger-testing:latest
+    environment:
+      # Database configuration (testing database)
+      POSTGRES_HOST: ${TEST_POSTGRES_HOST}
+      POSTGRES_PORT: ${TEST_POSTGRES_PORT}
+      POSTGRES_USER: ${TEST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${TEST_POSTGRES_DB}
+      
+      # Authentication
+      AUTH_SECRET: ${AUTH_SECRET}
+      NEXT_PUBLIC_APP_URL: https://testing.moneyger.dev
+      
+      # Redis configuration
+      REDIS_URL: ${REDIS_URL}
+      
+      # OAuth providers (optional)
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      
+      # Exchange rates (optional)
+      EXCHANGE_RATE_URL: ${EXCHANGE_RATE_URL}
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
+      
+      # SSL
+      POSTGRES_SSL: false
+      
+      # Environment
+      NODE_ENV: production
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.moneyger-testing.rule=Host(`testing.moneyger.dev`)"
+      - "traefik.http.routers.moneyger-testing.entrypoints=web,websecure"
+      - "traefik.http.routers.moneyger-testing.tls=true"
+      - "traefik.http.routers.moneyger-testing.tls.certresolver=myresolver"
+      - "traefik.http.services.moneyger-testing.loadbalancer.server.scheme=http"
+      - "traefik.http.services.moneyger-testing.loadbalancer.server.port=4000"
+      - "traefik.http.middlewares.moneyger-testing-retry.retry.attempts=3"
+      - "traefik.http.middlewares.moneyger-testing-retry.retry.initialinterval=100ms"
+      - "traefik.http.routers.moneyger-testing.middlewares=moneyger-testing-retry"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.moneyger-testing.middlewares=rate-limit-testing"
+      - "traefik.http.middlewares.rate-limit-testing.ratelimit.average=300"
+      - "traefik.http.middlewares.rate-limit-testing.ratelimit.burst=500"
+      - "traefik.http.middlewares.rate-limit-testing.ratelimit.period=1m"
+    networks:
+      - traefik
+      - moneyger-testing
+    depends_on:
+      - redis
+    restart: unless-stopped
+    ports:
+      - "4001:4000"
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_testing_data:/data
+    networks:
+      - moneyger-testing
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_testing_data:
+
+networks:
+  traefik:
+    external: true
+  moneyger-testing:
+    external: true
+
+

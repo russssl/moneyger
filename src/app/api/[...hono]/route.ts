@@ -6,6 +6,7 @@ import { type AuthVariables } from "@/server/api/authenticate"
 import userRouter from "@/server/api/routers/userRouter"
 import walletsRouter from "@/server/api/routers/walletsRouter"
 import transactionsRouter from "@/server/api/routers/transactionsRouter"
+import categoriesRouter from "@/server/api/routers/categoriesRouter"
 import statsRouter from "@/server/api/routers/statsRouter"
 import savingsRouter from "@/server/api/routers/savingsRouter"
 import { HTTPException } from "hono/http-exception"
@@ -77,12 +78,14 @@ api.use("/api/user/*", createRateLimiter("authenticated"));
 api.use("/api/wallets/*", createRateLimiter("authenticated"));
 api.use("/api/transactions/*", createRateLimiter("authenticated"));
 api.use("/api/savings/*", createRateLimiter("authenticated"));
+api.use("/api/categories/*", createRateLimiter("authenticated"));
 
 api.route("/api/stats", statsRouter);
 api.route("/api/user", userRouter);
 api.route("/api/wallets", walletsRouter);
 api.route("/api/transactions", transactionsRouter);
 api.route("/api/savings", savingsRouter);
+api.route("/api/categories", categoriesRouter);
 api.onError((err, c) => {
   console.error(err);
   if (err instanceof HTTPException) {

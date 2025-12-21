@@ -1,8 +1,19 @@
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import PagesHeader from "../pages-header";
 import SavingsPageContent from "./savings-content";
 
 export default async function SavingsPage() {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
+
   const t = await getTranslations("finances");
 
   return (

@@ -646,8 +646,11 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
 export default function SetupModal() {
   const t = useTranslations("setup-modal");
   const [open, setOpen] = useState(false);
-  const { data: userData } = useFetch<{ currency: string | undefined }>(
+  const { data: userData, isLoading: isLoadingUser } = useFetch<{ currency: string | undefined }>(
     "/api/user/me",
+  );
+  const { data: wallets, isLoading: isLoadingWallets } = useFetch<WalletType[]>(
+    "/api/wallets",
   );
 
   // Define stepper with translations
@@ -672,14 +675,15 @@ export default function SetupModal() {
   );
 
   useEffect(() => {
-    if (userData) {
-      const hasCurrency = !!userData.currency;
-      console.log("hasCurrency", hasCurrency);
-      // Setup is needed if currency is missing (first launch)
-      const needsSetup = !hasCurrency;
+    // Wait for both user data and wallets to load
+    if (!isLoadingUser && !isLoadingWallets) {
+      // Show setup modal if user has no wallets (new user hasn't completed setup)
+      // This is more reliable than checking currency since new users get default "USD"
+      const hasWallets = wallets && wallets.length > 0;
+      const needsSetup = !hasWallets;
       setOpen(needsSetup);
     }
-  }, [userData]);
+  }, [userData, wallets, isLoadingUser, isLoadingWallets]);
 
   if (!open) return null;
 

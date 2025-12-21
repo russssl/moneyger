@@ -4,6 +4,7 @@ import { authenticated, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator"
 import { z } from "zod";
 import { transactions } from "@/server/db/transaction";
+import { categories } from "@/server/db/category";
 import { and, eq, sql, gte, lte } from "drizzle-orm";
 import db from "@/server/db";
 
@@ -24,17 +25,20 @@ statsRouter.get("/spendings", authenticated, zValidator(
 
 
   const spendingData = await db.select({
-    category: transactions.category,
+    category: categories.name,
     totalSpent: sql<number>`sum(${transactions.amount})`.as("totalSpent"),
-  }).from(transactions).where(and(
+  })
+  .from(transactions)
+  .leftJoin(categories, eq(transactions.categoryId, categories.id))
+  .where(and(
     eq(transactions.userId, user.id),
     eq(transactions.type, "expense"),
-    // avoid using sql in where clauses
     startDate ? gte(transactions.transaction_date, new Date(startDate)) : undefined,
     endDate ? lte(transactions.transaction_date, new Date(endDate)) : undefined,
     walletId ? eq(transactions.walletId, walletId) : undefined,
-    category ? eq(transactions.category, category) : undefined,
-  )).groupBy(transactions.category);
+    category ? eq(transactions.categoryId, category) : undefined,
+  ))
+  .groupBy(categories.name);
 
   return c.json(spendingData);
 });
