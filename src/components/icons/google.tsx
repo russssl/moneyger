@@ -9,11 +9,10 @@ const Google = ({ noBackground = false }: GoogleProps) => {
         role="img"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="white"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="w-5 h-5"
+        className={`w-5 h-5 ${noBackground ? "stroke-foreground" : "stroke-white"}`}
         xmlns="http://www.w3.org/2000/svg"
         style={{ transform: "scaleY(-1)" }}
       >

@@ -63,12 +63,45 @@ echo "Step 6: Dropping and recreating staging database..."
 docker exec "$STAGING_CONTAINER" psql -U "$STAGING_USER" -d postgres -c "DROP DATABASE IF EXISTS \"$STAGING_DB\";" > /dev/null
 docker exec "$STAGING_CONTAINER" psql -U "$STAGING_USER" -d postgres -c "CREATE DATABASE \"$STAGING_DB\";" > /dev/null
 
-echo "Step 7: Applying production database data..."
+echo "Step 7: Waiting for staging database to be ready..."
+wait_for_db "$STAGING_CONTAINER" "$STAGING_USER" "$STAGING_DB"
+
+echo "Step 8: Applying production database data..."
 cat "$DUMP_FILE" | docker exec -i "$STAGING_CONTAINER" psql -U "$STAGING_USER" "$STAGING_DB" > /dev/null
 
-echo "Step 8: Running migrations to apply any new ones..."
+echo "Step 9: Waiting for app container to be ready..."
+max_attempts=30
+attempt=1
+while [ $attempt -le $max_attempts ]; do
+    if docker compose ps app 2>/dev/null | grep -q "Up"; then
+        sleep 3  # Give it a moment to fully initialize
+        break
+    fi
+    sleep 2
+    attempt=$((attempt + 1))
+done
 
-docker compose exec -T app bun run db:migrate
+if [ $attempt -gt $max_attempts ]; then
+    echo "Warning: App container may not be ready, but proceeding with migration..."
+fi
+
+echo "Step 10: Running migrations to apply any new ones..."
+echo "Note: If production already has all migrations applied, this will show 'No pending migrations'"
+echo "      Migration output will be shown below..."
+if ! docker compose exec app bun run db:migrate; then
+    echo ""
+    echo "Error: Migration failed! Check the output above for details."
+    echo ""
+    echo "Troubleshooting tips:"
+    echo "1. Check if the app container has the correct database environment variables"
+    echo "2. Verify the database connection from the app container"
+    echo "3. Check if there are any new migration files that need to be applied"
+    exit 1
+fi
+
+echo ""
+echo "Step 11: Verifying migration status..."
+docker compose exec -T app bun run drizzle-kit migrate 2>&1 | grep -q "No pending migrations" && echo "✓ All migrations are up to date" || echo "⚠ Some migrations may still be pending"
 
 echo "✓ Done!"
 
