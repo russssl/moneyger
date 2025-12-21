@@ -4,17 +4,17 @@ import { Badge } from "@/components/ui/badge"
 import { env } from "@/env"
 
 export function EnvironmentBadge() {
-  const nodeEnv = env.NEXT_PUBLIC_NODE_ENV
+  const environment = env.NEXT_PUBLIC_ENVIRONMENT
 
   // Only show badge for non-production environments
-  if (nodeEnv === "production") {
+  if (environment === "production") {
     return null
   }
 
-  const isStaging = nodeEnv === "staging"
-  const isDev = nodeEnv === "development"
+  const isStaging = environment === "staging"
+  const isDev = environment === "development"
 
-  const badgeText = isStaging ? "STAGING" : isDev ? "DEV" : (nodeEnv as string).toUpperCase()
+  const badgeText = isStaging ? "STAGING" : isDev ? "DEV" : (environment as string).toUpperCase()
 
   return (
     <Badge

@@ -11,7 +11,7 @@ export const env = createEnv({
     POSTGRES_HOST: z.string(),
     POSTGRES_PORT: z.string().default("5432"),
     NODE_ENV: z
-      .enum(["development", "staging", "production"])
+      .enum(["development", "production"])
       .default("development"),
     REDIS_KV_URL: z.string().url().optional(),
     REDIS_KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
@@ -28,7 +28,7 @@ export const env = createEnv({
     PORT: z.string().default("3000"),
   },
   client: {
-    NEXT_PUBLIC_NODE_ENV: z
+    NEXT_PUBLIC_ENVIRONMENT: z
       .enum(["development", "staging", "production"])
       .default("development"),
     NEXT_PUBLIC_APP_URL: z.string().url(),
@@ -41,7 +41,7 @@ export const env = createEnv({
     POSTGRES_HOST: process.env.POSTGRES_HOST,
     POSTGRES_PORT: process.env.POSTGRES_PORT,
     NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_NODE_ENV: process.env.NEXT_PUBLIC_NODE_ENV,
+    NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
     REDIS_KV_REST_API_READ_ONLY_TOKEN:
