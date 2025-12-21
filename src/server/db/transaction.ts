@@ -24,7 +24,8 @@ export const transactions = pgTable("transaction", {
   transaction_date: timestamp("transaction_date"),
   description: varchar("description", { length: 255 }),
   categoryId: varchar("category_id", { length: 255 })
-    .references(() => categories.id, { onDelete: "set null", onUpdate: "cascade" }),
+    .notNull()
+    .references(() => categories.id, { onDelete: "cascade", onUpdate: "cascade" }),
   type: varchar("type", { length: 255 }), // should be one of the following: "income", "expense", "transfer", "adjustment"
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
