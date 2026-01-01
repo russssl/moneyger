@@ -29,6 +29,9 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          build-args: |
+            NEXT_PUBLIC_APP_URL=https://staging.moneyger.dev
+            NEXT_PUBLIC_ENVIRONMENT=staging
           tags: |
             ${{ secrets.REG_URL }}/moneyger:staging-latest
             ${{ secrets.REG_URL }}/moneyger:staging-${{ github.ref_name }}-${{ steps.vars.outputs.sha_short }}
