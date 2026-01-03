@@ -96,7 +96,7 @@ export default function EditWalletModal({
   const createWallet = useMutation<any, NewWallet>("/api/wallets", "POST", {
     invalidates: [["wallets"]],
   });
-  const updateWallet = useMutation<any, Wallet>(`/api/wallets/${id}`, "PUT", {
+  const updateWallet = useMutation<any, Wallet>(`/api/wallets/${id}`, "POST", {
     invalidates: [["wallets"]],
   });
   const {
@@ -317,7 +317,15 @@ export default function EditWalletModal({
             <div className="flex flex-col gap-2">
               <Label htmlFor="saving-account">{t("saving_account")}</Label>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
+                <span
+                  className="text-sm text-muted-foreground cursor-pointer"
+                  onClick={() =>
+                    dispatch({
+                      type: "SET_IS_SAVING_ACCOUNT",
+                      payload: !state.isSavingAccount,
+                    })
+                  }
+                >
                   {t("saving_account_description")}
                 </span>
                 <Switch

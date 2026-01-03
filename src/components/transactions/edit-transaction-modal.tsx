@@ -4,7 +4,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DatePicker from "@/components/common/date-picker";
 import { useReducer, useEffect } from "react";
 import AutogrowingTextarea from "@/components/common/autogrowing-textarea";
@@ -19,8 +18,7 @@ import { type NewTransaction } from "@/server/db/transaction";
 import LoadingButton from "@/components/common/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime } from "luxon";
-import { Category } from "@/server/db/category";
-import { Icon, type IconName } from "@/components/ui/icon-picker";
+import CategorySelect from "./category-select";
 
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -75,7 +73,6 @@ export default function EditTransactionModal({
   const t = useTranslations("finances");
   const tService = useTranslations("service");
   const tGeneral = useTranslations("general");
-  const tCategory = useTranslations("categories");
   const locale = useLocale();
   const [state, dispatch] = useReducer(reducer, initialState(defaultTab));
   const {
@@ -89,14 +86,13 @@ export default function EditTransactionModal({
   } = state;
 
   const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null);
-  const { data: categoriesData } = useFetch<Category[]>(open ? "/api/categories" : null);
   const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST", {
     invalidates: [["transactions"], ["wallets"]],
   } );
   
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
-  const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;
-  
+  const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet && selectedCategory;
+
   const wallets = walletsData ?? [];
   const firstWallet = wallets.find((w) => w.id === selectedFirstWallet);
   const secondWallet = wallets.find((w) => w.id === selectedSecondWallet);
@@ -104,7 +100,6 @@ export default function EditTransactionModal({
   const currencyData: Currency | undefined = firstWallet?.currency ? currencies(firstWallet.currency) : undefined;
   const toCurrencyCode = secondWallet?.currency;
   const fromCurrencyCode = firstWallet?.currency;
-  const selectedCategoryData = categoriesData?.find((c) => c.id === selectedCategory);
   
   const shouldFetchExchangeRate = open && transactionType === "transfer" && fromCurrencyCode && toCurrencyCode && fromCurrencyCode !== toCurrencyCode;
   const { data: exchangeRateData } = useFetch<{ rate: number; timestamp: number; isStale: boolean }>(shouldFetchExchangeRate ? `/api/wallets/exchange-rate?from=${fromCurrencyCode}&to=${toCurrencyCode}` : null);
@@ -277,37 +272,11 @@ export default function EditTransactionModal({
                     />
                   </div>
                   {transactionType !== "transfer" && (
-                    <div className="min-w-0">
-                      <Label>{tGeneral("category")}</Label>
-                      <Select value={selectedCategory} onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
-                        <SelectTrigger className="w-full">
-                          {selectedCategoryData ? (
-                            <div className="flex items-center gap-2">
-                              {selectedCategoryData.iconName && (
-                                <Icon name={selectedCategoryData.iconName as IconName} className="w-4 h-4" />
-                              )}
-                              <SelectValue placeholder={tGeneral("select_category")} />
-                            </div>
-                          ) : (
-                            <SelectValue placeholder={tGeneral("select_category")} />
-                          )}
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categoriesData
-                            ?.filter((c) => c.type === transactionType)
-                            .map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                <div className="flex items-center gap-2">
-                                  {category.iconName && (
-                                    <Icon name={category.iconName as IconName} className="w-4 h-4" />
-                                  )}
-                                  <span>{category.name}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <CategorySelect
+                      transactionType={transactionType}
+                      selectedCategory={selectedCategory}
+                      onCategoryChange={(categoryId) => dispatch({ type: "set", field: "selectedCategory", value: categoryId })}
+                    />
                   )}
 
                   <div className="min-w-0 w-full">
