@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { type AuthVariables } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { categories } from "@/server/db/category";
 import { transactions } from "@/server/db/transaction";
 import db from "@/server/db";

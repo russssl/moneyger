@@ -150,7 +150,7 @@ export function TransactionList() {
                       <TableRow key={transaction.id}>
                         <TableCell className="w-24 whitespace-nowrap">
                           {transaction.transaction_date ? (
-                            new Date(transaction.transaction_date).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric', year: 'numeric' })
+                            new Date(transaction.transaction_date).toLocaleDateString(undefined, { month: "numeric", day: "numeric", year: "numeric" })
                           ) : (
                             "-"
                           )}

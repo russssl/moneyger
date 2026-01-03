@@ -28,17 +28,17 @@ statsRouter.get("/spendings", authenticated, zValidator(
     category: categories.name,
     totalSpent: sql<number>`sum(${transactions.amount})`.as("totalSpent"),
   })
-  .from(transactions)
-  .leftJoin(categories, eq(transactions.categoryId, categories.id))
-  .where(and(
-    eq(transactions.userId, user.id),
-    eq(transactions.type, "expense"),
-    startDate ? gte(transactions.transaction_date, new Date(startDate)) : undefined,
-    endDate ? lte(transactions.transaction_date, new Date(endDate)) : undefined,
-    walletId ? eq(transactions.walletId, walletId) : undefined,
-    category ? eq(transactions.categoryId, category) : undefined,
-  ))
-  .groupBy(categories.name);
+    .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .where(and(
+      eq(transactions.userId, user.id),
+      eq(transactions.type, "expense"),
+      startDate ? gte(transactions.transaction_date, new Date(startDate)) : undefined,
+      endDate ? lte(transactions.transaction_date, new Date(endDate)) : undefined,
+      walletId ? eq(transactions.walletId, walletId) : undefined,
+      category ? eq(transactions.categoryId, category) : undefined,
+    ))
+    .groupBy(categories.name);
 
   return c.json(spendingData);
 });
