@@ -46,6 +46,29 @@ categoriesRouter.post("/", authenticated, zValidator("json", z.object({
   return c.json(newCategory);
 });
 
+// Batch create categories
+categoriesRouter.post("/batch", authenticated, zValidator("json", z.object({
+  categories: z.array(z.object({
+    name: z.string().min(1),
+    type: z.enum(["income", "expense"]),
+    iconName: z.string().optional(),
+  })),
+})), async (c) => {
+  const { user } = await getUserData(c);
+  const { categories: categoriesData } = c.req.valid("json");
+
+  const categoriesToInsert = categoriesData.map((cat) => ({
+    name: cat.name,
+    type: cat.type,
+    iconName: cat.iconName,
+    createdBy: user.id,
+  }));
+
+  const insertedCategories = await db.insert(categories).values(categoriesToInsert).returning();
+
+  return c.json(insertedCategories);
+});
+
 // Update category
 categoriesRouter.put("/:id", authenticated, zValidator("json", z.object({
   name: z.string().min(1),
