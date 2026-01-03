@@ -1,13 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+// import { Button } from "@/components/ui/button"
 import { UserCog } from "lucide-react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
+// import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+// import { Separator } from "@/components/ui/separator"
 import { getTranslations } from "next-intl/server"
 import DeleteAccountDialog from "./delete-account-dialog"
 export default async function AccountSettings({...props}) {
   const t = await getTranslations("settings")
-  const tService = await getTranslations("service")
+  // const tService = await getTranslations("service")
   return (
     <>
       <Card {...props} className="sm:max-w-md">
@@ -19,7 +19,8 @@ export default async function AccountSettings({...props}) {
           <CardDescription>{t("manage_account_status")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
+          {/* TODO: Add suspend account, email integration required */}
+          {/* <div className="space-y-2">
             <h3 className="font-medium">{t("suspend_account")}</h3>
             <p className="text-sm text-muted-foreground">
               {t("suspend_account_description")}
@@ -41,9 +42,9 @@ export default async function AccountSettings({...props}) {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </div>
+          </div> */}
 
-          <Separator />
+          {/* <Separator /> */}
 
           <div className="space-y-2">
             <h3 className="font-medium text-destructive">{t("delete_account")}</h3>
