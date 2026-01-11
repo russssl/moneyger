@@ -550,12 +550,12 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                           onChange={(e) => setNewCategoryName(e.target.value)}
                           placeholder={tCategories("category_name")}
                           className="h-9 sm:h-10 text-sm"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && newCategoryName.trim()) {
-                                e.preventDefault();
-                                void handleAddCategory("expense");
-                              }
-                            }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && newCategoryName.trim()) {
+                              e.preventDefault();
+                              void handleAddCategory("expense");
+                            }
+                          }}
                         />
                       </div>
                       <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -578,10 +578,10 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                           </Button>
                         </IconPicker>
                       </div>
-                        <LoadingButton
-                          onClick={() => {
-                            void handleAddCategory("expense");
-                          }}
+                      <LoadingButton
+                        onClick={() => {
+                          void handleAddCategory("expense");
+                        }}
                         loading={createCategoryMutation.isPending}
                         disabled={!newCategoryName.trim()}
                         className="w-full h-9 sm:h-10 text-sm"
@@ -634,12 +634,12 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                           onChange={(e) => setNewCategoryName(e.target.value)}
                           placeholder={tCategories("category_name")}
                           className="h-9 sm:h-10 text-sm"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && newCategoryName.trim()) {
-                                e.preventDefault();
-                                void handleAddCategory("income");
-                              }
-                            }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && newCategoryName.trim()) {
+                              e.preventDefault();
+                              void handleAddCategory("income");
+                            }
+                          }}
                         />
                       </div>
                       <div className="flex flex-col gap-1.5 sm:gap-2">
@@ -662,10 +662,10 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
                           </Button>
                         </IconPicker>
                       </div>
-                        <LoadingButton
-                          onClick={() => {
-                            void handleAddCategory("income");
-                          }}
+                      <LoadingButton
+                        onClick={() => {
+                          void handleAddCategory("income");
+                        }}
                         loading={createCategoryMutation.isPending}
                         disabled={!newCategoryName.trim()}
                         className="w-full h-9 sm:h-10 text-sm"
