@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { LayoutDashboard, PiggyBank } from "lucide-react"
+import { LayoutDashboard, PiggyBank, ReceiptText } from "lucide-react"
 import { NavMain } from "@/components/layout/nav-main"
 import { NavUser } from "@/components/layout/nav-user"
 import AppLogo from "@/components/layout/app-logo"
@@ -19,6 +19,12 @@ const data = {
       title: "Dashboard",
       url: "/",
       icon: LayoutDashboard,
+      isActive: false,
+    },
+    {
+      title: "Transactions",
+      url: "/transactions",
+      icon: ReceiptText,
       isActive: false,
     },
     {
