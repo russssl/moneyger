@@ -15,7 +15,8 @@ import {
   Settings, 
   Tag,
   ArrowRight,
-  PiggyBank
+  PiggyBank,
+  ReceiptText
 } from "lucide-react";
 
 export default function MainBreadcrumb() {
@@ -27,7 +28,7 @@ export default function MainBreadcrumb() {
   const getSegmentIcon = (segment: string, index: number) => {
     if (index === 0 && segment === "dashboard") return <Home className="h-4 w-4" />;
     if (segment === "dashboard") return <BarChart3 className="h-4 w-4" />;
-    if (segment === "transactions") return <CreditCard className="h-4 w-4" />;
+    if (segment === "transactions") return <ReceiptText className="h-4 w-4" />;
     if (segment === "wallets") return <CreditCard className="h-4 w-4" />;
     if (segment === "savings") return <PiggyBank className="h-4 w-4" />;
     if (segment === "categories") return <Tag className="h-4 w-4" />;
