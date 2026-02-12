@@ -28,7 +28,7 @@ function getTransactionTypeIcon(type: string | null) {
 
 export function TransactionDeleteButton({ transactionId, onDelete, isDeleting }: { transactionId: string; onDelete: (id: string) => Promise<void>; isDeleting: boolean }) {
   return (
-    <Button variant="destructive" size="icon" onClick={() => onDelete(transactionId)} disabled={isDeleting}>
+    <Button variant="destructive" size="icon" onClick={() => onDelete(transactionId)} disabled={isDeleting} aria-label="Delete transaction">
       {isDeleting ? <LoadingSpinner className="w-4 h-4 text-white" /> : <TrashIcon className="w-4 h-4 text-white" />}
     </Button>
   )
@@ -72,6 +72,7 @@ export function TransactionItem({ transaction, onDelete, isDeleting }: Transacti
         variant="destructive" 
         size="icon" 
         className="flex-shrink-0 ml-2 h-8 w-8 sm:h-10 sm:w-10"
+        aria-label="Delete transaction"
         onClick={() => onDelete(transaction.id)} 
         disabled={isDeleting}
       >

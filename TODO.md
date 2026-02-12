@@ -1,3 +1,3 @@
 - [] add a some drag and drop
 - [] add camera usage
-- [] find a library for reshufling the cards (swapy or https://github.com/sadmann7/sortable)
+- [] find a library for reshuffling the cards (swapy or https://github.com/sadmann7/sortable)

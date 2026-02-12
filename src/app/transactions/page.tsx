@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DateTime } from "luxon"
 
 type TransactionsResponse = {
   items: TransactionWithCategory[];
@@ -40,8 +41,7 @@ export default function TransactionsPage() {
 
   const walletOptions = Array.isArray(wallets) ? wallets : []
 
-  const formattedDate = selectedDate ? selectedDate.toISOString().split("T")[0] : undefined
-
+  const formattedDate = selectedDate ? DateTime.fromJSDate(selectedDate).toFormat("yyyy-MM-dd") : undefined
   const {
     data: transactions,
     isLoading,
@@ -83,11 +83,12 @@ export default function TransactionsPage() {
                   <label className="block text-sm font-medium text-muted-foreground mb-1">
                     {tGeneral("wallet")}
                   </label>
-                  <Select value={selectedWalletId || undefined} onValueChange={setSelectedWalletId}>
+                  <Select value={selectedWalletId || "all"} onValueChange={setSelectedWalletId}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder={tGeneral("all_wallets")} />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">{tGeneral("all_wallets")}</SelectItem>
                       {walletOptions.map((wallet) => (
                         <SelectItem key={wallet.id} value={wallet.id}>
                           {wallet.name}
