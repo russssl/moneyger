@@ -11,17 +11,18 @@ export function EnvironmentBadge() {
     return null
   }
 
-  const isStaging = environment === "staging"
+  const envStr = String(environment)
+  const isStaging = envStr === "staging" || envStr.startsWith("staging-")
   const isDev = environment === "development"
 
-  const badgeText = isStaging ? "STAGING" : isDev ? "DEV" : (environment as string).toUpperCase()
+  const badgeText = isStaging ? envStr : isDev ? "DEV" : envStr
 
   return (
     <Badge
       variant="outline"
       className={
         isStaging
-          ? "border-yellow-500 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 font-semibold"
+          ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold"
           : isDev
             ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-400 font-semibold"
             : ""
