@@ -27,26 +27,26 @@ userRouter.post("/setPassword", authenticated, createRateLimiter("sensitive"), z
   password: z.string(),
   confirmPassword: z.string(),
 })), async (c) => {
-  const { user, headers } = await getUserData(c);
+  const { user, context } = await getUserData(c);
   const { password, confirmPassword } = c.req.valid("json");
 
   if (password !== confirmPassword) {
     return c.json({ error: "Passwords do not match" }, 400);
   }
 
-  const response = await auth.api.signInEmail({
-    body: {
-      email: user.email,
-      password,
-    },
-    headers,
+  // check if user already has credentials provider
+  const credentialsAccount = await db.query.account.findFirst({
+    where: and(eq(account.userId, user.id), eq(account.providerId, "credential")),
   });
 
-  if (response.redirect) {
-    return c.redirect(String(response.url ?? "/"));
-  } else {
-    return c.json({ error: "Failed to set password" }, 400);
+  if (credentialsAccount) {
+    return c.json({ error: "Password is already set" }, 400);
   }
+
+  const passwordHash = await context.password.hash(password);
+  await context.internalAdapter.updatePassword(user.id, passwordHash);
+
+  return c.json({ message: "Password set successfully" });
 });
 
 userRouter.post("/", authenticated, zValidator("json", z.object({

@@ -25,7 +25,7 @@ export function QuickActions({ className }: { className?: string }) {
   const quickActions: QuickAction[] = [
     {
       id: "expense",
-      name: t("add_transaction"),
+      name: t("add_expense"),
       icon: Minus,
       color: {
         bg: "bg-red-50 dark:bg-red-950/50",
@@ -37,7 +37,7 @@ export function QuickActions({ className }: { className?: string }) {
     },
     {
       id: "income",
-      name: t("add_transaction"),
+      name: t("add_income"),
       icon: Plus,
       color: {
         bg: "bg-green-50 dark:bg-green-950/50",

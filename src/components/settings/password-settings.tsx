@@ -184,8 +184,9 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
             if (!passwordExists) {
               // "register password"
               registerPassword();
+            } else {
+              updatePassword();
             }
-            updatePassword();
           }}
           toastText={settingsT("password_updated_successfully")}
           loading={isPending || isRegisteringPassword}

@@ -1,8 +1,9 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, PlusCircle } from "lucide-react"
+import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, PlusCircle, ArrowRightIcon } from "lucide-react"
 import { useState } from "react"
+import Link from "next/link"
 import { type TransactionWithCategory } from "@/server/db/transaction"
 import { Button } from "@/components/ui/button"
 import EditTransactionModal from "@/components/transactions/edit-transaction-modal"
@@ -23,11 +24,19 @@ import { TransactionItem, TransactionDeleteButton } from "./transaction-item"
 import { toast } from "sonner"
 import { Icon, type IconName } from "@/components/ui/icon-picker"
 
+type TransactionsResponse = {
+  items: TransactionWithCategory[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
 export function TransactionList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const fetchTransactions = useFetch<TransactionWithCategory[]>("/api/transactions", {
-    queryKey: ["transactions"],
+  const fetchTransactions = useFetch<TransactionsResponse>("/api/transactions", {
+    queryKey: ["transactions", { limit: 5 }],
+    query: { limit: 5 },
   });
   const { isLoading, error, refetch, data: transactions } = fetchTransactions;
   
@@ -75,8 +84,14 @@ export function TransactionList() {
   return (
     <>
       <Card className="w-full h-full flex flex-col">
-        <CardHeader className="pb-3 sm:pb-6">
+        <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-base sm:text-lg">{t("transactions_title")}</CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground">
+            <Link href="/transactions">
+              <span className="mr-1">{tGeneral("view_all")}</span>
+              <ArrowRightIcon className="h-3 w-3" />
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col px-4 sm:px-6">
           {error && (
@@ -120,17 +135,12 @@ export function TransactionList() {
                 </div>
               )}
             </div>
-          ) : transactions && transactions.length > 0 && !isLoading ? (
+          ) : transactions && transactions.items.length > 0 && !isLoading ? (
             <div className="flex-1 flex flex-col">
               {isMobile ? (
                 <div className="flex flex-col gap-2.5">
-                  {transactions?.map((transaction) => (
-                    <TransactionItem
-                      key={transaction.id}
-                      transaction={transaction}
-                      onDelete={handleDeleteTransaction}
-                      isDeleting={removeTransactionMutation.isPending}
-                    />
+                  {transactions.items.map((transaction) => (
+                    <TransactionItem key={transaction.id} transaction={transaction} onDelete={handleDeleteTransaction} isDeleting={removeTransactionMutation.isPending} />
                   ))}
                 </div>
               ) : (
@@ -145,8 +155,8 @@ export function TransactionList() {
                       <TableHead className="w-12" />
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
-                    {transactions?.map((transaction) => (
+                    <TableBody>
+                    {transactions.items.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell className="w-24 whitespace-nowrap">
                           {transaction.transaction_date ? (

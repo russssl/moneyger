@@ -3,7 +3,7 @@ import { type AuthVariables } from "../authenticate";
 import { authenticated, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq, not, sql } from "drizzle-orm";
 import db from "@/server/db";
 import { transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
@@ -16,8 +16,8 @@ const transactionsRouter = new Hono<AuthVariables>();
 transactionsRouter.get("/", authenticated, zValidator("query", z.object({
   walletId: z.string().optional(),
   transaction_date: z.string().optional(),
-  limit: z.coerce.number().optional(),
-  offset: z.coerce.number().optional(),
+  limit: z.coerce.number().min(1).max(500).optional(),
+  offset: z.coerce.number().min(0).optional(),
 })), async (c) => {
   const { user } = await getUserData(c);
   const { walletId, transaction_date, limit, offset } = c.req.valid("query");
@@ -25,14 +25,22 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
   const pagination = {
     limit: limit ?? 5, // 5 for main page
     offset: offset ?? 0,
-  }
+  };
+
+  const where = and(
+    eq(transactions.userId, user.id),
+    walletId ? eq(transactions.walletId, walletId) : undefined,
+    transaction_date ? eq(transactions.transaction_date, new Date(transaction_date)) : undefined,
+    not(eq(transactions.type, "adjustment")),
+  );
+
+  const [countResult] = await db
+    .select({ count: sql<number>`cast(count(${transactions.id}) as int)` })
+    .from(transactions)
+    .where(where);
+
   const transactionsData = await db.query.transactions.findMany({
-    where: and(
-      eq(transactions.userId, user.id),
-      walletId ? eq(transactions.walletId, walletId) : undefined,
-      transaction_date ? eq(transactions.transaction_date, new Date(transaction_date)) : undefined,
-      not(eq(transactions.type, "adjustment")),
-    ),
+    where,
     with: {
       wallet: {
         columns: {
@@ -53,7 +61,12 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
     orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
   });
 
-  return c.json(transactionsData);
+  return c.json({
+    items: transactionsData,
+    total: countResult?.count ?? 0,
+    limit: pagination.limit,
+    offset: pagination.offset,
+  });
 })
 
 transactionsRouter.get("/:id", authenticated, zValidator("param", z.object({

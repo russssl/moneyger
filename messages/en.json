@@ -48,6 +48,7 @@
     "description_placeholder": "Enter description",
     "enter_description": "Enter description",
     "wallet": "Wallet",
+    "all_wallets": "All wallets",
     "from_wallet": "From wallet",
     "to_wallet": "To wallet",
     "select_wallet": "Select wallet",
@@ -71,11 +72,14 @@
     "page_info": "Page {page} of {total}",
     "rows_selected": "{count} of {total} row(s) selected.",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "view_all": "View all"
   },
   "quick_actions": {
     "title": "Quick Actions",
     "add_transaction": "Add transaction",
+    "add_expense": "Add expense",
+    "add_income": "Add income",
     "add_transaction_description": "Quickly add transactions or manage your wallets",
     "add_wallet": "Add wallet",
     "add_wallet_description": "Add a new wallet",
