@@ -29,7 +29,10 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_ENVIRONMENT: z
-      .enum(["development", "staging", "production"])
+      .union([
+        z.enum(["development", "staging", "production"]),
+        z.string().regex(/^staging-[a-f0-9]+$/, "staging-<shortSha> for deployed builds"),
+      ])
       .default("development"),
     NEXT_PUBLIC_APP_URL: z.string().url(),
   },
