@@ -155,7 +155,7 @@ export function TransactionList() {
                       <TableHead className="w-12" />
                     </TableRow>
                   </TableHeader>
-                    <TableBody>
+                  <TableBody>
                     {transactions.items.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell className="w-24 whitespace-nowrap">

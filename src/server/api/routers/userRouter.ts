@@ -5,7 +5,6 @@ import { z } from "zod";
 import { authenticated, type AuthVariables, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import db from "@/server/db";
-import { auth } from "@/lib/auth";
 import { createRateLimiter } from "../middleware/rateLimit";
 
 const userRouter = new Hono<AuthVariables>();

@@ -33,7 +33,6 @@ export default function TransactionsPage() {
 
   const [selectedWalletId, setSelectedWalletId] = useState<string>("")
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [page, setPage] = useState<number>(0)
 
   const { data: wallets } = useFetch<Wallet[]>("/api/wallets", {
     queryKey: ["wallets"],
@@ -48,18 +47,14 @@ export default function TransactionsPage() {
     isLoading,
     error,
   } = useFetch<TransactionsResponse>("/api/transactions", {
-    queryKey: ["transactions", { walletId: selectedWalletId, date: formattedDate, page }],
+    queryKey: ["transactions", { walletId: selectedWalletId, date: formattedDate }],
     query: {
       limit: PAGE_LIMIT,
       walletId: selectedWalletId || undefined,
       transaction_date: formattedDate,
-      offset: page * PAGE_LIMIT,
+      offset: 0,
     },
   })
-
-  const total = transactions?.total ?? 0
-  const from = total === 0 ? 0 : transactions ? transactions.offset + 1 : 0
-  const to = transactions ? Math.min(transactions.offset + transactions.items.length, total) : 0
 
   return (
     <div className="min-h-screen bg-background">
