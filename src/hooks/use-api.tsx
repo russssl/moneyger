@@ -96,15 +96,16 @@ export function useFetch<T>(
   url: string | null,
   options?: {
     queryKey?: QueryKey;
+    query?: Record<string, any>;
   }
 ) {
   const { data, isLoading, error, refetch } = useQuery<T | null>({
-    queryKey: options?.queryKey ?? [url],
+    queryKey: options?.queryKey ?? [url, options?.query],
     queryFn: async () => {
       if (!url) {
         return null;
       }
-      const response = await fetchWithToken(url)
+      const response = await fetchWithToken(url, { query: options?.query })
       if (!response.ok) {
         throw await buildApiError(response)
       }

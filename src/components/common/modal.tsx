@@ -40,18 +40,22 @@ interface ModalSectionProps extends BaseProps {
   asChild?: true
 }
 
+const ModalContext = React.createContext<{ isDesktop: boolean }>({ isDesktop: true })
+
 const Modal = ({ children, open, onOpenChange, ...props }: RootModalProps) => {
   const isDesktop = !useIsMobile()
   const ModalComponent = isDesktop ? Dialog : Drawer
   return (
-    <ModalComponent open={open} onOpenChange={onOpenChange} {...props}>
-      {children}
-    </ModalComponent>
+    <ModalContext.Provider value={{ isDesktop }}>
+      <ModalComponent open={open} onOpenChange={onOpenChange} {...props}>
+        {children}
+      </ModalComponent>
+    </ModalContext.Provider>
   )
 }
 
 const ModalTrigger = ({ className, children, ...props }: ModalSectionProps) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalTriggerComponent = isDesktop ? DialogTrigger : DrawerTrigger
 
   return (
@@ -62,7 +66,7 @@ const ModalTrigger = ({ className, children, ...props }: ModalSectionProps) => {
 }
 
 const ModalClose = ({ className, children, ...props }: ModalSectionProps & { disableClose?: boolean }) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalCloseComponent = isDesktop ? DialogClose : DrawerClose
 
   return (
@@ -73,7 +77,7 @@ const ModalClose = ({ className, children, ...props }: ModalSectionProps & { dis
 }
 
 const ModalContent = ({ className, children, onKeyDown, disableClose = false, ...props }: ModalSectionProps & { onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void, disableClose?: boolean }) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalContentComponent = isDesktop ? DialogContent : DrawerContent
 
   return (
@@ -90,7 +94,7 @@ const ModalDescription = ({
   children,
   ...props
 }: ModalSectionProps) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalDescriptionComponent = isDesktop ? DialogDescription : DrawerDescription
 
   return (
@@ -101,7 +105,7 @@ const ModalDescription = ({
 }
 
 const ModalHeader = ({ className, children, ...props }: ModalSectionProps) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalHeaderComponent = isDesktop ? DialogHeader : DrawerHeader
 
   return (
@@ -112,7 +116,7 @@ const ModalHeader = ({ className, children, ...props }: ModalSectionProps) => {
 }
 
 const ModalTitle = ({ className, children, ...props }: ModalSectionProps) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalTitleComponent = isDesktop ? DialogTitle : DrawerTitle
 
   return (
@@ -131,7 +135,7 @@ const ModalBody = ({ className, children, ...props }: ModalSectionProps) => {
 }
 
 const ModalFooter = ({ className, children, ...props }: ModalSectionProps) => {
-  const isDesktop = !useIsMobile()
+  const { isDesktop } = React.useContext(ModalContext)
   const ModalFooterComponent = isDesktop ? DialogFooter : DrawerFooter
 
   return (

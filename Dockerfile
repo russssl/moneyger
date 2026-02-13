@@ -1,7 +1,13 @@
 FROM oven/bun:1 AS builder
 
+# Accept build arguments for Next.js public environment variables
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_ENVIRONMENT
+
 # Set environment variables for build time
 ENV SKIP_ENV_VALIDATION=true
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+ENV NEXT_PUBLIC_ENVIRONMENT=${NEXT_PUBLIC_ENVIRONMENT}
 
 WORKDIR /app
 

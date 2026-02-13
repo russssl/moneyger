@@ -4,7 +4,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DatePicker from "@/components/common/date-picker";
 import { useReducer, useEffect } from "react";
 import AutogrowingTextarea from "@/components/common/autogrowing-textarea";
@@ -19,6 +18,8 @@ import { type NewTransaction } from "@/server/db/transaction";
 import LoadingButton from "@/components/common/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime } from "luxon";
+import CategorySelect from "./category-select";
+
 type TransactionType = "income" | "expense" | "transfer";
 
 interface EditTransactionModalProps {
@@ -72,7 +73,6 @@ export default function EditTransactionModal({
   const t = useTranslations("finances");
   const tService = useTranslations("service");
   const tGeneral = useTranslations("general");
-  const tCategory = useTranslations("categories");
   const locale = useLocale();
   const [state, dispatch] = useReducer(reducer, initialState(defaultTab));
   const {
@@ -86,14 +86,13 @@ export default function EditTransactionModal({
   } = state;
 
   const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null);
-
   const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST", {
     invalidates: [["transactions"], ["wallets"]],
   } );
   
   const sameWallet = selectedFirstWallet && selectedSecondWallet && selectedFirstWallet === selectedSecondWallet;
-  const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet;
-  
+  const canSave = selectedFirstWallet && date && amount !== 0 && !sameWallet && selectedCategory;
+
   const wallets = walletsData ?? [];
   const firstWallet = wallets.find((w) => w.id === selectedFirstWallet);
   const secondWallet = wallets.find((w) => w.id === selectedSecondWallet);
@@ -121,7 +120,7 @@ export default function EditTransactionModal({
         amount,
         transaction_date: date,
         description,
-        category: transactionType === "transfer" ? "Transfer" : selectedCategory ?? "other",
+        categoryId: transactionType === "transfer" ? undefined : selectedCategory,
         type: transactionType,
       },
       {
@@ -273,21 +272,11 @@ export default function EditTransactionModal({
                     />
                   </div>
                   {transactionType !== "transfer" && (
-                    <div className="min-w-0">
-                      <Label>{tGeneral("category")}</Label>
-                      <Select onValueChange={(value) => dispatch({ type: "set", field: "selectedCategory", value })}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={tGeneral("select_category")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="food">{tCategory("food_and_dining")}</SelectItem>
-                          <SelectItem value="transport">{tCategory("transportation")}</SelectItem>
-                          <SelectItem value="utilities">{tCategory("utilities")}</SelectItem>
-                          <SelectItem value="entertainment">{tCategory("entertainment")}</SelectItem>
-                          <SelectItem value="other">{tCategory("other")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <CategorySelect
+                      transactionType={transactionType}
+                      selectedCategory={selectedCategory}
+                      onCategoryChange={(categoryId) => dispatch({ type: "set", field: "selectedCategory", value: categoryId })}
+                    />
                   )}
 
                   <div className="min-w-0 w-full">

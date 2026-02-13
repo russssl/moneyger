@@ -405,20 +405,27 @@ const IconPicker = React.forwardRef<
       </PopoverTrigger>
       <PopoverContent 
         className="w-64 p-2 z-[100]"
-        onPointerDown={(e) => e.stopPropagation()}
         onPointerDownOutside={(e) => {
-          // Prevent closing when clicking on modal overlay
+          // Only prevent closing when clicking on modal overlay
+          // Allow normal outside clicks to close the popover
           const target = e.target as HTMLElement;
-          if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
+          const isDialogElement = target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]");
+          if (isDialogElement) {
+            // Prevent closing when clicking on dialog elements (modal overlay)
             e.preventDefault();
           }
+          // Otherwise, allow the default behavior (closing on outside click)
         }}
         onInteractOutside={(e) => {
-          // Prevent closing when interacting with modal
+          // Only prevent closing when interacting with modal overlay
+          // Allow normal outside clicks to close the popover
           const target = e.target as HTMLElement;
-          if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
+          const isDialogElement = target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]");
+          if (isDialogElement) {
+            // Prevent closing when clicking on dialog elements (modal overlay)
             e.preventDefault();
           }
+          // Otherwise, allow the default behavior (closing on outside click)
         }}>
         <div 
           onPointerDown={(e) => e.stopPropagation()}

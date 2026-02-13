@@ -3,7 +3,7 @@ import { type AuthVariables } from "../authenticate";
 import { authenticated, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, not } from "drizzle-orm";
+import { and, eq, not, sql } from "drizzle-orm";
 import db from "@/server/db";
 import { transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
@@ -16,23 +16,31 @@ const transactionsRouter = new Hono<AuthVariables>();
 transactionsRouter.get("/", authenticated, zValidator("query", z.object({
   walletId: z.string().optional(),
   transaction_date: z.string().optional(),
-  limit: z.number().optional(),
-  offset: z.number().optional(),
+  limit: z.coerce.number().min(1).max(500).optional(),
+  offset: z.coerce.number().min(0).optional(),
 })), async (c) => {
   const { user } = await getUserData(c);
   const { walletId, transaction_date, limit, offset } = c.req.valid("query");
 
   const pagination = {
-    limit: limit ? limit : 5, // 5 for main page
+    limit: limit ?? 5, // 5 for main page
     offset: offset ?? 0,
-  }
+  };
+
+  const where = and(
+    eq(transactions.userId, user.id),
+    walletId ? eq(transactions.walletId, walletId) : undefined,
+    transaction_date ? eq(transactions.transaction_date, new Date(transaction_date)) : undefined,
+    not(eq(transactions.type, "adjustment")),
+  );
+
+  const [countResult] = await db
+    .select({ count: sql<number>`cast(count(${transactions.id}) as int)` })
+    .from(transactions)
+    .where(where);
+
   const transactionsData = await db.query.transactions.findMany({
-    where: and(
-      eq(transactions.userId, user.id),
-      walletId ? eq(transactions.walletId, walletId) : undefined,
-      transaction_date ? eq(transactions.transaction_date, new Date(transaction_date)) : undefined,
-      not(eq(transactions.type, "adjustment")),
-    ),
+    where,
     with: {
       wallet: {
         columns: {
@@ -40,12 +48,25 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
           currency: true,
         },
       },
+      category: {
+        columns: {
+          id: true,
+          name: true,
+          iconName: true,
+          type: true,
+        },
+      },
     },
     ...pagination,
     orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],
   });
 
-  return c.json(transactionsData);
+  return c.json({
+    items: transactionsData,
+    total: countResult?.count ?? 0,
+    limit: pagination.limit,
+    offset: pagination.offset,
+  });
 })
 
 transactionsRouter.get("/:id", authenticated, zValidator("param", z.object({
@@ -74,11 +95,11 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
   amount: z.number(),
   transaction_date: z.coerce.date(),
   description: z.string(),
-  category: z.string(),
+  categoryId: z.string(),
   type: z.string(),
 })), async (c) => {
   const { user } = await getUserData(c);
-  const { walletId, toWalletId, amount, transaction_date, description, category, type } = c.req.valid("json");
+  const { walletId, toWalletId, amount, transaction_date, description, categoryId, type } = c.req.valid("json");
 
   const transactionData = await db.transaction(async (tx) => {
 
@@ -93,16 +114,16 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
-
-    const transaction = await tx.insert(transactions).values({
+    const transactionValues = {
       userId: user.id,
       walletId,
       amount,
       transaction_date,
       description,
-      category,
       type,
-    }).returning().execute().then((res) => res[0]);
+      categoryId,
+    };
+    const transaction = await tx.insert(transactions).values(transactionValues).returning().execute().then((res) => res[0]);
   
     if (!transaction) {
       throw new HTTPException(500, { message: "We couldn't save your transaction. Please try again." });
@@ -190,12 +211,12 @@ transactionsRouter.post("/:id", authenticated, zValidator("param", z.object({
   amount: z.number(),
   transaction_date: z.coerce.date(),
   description: z.string(),
-  category: z.string(),
+  categoryId: z.string().optional(),
 })),
 async (c) => {
   const { user } = await getUserData(c);
   const { id } = c.req.valid("param");
-  const { amount, transaction_date, description, category } = c.req.valid("json");
+  const { amount, transaction_date, description, categoryId } = c.req.valid("json");
   
   const transactionData = await db.transaction(async (tx) => {
     const transaction = await tx.query.transactions.findFirst({
@@ -209,12 +230,13 @@ async (c) => {
       throw new HTTPException(404, { message: "We couldn't find that transaction." });
     }
 
-    const updatedTransaction = await tx.update(transactions).set({
+    const updateValues = {
       amount,
       transaction_date,
       description,
-      category,
-    }).where(and(
+      ...(categoryId !== undefined && { categoryId: categoryId || undefined }),
+    };
+    const updatedTransaction = await tx.update(transactions).set(updateValues as Partial<typeof transactions.$inferInsert>).where(and(
       eq(transactions.id, id),
       eq(transactions.userId, user.id),
     )).returning().execute().then((res) => res[0]);

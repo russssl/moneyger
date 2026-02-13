@@ -1,5 +1,5 @@
 "use client"
-import { Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles, Moon, Sun, Settings } from "lucide-react"
+import { ChevronsUpDown, LogOut, Moon, Sun, Settings } from "lucide-react"
 import { useTheme, } from "next-themes"
 import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
@@ -97,26 +97,10 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                {t("upgrade_to_pro")}
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
                 <Settings />
                 {t("settings")}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                {t("billing")}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                {t("notifications")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={useSetTheme()}>
                 <CurrentThemeIcon />

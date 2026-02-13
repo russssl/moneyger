@@ -7,6 +7,7 @@ import { BottomBar } from "@/components/layout/bottom-bar";
 import { useAuthSession } from "@/hooks/use-session";
 import { usePathname } from "next/navigation";
 import PersistentModals from "@/components/common/persistent-modals";
+import { EnvironmentBadge } from "@/components/layout/environment-badge";
 
 export default function SessionWrapper({ children, defaultOpen }: { children: ReactNode, defaultOpen?: boolean }) {
   const { data: session, isPending } = useAuthSession();
@@ -27,7 +28,14 @@ export default function SessionWrapper({ children, defaultOpen }: { children: Re
 
   // For public pages, just render children without session handling
   if (isPublicPage) {
-    return <div className="overflow-x-hidden">{children}</div>;
+    return (
+      <div className="overflow-x-hidden">
+        <div className="fixed top-2 right-2 z-50 md:top-4 md:right-4">
+          <EnvironmentBadge />
+        </div>
+        {children}
+      </div>
+    );
   }
 
   if (!mounted || isPending) {
@@ -40,6 +48,9 @@ export default function SessionWrapper({ children, defaultOpen }: { children: Re
 
   return (
     <div className="overflow-x-hidden">
+      <div className="fixed top-2 right-2 z-50 md:top-4 md:right-4">
+        <EnvironmentBadge />
+      </div>
       {session ? (
         <SidebarProvider defaultOpen={defaultOpen}>
           <AppSidebar session={session} className="hidden md:flex" />

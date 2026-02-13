@@ -36,3 +36,5 @@ jobs:
           build-args: |
             COMMIT=${{ steps.extract_sha_short.outputs.sha_short }}
             APP_VERSION=${{ steps.extract_sha_short.outputs.sha_short }}
+            NEXT_PUBLIC_APP_URL=https://moneyger.dev
+            NEXT_PUBLIC_ENVIRONMENT=production

@@ -7,6 +7,7 @@ import {
 import { user } from "./user";
 import { wallets } from "./wallet";
 import { relations } from "drizzle-orm";
+import { categories } from "./category";
 
 export const transactions = pgTable("transaction", {
   id: varchar("id", { length: 255 })
@@ -22,8 +23,8 @@ export const transactions = pgTable("transaction", {
   amount: doublePrecision("amount").notNull(),
   transaction_date: timestamp("transaction_date"),
   description: varchar("description", { length: 255 }),
-  note: varchar("note", { length: 255 }),
-  category: varchar("category", { length: 255 }),
+  categoryId: varchar("category_id", { length: 255 })
+    .references(() => categories.id, { onDelete: "set null", onUpdate: "cascade" }),
   type: varchar("type", { length: 255 }), // should be one of the following: "income", "expense", "transfer", "adjustment"
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -36,6 +37,11 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     references: [wallets.id],
     relationName: "transactionWallet",
   }),
+  category: one(categories, {
+    fields: [transactions.categoryId],
+    references: [categories.id],
+    relationName: "transactionCategory",
+  }),
 }));
 
 export type Transaction = typeof transactions.$inferSelect;
@@ -45,4 +51,16 @@ export type TransactionWithWallet = Transaction & {
     name: string | null;
     currency: string | null;
   };
+};
+export type TransactionWithCategory = Transaction & {
+  wallet: {
+    name: string | null;
+    currency: string | null;
+  };
+  category: {
+    id: string;
+    name: string;
+    iconName: string | null;
+    type: string;
+  } | null;
 };

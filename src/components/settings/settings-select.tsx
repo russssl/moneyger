@@ -1,5 +1,5 @@
 "use client"
-import { User, Bell, Palette, Shield } from "lucide-react"
+import { User, Bell, Palette, Shield, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -15,6 +15,7 @@ export default function SettingsSelect({ ...props }) {
   const settingsSections = [
     { id: "account", label: t("account"), icon: User },
     { id: "appearance", label: t("appearance"), icon: Palette },
+    { id: "categories", label: t("categories"), icon: Tag },
     { id: "notifications", label: t("notifications"), icon: Bell },
     { id: "privacy", label: t("privacy"), icon: Shield },
   ];
