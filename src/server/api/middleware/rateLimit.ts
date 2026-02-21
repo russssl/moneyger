@@ -26,19 +26,19 @@ const isProduction = process.env.NODE_ENV === "production";
 export const RATE_LIMITS = {
   auth: {
     windowMs: 15 * 60 * 1000,
-    maxRequests: isProduction ? 1000 : 30, // Lenient in dev so a few register/login attempts don't trigger
+    maxRequests: isProduction ? 30 : 1000, // Lenient in dev so a few register/login attempts don't trigger
   },
   authenticated: {
     windowMs: 60 * 1000,
-    maxRequests: isProduction ? 1000 : 60, // Increased from 60 for dev/testing
+    maxRequests: isProduction ? 60 : 1000, // Lenient in dev so a few requests don't trigger
   },
   public: {
     windowMs: 60 * 1000,
-    maxRequests: isProduction ? 1000 : 100, // Increased from 100 for dev/testing
+    maxRequests: isProduction ? 100 : 1000, // Lenient in dev so a few requests don't trigger
   },
   sensitive: {
     windowMs: 60 * 60 * 1000,
-    maxRequests: isProduction ? 1000 : 5, // Increased from 5 for dev/testing
+    maxRequests: isProduction ? 5 : 1000, // Lenient in dev so a few requests don't trigger
   },
 } as const;
 
