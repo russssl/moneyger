@@ -1,15 +1,24 @@
-import { betterAuth } from "better-auth";
+import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "@/server/db";
 import { sendResetPasswordEmail } from "@/server/api/services/emails";
 import { env } from "@/env";
 import { haveIBeenPwned, username, lastLoginMethod } from "better-auth/plugins"
-import { passkey } from "better-auth/plugins/passkey";
+import { passkey } from "@better-auth/passkey";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+  experimental: {
+    joins: true, // fewer DB round-trips on 50+ endpoints (re-run CLI generate/migrate if needed)
+  },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // 5 min – reduces DB hits for getSession/useSession
+    },
+  },
   plugins: [haveIBeenPwned(), lastLoginMethod(), passkey({
     rpID: process.env.NODE_ENV === "production" ? new URL(env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").hostname : "localhost",
     rpName: "Moneyger",
