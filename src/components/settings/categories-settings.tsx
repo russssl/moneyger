@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, TrendingUp, TrendingDown, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp, TrendingDown, Tag, Download } from "lucide-react";
 import {
   Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
+  ModalDescription,
   ModalBody,
   ModalFooter,
 } from "@/components/common/modal";
@@ -25,6 +26,88 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NoItems } from "@/components/common/no-items";
 import { cn } from "@/lib/utils";
+
+type DefaultTemplate = { key: string; type: "income" | "expense"; iconName: string };
+
+function LoadDefaultsModal({
+  open,
+  type,
+  onClose,
+  onConfirm,
+}: {
+  open: boolean;
+  type: "income" | "expense";
+  onClose: () => void;
+  onConfirm: (templates: DefaultTemplate[]) => Promise<void>;
+}) {
+  const t = useTranslations("categories");
+  const tGeneral = useTranslations("general");
+  const [templates, setTemplates] = useState<DefaultTemplate[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setError(null);
+    setTemplates([]);
+    fetch("/api/categories/defaults", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Failed to load"))))
+      .then((data: { income?: DefaultTemplate[]; expense?: DefaultTemplate[] }) => {
+        const list = type === "income" ? (data.income ?? []) : (data.expense ?? []);
+        setTemplates(list);
+      })
+      .catch(() => setError(tGeneral("error")));
+  }, [open, type, tGeneral]);
+
+  const remove = (index: number) => setTemplates((prev) => prev.filter((_, i) => i !== index));
+
+  const handleConfirm = async () => {
+    if (templates.length === 0) return;
+    setIsSubmitting(true);
+    try {
+      await onConfirm(templates);
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal open={open} onOpenChange={(o) => !o && onClose()}>
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle>{t("load_default_categories")}</ModalTitle>
+          <ModalDescription>{t("load_default_categories_description")}</ModalDescription>
+        </ModalHeader>
+        <ModalBody className="space-y-4">
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          {templates.length === 0 && !error && <p className="text-sm text-muted-foreground">{t("no_categories")}</p>}
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {templates.map((template, index) => (
+              <div key={`${template.key}-${index}`} className="flex items-center justify-between gap-2 p-3 rounded-lg border bg-card">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex-shrink-0 flex items-center justify-center rounded-md bg-muted h-8 w-8">
+                    {template.iconName ? <Icon name={template.iconName as IconName} className="w-4 h-4" /> : <Tag className="w-4 h-4 text-muted-foreground" />}
+                  </div>
+                  <span className="font-medium text-sm truncate">{t(template.key)}</span>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => remove(index)}>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </ModalBody>
+        <ModalFooter className="flex flex-row justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>{tGeneral("cancel")}</Button>
+          <LoadingButton onClick={handleConfirm} loading={isSubmitting} disabled={templates.length === 0}>
+            {t("load_default_categories_button")} ({templates.length})
+          </LoadingButton>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
+}
 
 export default function CategoriesSettings() {
   const t = useTranslations("categories");
@@ -55,6 +138,13 @@ export default function CategoriesSettings() {
     (data) => `/api/categories/${data.id}`,
     "DELETE"
   );
+
+  const createCategoriesBatch = useMutation<{ categories: Array<{ name: string; type: string; iconName?: string }> }, Category[]>(
+    "/api/categories/batch",
+    "POST"
+  );
+
+  const [loadDefaultsModal, setLoadDefaultsModal] = useState<null | { type: "income" | "expense" }>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,16 +266,18 @@ export default function CategoriesSettings() {
                   ))}
                 </div>
               ) : expenseCategories.length === 0 ? (
-                <NoItems
-                  icon={Tag}
-                  title={t("no_categories")}
-                  description={t("no_categories_desc")}
-                  button={{
-                    text: t("add_category"),
-                    onClick: () => openCreate("expense"),
-                    icon: Plus
-                  }}
-                />
+                <NoItems icon={Tag} title={t("no_categories")} description={t("no_categories_desc")}>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Button size="sm" onClick={() => openCreate("expense")} variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {t("add_category")}
+                    </Button>
+                    <Button size="sm" onClick={() => setLoadDefaultsModal({ type: "expense" })} variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      {t("load_default_categories")}
+                    </Button>
+                  </div>
+                </NoItems>
               ) : (
                 <>
                   <div className="flex justify-end mb-2">
@@ -221,16 +313,18 @@ export default function CategoriesSettings() {
                   ))}
                 </div>
               ) : incomeCategories.length === 0 ? (
-                <NoItems
-                  icon={Tag}
-                  title={t("no_categories")}
-                  description={t("no_categories_desc")}
-                  button={{
-                    text: t("add_category"),
-                    onClick: () => openCreate("income"),
-                    icon: Plus
-                  }}
-                />
+                <NoItems icon={Tag} title={t("no_categories")} description={t("no_categories_desc")}>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Button size="sm" onClick={() => openCreate("income")} variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {t("add_category")}
+                    </Button>
+                    <Button size="sm" onClick={() => setLoadDefaultsModal({ type: "income" })} variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      {t("load_default_categories")}
+                    </Button>
+                  </div>
+                </NoItems>
               ) : (
                 <>
                   <div className="flex justify-end mb-2">
@@ -356,6 +450,23 @@ export default function CategoriesSettings() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <LoadDefaultsModal
+        open={loadDefaultsModal !== null}
+        type={loadDefaultsModal?.type ?? "expense"}
+        onClose={() => setLoadDefaultsModal(null)}
+        onConfirm={async (templates) => {
+          try {
+            const categoriesToCreate = templates.map((tpl) => ({ name: t(tpl.key), type: tpl.type, iconName: tpl.iconName }));
+            await createCategoriesBatch.mutateAsync({ categories: categoriesToCreate });
+            toast.success(tGeneral("success"));
+            void refetch();
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : tGeneral("error"));
+            throw e;
+          }
+        }}
+      />
     </div>
   );
 }
