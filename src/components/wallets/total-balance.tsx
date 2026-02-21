@@ -1,6 +1,6 @@
 "use client"
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
-import { Briefcase } from "lucide-react";
+import { ArrowRightIcon, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DashboardWallets from "./dashboard-wallets";
 import { useFetch } from "@/hooks/use-api";
@@ -9,6 +9,9 @@ import { NoItems } from "@/components/common/no-items";
 import { type Wallet } from "@/server/db/wallet";
 import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
 
 const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";
 const TEXT_SIZES = {
@@ -22,6 +25,8 @@ const TEXT_SIZES = {
 
 export default function TotalBalance() {
   const t = useTranslations("finances");
+  const tGeneral = useTranslations("general")
+
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [userMainCurrency, setUserMainCurrency] = useState<string | null>(null);
@@ -53,10 +58,14 @@ export default function TotalBalance() {
         "w-full h-full flex flex-col",
         "bg-card"
       )}>
-        <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="text-base sm:text-lg">
-            {t("total_balance")}
-          </CardTitle>
+        <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
+          <CardTitle className="text-base sm:text-lg">{t("wallets_title")}</CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground">
+            <Link href="/wallets">
+              <span className="mr-1">{tGeneral("view_all")}</span>
+              <ArrowRightIcon className="h-3 w-3" />
+            </Link>
+          </Button>
         </CardHeader>
         <CardContent className={cn(
           "pt-0 flex-1 flex flex-col px-4 sm:px-6",

@@ -250,6 +250,9 @@
     "edit_category": "Edit Category",
     "manage_categories": "Manage Categories",
     "add_category": "Add new category",
+    "load_default_categories": "Load default categories",
+    "load_default_categories_description": "Select which default categories to add. Remove any you don't need, then save.",
+    "load_default_categories_button": "Add categories",
     "category_name": "Category name",
     "category_color": "Category color",
     "category_icon": "Category icon",
@@ -259,7 +262,17 @@
     "transportation": "Transportation",
     "utilities": "Utilities",
     "entertainment": "Entertainment",
-    "other": "Other"
+    "other": "Other",
+    "default_salary": "Salary",
+    "default_investment": "Investment",
+    "default_gifts": "Gifts",
+    "default_groceries": "Groceries",
+    "default_housing": "Housing",
+    "default_transport": "Transport",
+    "default_entertainment": "Entertainment",
+    "default_health": "Health",
+    "default_shopping": "Shopping",
+    "default_dining": "Dining"
   },
   "register_login": {
     "login": "Login",

@@ -8,37 +8,23 @@ import {
   ModalTitle,
 } from "@/components/common/modal";
 import { useEffect, useState, useReducer } from "react";
-import CurrencySelect from "./currency-select";
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "./error-alert";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { type NewUser } from "@/server/db/user";
 import { defineStepper } from "@stepperize/react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Wallet, Globe, Palette, Sun, Moon, Computer, Tag, Plus, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { type Wallet as WalletType } from "@/server/db/wallet";
 import { type Category } from "@/server/db/category";
-import { cn } from "@/lib/utils";
 import LoadingButton from "./loading-button";
 import { useTranslations as useServiceTranslations } from "next-intl";
-import { IconPicker, Icon, type IconName } from "@/components/ui/icon-picker";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { IconName } from "@/components/ui/icon-picker";
 import { toast } from "sonner";
-
-type WalletFormState = {
-  walletName: string;
-  balance: number | null;
-  currency: string | undefined;
-};
-
-type WalletFormAction =
-  | { type: "SET_WALLET_NAME"; payload: string }
-  | { type: "SET_BALANCE"; payload: number | null }
-  | { type: "SET_CURRENCY"; payload: string | undefined }
-  | { type: "RESET"; payload?: string | undefined };
+import type { WalletFormState, WalletFormAction } from "./setup-modal/types";
+import { CurrencyStep } from "./setup-modal/steps/currency-step";
+import { ThemeStep } from "./setup-modal/steps/theme-step";
+import { CategoriesStep } from "./setup-modal/steps/categories-step";
+import { WalletStep } from "./setup-modal/steps/wallet-step";
 
 const walletInitialState: WalletFormState = {
   walletName: "",
@@ -46,10 +32,7 @@ const walletInitialState: WalletFormState = {
   currency: undefined,
 };
 
-function walletFormReducer(
-  state: WalletFormState,
-  action: WalletFormAction,
-): WalletFormState {
+function walletFormReducer(state: WalletFormState, action: WalletFormAction): WalletFormState {
   switch (action.type) {
   case "SET_WALLET_NAME":
     return { ...state, walletName: action.payload };
@@ -67,7 +50,6 @@ function walletFormReducer(
 function SetupModalContent({ useStepper }: { useStepper: any }) {
   const t = useTranslations("setup-modal");
   const tGeneral = useTranslations("general");
-  const tFinances = useTranslations("finances");
   const tCategories = useTranslations("categories");
 
   // useStepper must be called inside Scoped context
@@ -82,7 +64,9 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
   const [selectedTheme, setSelectedTheme] = useState<string | undefined>(
     undefined,
   );
-  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [defaultsFetched, setDefaultsFetched] = useState(false);
+  const [isLoadingDefaultsTemplate, setIsLoadingDefaultsTemplate] = useState(false);
+  const [pendingDefaultCategories, setPendingDefaultCategories] = useState<Array<{ id: string; key: string; type: "income" | "expense"; iconName?: string }>>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState<IconName | undefined>(undefined);
   const { setTheme, theme } = useTheme();
@@ -98,7 +82,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     "DELETE"
   );
   
-  const { data: categories, refetch: refetchCategories } = useFetch<Category[]>("/api/categories");
+  const { data: categories, refetch: refetchCategories, isLoading: isLoadingCategories } = useFetch<Category[]>("/api/categories");
 
   const { data: userData, refetch: refetchUserData } = useFetch<{
     currency: string | undefined;
@@ -204,9 +188,15 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
         await createWallet();
       }
 
-      // Categories are already loaded if user clicked the button, no need to save again
+      // Save pending default categories (resolve key -> name via i18n)
+      if (pendingDefaultCategories.length > 0) {
+        await createCategoriesMutation.mutateAsync({
+          categories: pendingDefaultCategories.map(({ id: _id, key, type, iconName }) => ({ name: tCategories(key), type, iconName })),
+        });
+        setPendingDefaultCategories([]);
+        await refetchCategories();
+      }
 
-      // Refetch all data to update the UI
       await Promise.all([refetchUserData(), refetchWallets()]);
     } catch (error) {
       // Error is already set in the individual save functions
@@ -214,56 +204,35 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     }
   }
 
-  // Default categories
-  const defaultCategories = {
-    income: [
-      { name: "Salary", type: "income" as const, iconName: "banknote" },
-      { name: "Investment", type: "income" as const, iconName: "trending-up" },
-      { name: "Gifts", type: "income" as const, iconName: "gift" },
-    ],
-    expense: [
-      { name: "Groceries", type: "expense" as const, iconName: "shopping-cart" },
-      { name: "Housing", type: "expense" as const, iconName: "home" },
-      { name: "Transport", type: "expense" as const, iconName: "car" },
-      { name: "Entertainment", type: "expense" as const, iconName: "gamepad-2" },
-      { name: "Health", type: "expense" as const, iconName: "heart-pulse" },
-      { name: "Shopping", type: "expense" as const, iconName: "shopping-bag" },
-      { name: "Dining", type: "expense" as const, iconName: "utensils" },
-    ],
-  };
-
-  const handleLoadDefaultCategories = async () => {
-    try {
-      const allCategories = [
-        ...defaultCategories.income,
-        ...defaultCategories.expense,
-      ];
-      await createCategoriesMutation.mutateAsync(
-        { categories: allCategories },
-        {
-          onError: (error) => {
-            setError(error.message || t("error_load_categories"));
-            throw error;
-          },
-          onSuccess: () => {
-            setError(undefined);
-            setCategoriesLoaded(true);
-            void refetchCategories();
-          },
-        },
-      );
-    } catch (error) {
-      console.error("Failed to load default categories:", error);
-    }
-  };
-
-  // Auto-load default categories when categories step is shown
+  // Prefetch categories when on theme step so they're ready when user goes to categories step
   useEffect(() => {
-    if (stepper.current.id === "categories" && !categoriesLoaded && categories && categories.length === 0) {
-      void handleLoadDefaultCategories();
+    if (stepper.current.id === "theme") {
+      void refetchCategories();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepper.current.id, categoriesLoaded]);
+  }, [stepper.current.id, refetchCategories]);
+
+  // Load default category templates into pending when entering categories step with 0 categories (show, don't save yet)
+  useEffect(() => {
+    if (stepper.current.id !== "categories" || !categories || categories.length > 0 || defaultsFetched) return;
+    let cancelled = false;
+    setDefaultsFetched(true);
+    setIsLoadingDefaultsTemplate(true);
+    fetch("/api/categories/defaults", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data: { income: Array<{ key: string; type: "income"; iconName: string }>; expense: Array<{ key: string; type: "expense"; iconName: string }> }) => {
+        if (cancelled) return;
+        const all = [...(data.income ?? []), ...(data.expense ?? [])];
+        setPendingDefaultCategories(all.map((c, i) => ({ ...c, id: `pending-${i}-${Date.now()}` })));
+      })
+      .catch(() => setDefaultsFetched(false))
+      .finally(() => { if (!cancelled) setIsLoadingDefaultsTemplate(false); });
+    return () => { cancelled = true; };
+  }, [stepper.current.id, categories, defaultsFetched]);
+
+  const categoriesForStep = [
+    ...(categories ?? []),
+    ...pendingDefaultCategories.map((p) => ({ id: p.id, name: tCategories(p.key), type: p.type, iconName: p.iconName ?? "" })),
+  ] as Category[];
 
   const handleAddCategory = async (type: "income" | "expense") => {
     if (!newCategoryName.trim()) return;
@@ -283,13 +252,13 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     }
   };
 
-  const incomeCategories = categories?.filter((c) => c.type === "income") || [];
-  const expenseCategories = categories?.filter((c) => c.type === "expense") || [];
-
   const handleDeleteCategory = async (categoryId: string) => {
+    if (categoryId.startsWith("pending-")) {
+      setPendingDefaultCategories((prev) => prev.filter((c) => c.id !== categoryId));
+      return;
+    }
     try {
       await deleteCategoryMutation.mutateAsync({ id: categoryId });
-      toast.success(tGeneral("success"));
       void refetchCategories();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : tGeneral("error"));
@@ -336,428 +305,38 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
               <ErrorAlert error={error} />
             </div>
           )}
-          {stepper.current.id === "currency" ? (
-            <div className="flex flex-col gap-4 duration-300 animate-in fade-in slide-in-from-right-4">
-              <div className="mb-2 flex items-center gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Globe className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold">
-                    {t("currency_step_title")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("currency_step_description")}
-                  </p>
-                </div>
-              </div>
-              <CurrencySelect
-                selectedCurrency={currency}
-                setSelectedCurrency={(currency) =>
-                  setCurrency(currency ?? undefined)
-                }
-              />
-            </div>
-          ) : stepper.current.id === "theme" ? (
-            <div className="flex flex-col gap-4 duration-300 animate-in fade-in slide-in-from-right-4">
-              <div className="mb-2 flex items-center gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Palette className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold">
-                    {t("theme_step_title")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("theme_step_description")}
-                  </p>
-                </div>
-              </div>
-              <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
-                <button
-                  type="button"
-                  onClick={() => handleThemeSelection("light")}
-                  className={cn(
-                    "flex w-full flex-row items-center justify-start gap-3 rounded-lg border-2 p-3 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-0 sm:p-6",
-                    selectedTheme === "light"
-                      ? "border-primary bg-primary/10 shadow-md"
-                      : "border-muted hover:border-muted-foreground/50",
-                  )}
-                >
-                  <Sun
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-colors sm:mb-3 sm:h-6 sm:w-6",
-                      selectedTheme === "light"
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  />
-                  <div className="flex flex-1 flex-col items-start text-left sm:flex-none sm:items-center sm:text-center">
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        selectedTheme === "light"
-                          ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {t("light_theme")}
-                    </span>
-                    <span className="hidden text-xs text-muted-foreground sm:mt-1 sm:block">
-                      {t("light_theme_desc")}
-                    </span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleThemeSelection("dark")}
-                  className={cn(
-                    "flex w-full flex-row items-center justify-start gap-3 rounded-lg border-2 p-3 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-0 sm:p-6",
-                    selectedTheme === "dark"
-                      ? "border-primary bg-primary/10 shadow-md"
-                      : "border-muted hover:border-muted-foreground/50",
-                  )}
-                >
-                  <Moon
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-colors sm:mb-3 sm:h-6 sm:w-6",
-                      selectedTheme === "dark"
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  />
-                  <div className="flex flex-1 flex-col items-start text-left sm:flex-none sm:items-center sm:text-center">
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        selectedTheme === "dark"
-                          ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {t("dark_theme")}
-                    </span>
-                    <span className="hidden text-xs text-muted-foreground sm:mt-1 sm:block">
-                      {t("dark_theme_desc")}
-                    </span>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleThemeSelection("system")}
-                  className={cn(
-                    "flex w-full flex-row items-center justify-start gap-3 rounded-lg border-2 p-3 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-0 sm:p-6",
-                    selectedTheme === "system"
-                      ? "border-primary bg-primary/10 shadow-md"
-                      : "border-muted hover:border-muted-foreground/50",
-                  )}
-                >
-                  <Computer
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-colors sm:mb-3 sm:h-6 sm:w-6",
-                      selectedTheme === "system"
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  />
-                  <div className="flex flex-1 flex-col items-start text-left sm:flex-none sm:items-center sm:text-center">
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        selectedTheme === "system"
-                          ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {t("system_theme")}
-                    </span>
-                    <span className="hidden text-xs text-muted-foreground sm:mt-1 sm:block">
-                      {t("system_theme_desc")}
-                    </span>
-                  </div>
-                </button>
-              </div>
-              <p className="mt-2 hidden text-center text-xs text-muted-foreground sm:block">
-                {t("theme_note")}
-              </p>
-            </div>
-          ) : stepper.current.id === "categories" ? (
-            <div className="flex flex-col gap-3 sm:gap-4 duration-300 animate-in fade-in slide-in-from-right-4">
-              <div className="mb-1 sm:mb-2 flex items-center gap-2 sm:gap-3">
-                <div className="rounded-lg bg-primary/10 p-1.5 sm:p-2">
-                  <Tag className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-sm sm:text-base font-semibold">
-                    {t("categories_step_title")}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t("categories_step_description")}
-                  </p>
-                </div>
-              </div>
-
-              <Tabs defaultValue="expense" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-2 sm:mb-4">
-                  <TabsTrigger value="expense" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                    <TrendingDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    {tGeneral("expense")}
-                  </TabsTrigger>
-                  <TabsTrigger value="income" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                    <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    {tGeneral("income")}
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="expense" className="space-y-2 sm:space-y-4 mt-0">
-                  <div className="space-y-1.5 sm:space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
-                    {expenseCategories.map((category) => (
-                      <div
-                        key={category.id}
-                        className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border bg-card group hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                          <div className="flex-shrink-0 flex items-center justify-center rounded-md bg-muted h-7 w-7 sm:h-8 sm:w-8">
-                            {category.iconName ? (
-                              <Icon name={category.iconName as IconName} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            ) : (
-                              <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
-                            )}
-                          </div>
-                          <span className="font-medium text-xs sm:text-sm truncate">{category.name}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => void handleDeleteCategory(category.id)}
-                          disabled={deleteCategoryMutation.isPending}
-                        >
-                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t pt-2 sm:pt-4 space-y-2 sm:space-y-3">
-                    <h4 className="text-xs sm:text-sm font-semibold">{tCategories("add_category")}</h4>
-                    <div className="flex flex-col gap-2 sm:gap-3">
-                      <div className="flex flex-col gap-1.5 sm:gap-2">
-                        <Label htmlFor="category-name" className="text-xs sm:text-sm">{tGeneral("name")}</Label>
-                        <Input
-                          id="category-name"
-                          value={newCategoryName}
-                          onChange={(e) => setNewCategoryName(e.target.value)}
-                          placeholder={tCategories("category_name")}
-                          className="h-9 sm:h-10 text-sm"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && newCategoryName.trim()) {
-                              e.preventDefault();
-                              void handleAddCategory("expense");
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5 sm:gap-2">
-                        <Label className="text-xs sm:text-sm">{tCategories("category_icon")}</Label>
-                        <IconPicker
-                          value={newCategoryIcon}
-                          onValueChange={(val) => setNewCategoryIcon(val)}
-                          triggerPlaceholder={tFinances("select_icon")}
-                          modal={true}
-                        >
-                          <Button variant="outline" className="w-full justify-start h-9 sm:h-10 text-sm">
-                            {newCategoryIcon ? (
-                              <>
-                                <Icon name={newCategoryIcon} className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                                <span className="text-xs sm:text-sm">{newCategoryIcon}</span>
-                              </>
-                            ) : (
-                              <span className="text-xs sm:text-sm">{tFinances("select_icon")}</span>
-                            )}
-                          </Button>
-                        </IconPicker>
-                      </div>
-                      <LoadingButton
-                        onClick={() => {
-                          void handleAddCategory("expense");
-                        }}
-                        loading={createCategoryMutation.isPending}
-                        disabled={!newCategoryName.trim()}
-                        className="w-full h-9 sm:h-10 text-sm"
-                      >
-                        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                        {tCategories("add_category")}
-                      </LoadingButton>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="income" className="space-y-2 sm:space-y-4 mt-0">
-                  <div className="space-y-1.5 sm:space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
-                    {incomeCategories.map((category) => (
-                      <div
-                        key={category.id}
-                        className="flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border bg-card group hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                          <div className="flex-shrink-0 flex items-center justify-center rounded-md bg-muted h-7 w-7 sm:h-8 sm:w-8">
-                            {category.iconName ? (
-                              <Icon name={category.iconName as IconName} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                            ) : (
-                              <Tag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
-                            )}
-                          </div>
-                          <span className="font-medium text-xs sm:text-sm truncate">{category.name}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => void handleDeleteCategory(category.id)}
-                          disabled={deleteCategoryMutation.isPending}
-                        >
-                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="border-t pt-2 sm:pt-4 space-y-2 sm:space-y-3">
-                    <h4 className="text-xs sm:text-sm font-semibold">{tCategories("add_category")}</h4>
-                    <div className="flex flex-col gap-2 sm:gap-3">
-                      <div className="flex flex-col gap-1.5 sm:gap-2">
-                        <Label htmlFor="category-name-income" className="text-xs sm:text-sm">{tGeneral("name")}</Label>
-                        <Input
-                          id="category-name-income"
-                          value={newCategoryName}
-                          onChange={(e) => setNewCategoryName(e.target.value)}
-                          placeholder={tCategories("category_name")}
-                          className="h-9 sm:h-10 text-sm"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && newCategoryName.trim()) {
-                              e.preventDefault();
-                              void handleAddCategory("income");
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5 sm:gap-2">
-                        <Label className="text-xs sm:text-sm">{tCategories("category_icon")}</Label>
-                        <IconPicker
-                          value={newCategoryIcon}
-                          onValueChange={(val) => setNewCategoryIcon(val)}
-                          triggerPlaceholder={tFinances("select_icon")}
-                          modal={true}
-                        >
-                          <Button variant="outline" className="w-full justify-start h-9 sm:h-10 text-sm">
-                            {newCategoryIcon ? (
-                              <>
-                                <Icon name={newCategoryIcon} className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
-                                <span className="text-xs sm:text-sm">{newCategoryIcon}</span>
-                              </>
-                            ) : (
-                              <span className="text-xs sm:text-sm">{tFinances("select_icon")}</span>
-                            )}
-                          </Button>
-                        </IconPicker>
-                      </div>
-                      <LoadingButton
-                        onClick={() => {
-                          void handleAddCategory("income");
-                        }}
-                        loading={createCategoryMutation.isPending}
-                        disabled={!newCategoryName.trim()}
-                        className="w-full h-9 sm:h-10 text-sm"
-                      >
-                        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                        {tCategories("add_category")}
-                      </LoadingButton>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-
-              <p className="text-center text-[10px] sm:text-xs text-muted-foreground">
-                {t("categories_note")}
-              </p>
-            </div>
-          ) : stepper.current.id === "wallet" ? (
-            <form
+          {stepper.current.id === "currency" && (
+            <CurrencyStep currency={currency} setCurrency={setCurrency} />
+          )}
+          {stepper.current.id === "theme" && (
+            <ThemeStep selectedTheme={selectedTheme} onThemeSelect={handleThemeSelection} />
+          )}
+          {stepper.current.id === "categories" && (
+            <CategoriesStep
+              categories={categoriesForStep}
+              isLoading={isLoadingCategories}
+              isLoadingDefaults={isLoadingDefaultsTemplate}
+              newCategoryName={newCategoryName}
+              setNewCategoryName={setNewCategoryName}
+              newCategoryIcon={newCategoryIcon}
+              setNewCategoryIcon={setNewCategoryIcon}
+              onAddCategory={handleAddCategory}
+              onDeleteCategory={handleDeleteCategory}
+              isCreatePending={createCategoryMutation.isPending}
+              isDeletePending={deleteCategoryMutation.isPending}
+            />
+          )}
+          {stepper.current.id === "wallet" && (
+            <WalletStep
+              walletState={walletState}
+              dispatchWallet={dispatchWallet}
+              currency={currency}
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (stepper.isLast && canProceedFromWallet) {
-                  await handleFinish();
-                }
+                if (stepper.isLast && canProceedFromWallet) await handleFinish();
               }}
-              className="flex flex-col gap-4 duration-300 animate-in fade-in slide-in-from-right-4"
-            >
-              <div className="mb-2 flex items-center gap-3">
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <Wallet className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold">
-                    {t("wallet_step_title")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("wallet_step_description")}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="wallet-name">
-                    {tFinances("wallet_name")}
-                  </Label>
-                  <Input
-                    id="wallet-name"
-                    placeholder={t("wallet_name_placeholder")}
-                    value={walletState.walletName}
-                    onChange={(e) =>
-                      dispatchWallet({
-                        type: "SET_WALLET_NAME",
-                        payload: e.target.value,
-                      })
-                    }
-                    required
-                  />
-                </div>
-                <CurrencySelect
-                  selectedCurrency={walletState.currency || currency}
-                  setSelectedCurrency={(currencyCode) =>
-                    dispatchWallet({
-                      type: "SET_CURRENCY",
-                      payload: currencyCode ?? undefined,
-                    })
-                  }
-                />
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="initial-balance">
-                    {tFinances("wallet_initial_balance")} (
-                    {tGeneral("optional")})
-                  </Label>
-                  <Input
-                    id="initial-balance"
-                    placeholder={t("initial_balance_placeholder")}
-                    type="number"
-                    step="0.01"
-                    value={walletState.balance ?? ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      dispatchWallet({
-                        type: "SET_BALANCE",
-                        payload: value === "" ? null : parseFloat(value),
-                      });
-                    }}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t("initial_balance_hint")}
-                  </p>
-                </div>
-              </div>
-            </form>
-          ) : null}
+            />
+          )}
 
           {/* Footer Navigation */}
           <div className="mt-6 flex w-full flex-col-reverse justify-between gap-3 sm:flex-row">

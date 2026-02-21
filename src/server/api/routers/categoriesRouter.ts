@@ -7,8 +7,14 @@ import { and, eq } from "drizzle-orm";
 import { categories } from "@/server/db/category";
 import { transactions } from "@/server/db/transaction";
 import db from "@/server/db";
+import { DEFAULT_CATEGORIES } from "@/server/defaultCategories";
 
 const categoriesRouter = new Hono<AuthVariables>();
+
+// Get default category templates (for setup modal and settings)
+categoriesRouter.get("/defaults", authenticated, async (c) => {
+  return c.json(DEFAULT_CATEGORIES);
+});
 
 // Get categories
 categoriesRouter.get("/", authenticated, zValidator("query", z.object({

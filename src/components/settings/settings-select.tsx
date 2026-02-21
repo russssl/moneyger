@@ -16,8 +16,6 @@ export default function SettingsSelect({ ...props }) {
     { id: "account", label: t("account"), icon: User },
     { id: "appearance", label: t("appearance"), icon: Palette },
     { id: "categories", label: t("categories"), icon: Tag },
-    { id: "notifications", label: t("notifications"), icon: Bell },
-    { id: "privacy", label: t("privacy"), icon: Shield },
   ];
   // Initialize state based on current param or default to 'account'
   const [activeSection, setActiveSection] = useState(searchParams.get("category") || "account")
