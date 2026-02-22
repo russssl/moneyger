@@ -209,7 +209,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     if (stepper.current.id === "theme") {
       void refetchCategories();
     }
-  }, [stepper.current.id, refetchCategories]);
+  }, [stepper.current.id, refetchCategories, stepper]);
 
   // Load default category templates into pending when entering categories step with 0 categories (show, don't save yet)
   useEffect(() => {
@@ -227,7 +227,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
       .catch(() => setDefaultsFetched(false))
       .finally(() => { if (!cancelled) setIsLoadingDefaultsTemplate(false); });
     return () => { cancelled = true; };
-  }, [stepper.current.id, categories, defaultsFetched]);
+  }, [stepper.current.id, categories, defaultsFetched, stepper]);
 
   const categoriesForStep = [
     ...(categories ?? []),

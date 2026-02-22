@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl"
 import { useState, useEffect, useCallback } from "react"
 import LoadingButton from "@/components/common/loading-button"
 import { NoItems } from "@/components/common/no-items"
-import { type Passkey } from "better-auth/plugins/passkey"
+import { type Passkey } from "@better-auth/passkey"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
