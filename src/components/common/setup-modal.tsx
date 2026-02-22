@@ -64,8 +64,6 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
   const [selectedTheme, setSelectedTheme] = useState<string | undefined>(
     undefined,
   );
-  const [defaultsFetched, setDefaultsFetched] = useState(false);
-  const [isLoadingDefaultsTemplate, setIsLoadingDefaultsTemplate] = useState(false);
   const [pendingDefaultCategories, setPendingDefaultCategories] = useState<Array<{ id: string; key: string; type: "income" | "expense"; iconName?: string }>>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState<IconName | undefined>(undefined);
@@ -81,8 +79,13 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     (data) => `/api/categories/${data.id}`,
     "DELETE"
   );
-  
+
   const { data: categories, refetch: refetchCategories, isLoading: isLoadingCategories } = useFetch<Category[]>("/api/categories");
+  const shouldFetchDefaults = stepper.current.id === "categories" && (categories?.length ?? 0) === 0;
+  const { data: defaultsData, isLoading: isLoadingDefaultsTemplate } = useFetch<{
+    income: Array<{ key: string; type: "income"; iconName: string }>;
+    expense: Array<{ key: string; type: "expense"; iconName: string }>;
+  }>(shouldFetchDefaults ? "/api/categories/defaults" : null, { queryKey: ["categories", "defaults"] });
 
   const { data: userData, refetch: refetchUserData } = useFetch<{
     currency: string | undefined;
@@ -211,23 +214,12 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     }
   }, [stepper.current.id, refetchCategories, stepper]);
 
-  // Load default category templates into pending when entering categories step with 0 categories (show, don't save yet)
+  // Sync fetched default templates into pending when on categories step (show, don't save yet)
   useEffect(() => {
-    if (stepper.current.id !== "categories" || !categories || categories.length > 0 || defaultsFetched) return;
-    let cancelled = false;
-    setDefaultsFetched(true);
-    setIsLoadingDefaultsTemplate(true);
-    fetch("/api/categories/defaults", { credentials: "include" })
-      .then((r) => r.json())
-      .then((data: { income: Array<{ key: string; type: "income"; iconName: string }>; expense: Array<{ key: string; type: "expense"; iconName: string }> }) => {
-        if (cancelled) return;
-        const all = [...(data.income ?? []), ...(data.expense ?? [])];
-        setPendingDefaultCategories(all.map((c, i) => ({ ...c, id: `pending-${i}-${Date.now()}` })));
-      })
-      .catch(() => setDefaultsFetched(false))
-      .finally(() => { if (!cancelled) setIsLoadingDefaultsTemplate(false); });
-    return () => { cancelled = true; };
-  }, [stepper.current.id, categories, defaultsFetched, stepper]);
+    if (stepper.current.id !== "categories" || !defaultsData || pendingDefaultCategories.length > 0) return;
+    const all = [...(defaultsData.income ?? []), ...(defaultsData.expense ?? [])];
+    setPendingDefaultCategories(all.map((c, i) => ({ ...c, id: `pending-${i}-${Date.now()}` })));
+  }, [stepper.current.id, defaultsData, pendingDefaultCategories.length, stepper]);
 
   const categoriesForStep = [
     ...(categories ?? []),
