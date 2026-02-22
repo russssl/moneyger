@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react"
 import LoadingButton from "@/components/common/loading-button"
 import Link from "next/link"
 import { useState } from "react"
-import { forgetPassword } from "@/hooks/use-session"
+import { requestPasswordReset } from "@/hooks/use-session";
 import { ErrorAlert } from "@/components/common/error-alert"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
@@ -32,7 +32,7 @@ export default function SendResetPasswordEmailForm() {
 
       setIsLoading(true)
       setError(null) // Clear previous errors
-      const { error } = await forgetPassword({
+      const { error } = await requestPasswordReset({
         email,
         redirectTo: "/reset-password",
       })

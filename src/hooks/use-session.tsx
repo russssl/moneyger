@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 import { usernameClient, lastLoginMethodClient } from "better-auth/client/plugins";
-import { passkeyClient } from "better-auth/client/plugins"
-const { useSession, signIn, signOut, signUp, getSession, forgetPassword, resetPassword, updateUser, getLastUsedLoginMethod, passkey } = createAuthClient({
+import { passkeyClient } from "@better-auth/passkey/client";
+const { useSession, signIn, signOut, signUp, getSession, requestPasswordReset, resetPassword, updateUser, getLastUsedLoginMethod, passkey } = createAuthClient({
   plugins: [usernameClient(), lastLoginMethodClient(), passkeyClient()],
 });
 
@@ -17,4 +17,4 @@ export const useAuthSession = (): { data: Session | null; isPending: boolean; er
   return useSession();
 };
 
-export { signIn, signOut, signUp, getSession, forgetPassword, resetPassword, updateUser, getLastUsedLoginMethod, passkey };
+export { signIn, signOut, signUp, getSession, requestPasswordReset, resetPassword, updateUser, getLastUsedLoginMethod, passkey };

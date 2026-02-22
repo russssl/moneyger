@@ -96,7 +96,6 @@ function AddCategoryForm({
   isCreatePending: boolean;
   inputId: string;
 }) {
-  const t = useTranslations("setup-modal");
   const tGeneral = useTranslations("general");
   const tCategories = useTranslations("categories");
   const tFinances = useTranslations("finances");

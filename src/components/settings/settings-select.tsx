@@ -1,5 +1,5 @@
 "use client"
-import { User, Bell, Palette, Shield, Tag } from "lucide-react"
+import { User, Palette, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
