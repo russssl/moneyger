@@ -2,9 +2,10 @@
 import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
 import { Progress } from "@/components/ui/progress";
-import { Target } from "lucide-react";
+import { ChevronRight, Target } from "lucide-react";
 import { Icon, type IconName } from "@/components/ui/icon-picker";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 
 interface WalletItemProps {
   wallet: Wallet;
@@ -42,6 +43,11 @@ export default function WalletItem({
 
   const isGrid = layout === "grid";
   const isCompact = layout === "compact";
+
+  const showDetails = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log("show details");
+  }
 
   return (
     <div
@@ -127,15 +133,20 @@ export default function WalletItem({
           isGrid ? "items-center" : "items-end",
           isCompact && "gap-0.5"
         )}>
-          <span className={cn(
-            isGrid ? "font-semibold text-base" : textSizes.balance,
-            "font-medium"
-          )}>
-            {wallet.balance.toLocaleString("en-US", {
-              style: "currency",
-              currency: wallet.currency
-            })}
-          </span>
+          <div className={cn("flex items-center gap-1", isGrid && "flex-col")}>
+            <span className={cn(
+              isGrid ? "font-semibold text-base" : textSizes.balance,
+              "font-medium"
+            )}>
+              {wallet.balance.toLocaleString("en-US", {
+                style: "currency",
+                currency: wallet.currency
+              })}
+            </span>
+            <Link href={`/transactions?walletId=${wallet.id}`} onClick={(e) => e.stopPropagation()} title={t("show_details")} aria-label={t("show_details")} className="flex items-center justify-center rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-accent/50 active:bg-accent/70 touch-manipulation">
+              <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            </Link>
+          </div>
           {isSavingAccount && goal > 0 && (
             <span className={cn(
               isGrid ? "text-xs" : "text-[10px]",
