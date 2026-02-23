@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorAlert } from "@/components/common/error-alert";
 import LoadingButton from "@/components/common/loading-button";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Key } from "lucide-react";
@@ -156,11 +156,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
               </button>
             </div>
           </div>
-          {error && (
-            <Alert variant="destructive" className="mt-3">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          {error && <ErrorAlert error={error} className="mt-3" />}
           <LoadingButton loading={loading} className="w-full mt-5" type="submit">
             {t("login")}
           </LoadingButton>

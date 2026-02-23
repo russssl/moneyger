@@ -8,6 +8,7 @@ import { type Wallet } from "@/server/db/wallet"
 import { DataTable } from "./data-table"
 import { columns } from "./columns"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ErrorAlert } from "@/components/common/error-alert"
 import { useTranslations } from "next-intl"
 import PagesHeader from "../pages-header"
 import DatePicker from "@/components/common/date-picker"
@@ -95,13 +96,39 @@ export default function TransactionsPage() {
 
         {isLoading ? (
           <div className="space-y-4">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-72 w-full" />
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end flex-wrap">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex-1 min-w-0 sm:max-w-[200px] space-y-1.5">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-4 rounded-md border">
+              <div className="flex items-center justify-between gap-4 p-4 border-b">
+                <Skeleton className="h-9 max-w-sm w-full" />
+                <Skeleton className="h-8 w-8" />
+              </div>
+              <div className="p-0">
+                <div className="flex border-b px-4 py-2 gap-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Skeleton key={i} className="h-4 flex-1 min-w-0" />
+                  ))}
+                </div>
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="flex border-b px-4 py-3 gap-4 last:border-b-0">
+                    <Skeleton className="h-4 w-[100px] flex-shrink-0" />
+                    <Skeleton className="h-4 flex-1 min-w-[120px]" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-5 w-[70px]" />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : error ? (
-          <div className="rounded-md border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
-            {error instanceof Error ? error.message : tGeneral("something_went_wrong")}
-          </div>
+          <ErrorAlert error={error instanceof Error ? error : (error ? tGeneral("something_went_wrong") : null)} />
         ) : (
           <>
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

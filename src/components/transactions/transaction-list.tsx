@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip"
 import { useFetch, useMutation } from "@/hooks/use-api"
 import { NoItems } from "@/components/common/no-items"
+import { ErrorAlert } from "@/components/common/error-alert"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TransactionItem, TransactionDeleteButton } from "./transaction-item"
 import { toast } from "sonner"
@@ -95,8 +96,8 @@ export function TransactionList() {
         </CardHeader>
         <CardContent className="flex-1 flex flex-col px-4 sm:px-6">
           {error && (
-            <div className="p-4 text-center text-muted-foreground flex-1 flex justify-center items-center">
-              <p>{error.message}</p>
+            <div className="p-4 flex-1 flex items-start justify-center">
+              <ErrorAlert error={error} className="w-full max-w-md" />
             </div>
           )}
           {isLoading ? (

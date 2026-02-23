@@ -2,7 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ErrorAlert } from "@/components/common/error-alert";
 
 import Link from "next/link"
 import { useState } from "react";
@@ -67,14 +67,7 @@ export default function RegisterForm() {
           <CardDescription>{t("register_modal_description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          {
-            error &&
-            <Alert variant="destructive" className='mb-2'>
-              <AlertDescription>
-                {error}
-              </AlertDescription>
-            </Alert>
-          }
+          {error && <ErrorAlert error={error} className="mb-2" />}
 
           <form className="space-y-4" onSubmit={register}>
             <div className="space-y-2">

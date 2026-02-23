@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { updateUser } from "@/hooks/use-session";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { type User } from "@/server/db/user";
+import { ErrorAlert } from "@/components/common/error-alert";
 
 export default function ProfileSettings({...props}) {
   const {data: userSettings, isLoading, error} = useFetch<User>("/api/user/me");
@@ -34,13 +35,6 @@ export default function ProfileSettings({...props}) {
       setUsername(userSettings.username ?? "");
     }
   }, [userSettings]);
-  // error handling
-  useEffect(() => {
-    if (error) {
-      console.error(error);
-    }
-  }, [error]);
-
   const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string }, { message: string }>("/api/user", "POST");
   if (!session) {
     return null;
@@ -76,6 +70,7 @@ export default function ProfileSettings({...props}) {
         <CardDescription>{t("profile_description")}</CardDescription>
       </CardHeader>
       <CardContent>
+        {error && <ErrorAlert error={error} className="mb-4" />}
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">{t("email")}</Label>
