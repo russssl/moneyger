@@ -33,6 +33,10 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
   filterColumn?: string
   filterPlaceholder?: string
+  /** When set, table shows one server-fed page and uses this page size (hides built-in pagination). */
+  initialPageSize?: number
+  /** When set with initialPageSize, built-in pagination is hidden (parent handles server pagination). */
+  totalRowCount?: number
 }
 
 export function DataTable<TData, TValue>({
@@ -40,17 +44,16 @@ export function DataTable<TData, TValue>({
   data,
   filterColumn,
   filterPlaceholder = "Filter...",
+  initialPageSize,
+  totalRowCount,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations("general")
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: initialPageSize ?? 10,
   })
 
   const table = useReactTable({
@@ -143,7 +146,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} pagination={pagination} />
+      {totalRowCount == null && <DataTablePagination table={table} pagination={pagination} />}
     </div>
   )
 }

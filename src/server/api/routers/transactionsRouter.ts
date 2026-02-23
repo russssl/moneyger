@@ -3,7 +3,7 @@ import { type AuthVariables } from "../authenticate";
 import { authenticated, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, not, sql } from "drizzle-orm";
+import { and, eq, ilike, not, sql } from "drizzle-orm";
 import db from "@/server/db";
 import { transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
@@ -16,14 +16,16 @@ const transactionsRouter = new Hono<AuthVariables>();
 transactionsRouter.get("/", authenticated, zValidator("query", z.object({
   walletId: z.string().optional(),
   transaction_date: z.string().optional(),
+  description: z.string().optional(),
+  type: z.enum(["income", "expense", "transfer"]).optional(),
   limit: z.coerce.number().min(1).max(500).optional(),
   offset: z.coerce.number().min(0).optional(),
 })), async (c) => {
   const { user } = await getUserData(c);
-  const { walletId, transaction_date, limit, offset } = c.req.valid("query");
+  const { walletId, transaction_date, description, type: typeFilter, limit, offset } = c.req.valid("query");
 
   const pagination = {
-    limit: limit ?? 5, // 5 for main page
+    limit: limit ?? 100,
     offset: offset ?? 0,
   };
 
@@ -31,6 +33,8 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
     eq(transactions.userId, user.id),
     walletId ? eq(transactions.walletId, walletId) : undefined,
     transaction_date ? eq(transactions.transaction_date, new Date(transaction_date)) : undefined,
+    description?.trim() ? ilike(transactions.description, `%${description.trim()}%`) : undefined,
+    typeFilter ? eq(transactions.type, typeFilter) : undefined,
     not(eq(transactions.type, "adjustment")),
   );
 

@@ -55,37 +55,34 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent 
-          className="w-auto p-0 z-[100] pointer-events-auto" 
+        <PopoverContent
+          className="w-auto p-0 z-[100] pointer-events-auto rounded-lg border shadow-lg"
           align="start"
           onPointerDown={(e) => e.stopPropagation()}
           onPointerDownOutside={(e) => {
-            // Prevent closing when clicking on modal overlay
             const target = e.target as HTMLElement;
             if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
               e.preventDefault();
             }
           }}
           onInteractOutside={(e) => {
-            // Prevent closing when interacting with modal
             const target = e.target as HTMLElement;
             if (target.closest("[role=\"dialog\"]") || target.closest("[data-radix-dialog-overlay]")) {
               e.preventDefault();
             }
           }}
         >
-          <div 
+          <div
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="pb-3 pt-2 px-2 flex flex-wrap gap-2"
+            className="px-2 pt-2 pb-1"
           >
-            <div className="flex flex-row gap-2">
+            <div className="flex gap-1">
               <Button
-                variant={ isPresetSelected(value, "today") ? "default" : "secondary" }
+                variant={isPresetSelected(value, "today") ? "default" : "secondary"}
                 size="sm"
-                disabled={ value ? isPresetSelected(value, "today") : false }
-                className="rounded-full px-3"
+                className="rounded-md px-2.5 py-1.5 h-8 text-xs font-medium"
                 onClick={() => {
                   onChange?.(new Date());
                   if (closeOnSelect) setOpen(false);
@@ -94,11 +91,9 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
                 Today
               </Button>
               <Button
-                variant={ isPresetSelected(value, "yesterday") ? "default" : "secondary"}
+                variant={isPresetSelected(value, "yesterday") ? "default" : "secondary"}
                 size="sm"
-                disabled={
-                  value ? isPresetSelected(value, "yesterday") : false }
-                className="rounded-full px-3"
+                className="rounded-md px-2.5 py-1.5 h-8 text-xs font-medium"
                 onClick={() => {
                   const yesterday = new Date();
                   yesterday.setDate(yesterday.getDate() - 1);
@@ -109,10 +104,9 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
                 Yesterday
               </Button>
               <Button
-                variant={ isPresetSelected(value, "tomorrow") ? "default" : "secondary"}
+                variant={isPresetSelected(value, "tomorrow") ? "default" : "secondary"}
                 size="sm"
-                disabled={ value ? isPresetSelected(value, "tomorrow") : false }
-                className="rounded-full px-3"
+                className="rounded-md px-2.5 py-1.5 h-8 text-xs font-medium"
                 onClick={() => {
                   const tomorrow = new Date();
                   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -125,6 +119,7 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
             </div>
           </div>
           <Calendar
+            className="pt-0"
             mode="single"
             selected={value}
             onSelect={(date) => {
