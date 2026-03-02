@@ -60,6 +60,23 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
           type: true,
         },
       },
+      transfers: {
+        columns: {
+          id: true,
+        },
+        with: {
+          fromWallet: {
+            columns: {
+              name: true,
+            },
+          },
+          toWallet: {
+            columns: {
+              name: true,
+            },
+          },
+        },
+      },
     },
     ...pagination,
     orderBy: (transactions, { desc }) => [desc(transactions.transaction_date)],

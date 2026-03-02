@@ -18,6 +18,16 @@ const DescriptionHeader = ({ column }: { column: any }) => {
   return <DataTableColumnHeader column={column} title={t("description")} />
 }
 
+const FromWalletHeader = ({ column }: { column: any }) => {
+  const t = useTranslations("general")
+  return <DataTableColumnHeader column={column} title={t("from_wallet")} />
+}
+
+const ToWalletHeader = ({ column }: { column: any }) => {
+  const t = useTranslations("general")
+  return <DataTableColumnHeader column={column} title={t("to_wallet")} />
+}
+
 const CategoryHeader = ({ column }: { column: any }) => {
   const t = useTranslations("general")
   return <DataTableColumnHeader column={column} title={t("category")} />
@@ -62,11 +72,37 @@ export const columns: ColumnDef<TransactionWithCategory>[] = [
     header: DescriptionHeader,
     cell: ({ row }) => {
       return (
-        <div className="flex flex-col min-w-[200px]">
+        <div className="flex flex-col min-w-0">
           <span className="font-medium">{row.getValue("description")}</span>
           <span className="text-xs text-muted-foreground">
             {row.original.wallet.name}
           </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "wallet",
+    header: FromWalletHeader,
+    cell: ({ row }) => {
+      const wallet = row.original.wallet
+      if (!wallet) return <span className="text-muted-foreground">-</span>
+      return (
+        <div className="flex items-center gap-2 min-w-0">
+          <span>{wallet.name}</span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "to_wallet",
+    header: ToWalletHeader,
+    cell: ({ row }) => {
+      const wallet = row.original.transfers?.[0]?.toWallet
+      if (!wallet) return <span className="text-muted-foreground">-</span>
+      return (
+        <div className="flex items-center gap-2 min-w-0">
+          <span>{wallet.name}</span>
         </div>
       )
     },

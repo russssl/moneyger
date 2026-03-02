@@ -30,6 +30,8 @@ export function DataTableViewOptions<TData>({
   const columnLabels: Record<string, string> = {
     transaction_date: t("date"),
     description: t("description"),
+    wallet: t("from_wallet"),
+    to_wallet: t("to_wallet"),
     category: t("category"),
     type: t("type"),
     amount: t("amount"),

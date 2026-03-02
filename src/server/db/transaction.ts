@@ -8,6 +8,7 @@ import { user } from "./user";
 import { wallets } from "./wallet";
 import { relations } from "drizzle-orm";
 import { categories } from "./category";
+import { transfers } from "./transfer";
 
 export const transactions = pgTable("transaction", {
   id: varchar("id", { length: 255 })
@@ -30,7 +31,7 @@ export const transactions = pgTable("transaction", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const transactionsRelations = relations(transactions, ({ one }) => ({
+export const transactionsRelations = relations(transactions, ({ one, many }) => ({
   user: one(user, { fields: [transactions.userId], references: [user.id] }),
   wallet: one(wallets, {
     fields: [transactions.walletId],
@@ -42,6 +43,7 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
     references: [categories.id],
     relationName: "transactionCategory",
   }),
+  transfers: many(transfers),
 }));
 
 export type Transaction = typeof transactions.$inferSelect;
@@ -63,4 +65,13 @@ export type TransactionWithCategory = Transaction & {
     iconName: string | null;
     type: string;
   } | null;
+  transfers?: {
+    id: string;
+    fromWallet?: {
+      name: string | null;
+    } | null;
+    toWallet?: {
+      name: string | null;
+    } | null;
+  }[];
 };

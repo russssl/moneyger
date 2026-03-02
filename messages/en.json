@@ -197,6 +197,7 @@
   "finances": {
     "wallets_title": "Wallets",
     "add_wallet": "Add new wallet",
+    "show_details": "Show details",
     "no_wallets": "No wallets",
     "no_wallets_desc": "You don't have any wallets yet. Please create a new wallet first.",
     "no_wallets_found": "No wallets found",

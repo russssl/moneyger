@@ -115,6 +115,7 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
                 layout={viewMode}
                 showProgressDetails={true}
                 className="border-0 mb-0"
+                showDetails={false}
               />
             </CardContent>
           </Card>

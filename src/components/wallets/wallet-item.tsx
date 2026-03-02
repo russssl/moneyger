@@ -19,6 +19,7 @@ interface WalletItemProps {
   layout?: "list" | "grid" | "compact";
   showProgressDetails?: boolean;
   className?: string;
+  showDetails?: boolean;
 }
 
 export default function WalletItem({
@@ -33,6 +34,7 @@ export default function WalletItem({
   layout = "list",
   showProgressDetails = false,
   className,
+  showDetails = true,
 }: WalletItemProps) {
   const t = useTranslations("finances");
   const isSavingAccount = wallet.isSavingAccount ?? false;
@@ -138,9 +140,11 @@ export default function WalletItem({
                 currency: wallet.currency
               })}
             </span>
-            <Link href={`/transactions?walletId=${wallet.id}`} onClick={(e) => e.stopPropagation()} title={t("show_details")} aria-label={t("show_details")} className="flex items-center justify-center rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-accent/50 active:bg-accent/70 touch-manipulation">
-              <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
-            </Link>
+            {showDetails && (
+              <Link href={`/transactions?walletId=${wallet.id}`} onClick={(e) => e.stopPropagation()} title={t("show_details")} aria-label={t("show_details")} className="flex items-center justify-center rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-accent/50 active:bg-accent/70 touch-manipulation">
+                <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+              </Link>
+            )}
           </div>
           {isSavingAccount && goal > 0 && (
             <span className={cn(

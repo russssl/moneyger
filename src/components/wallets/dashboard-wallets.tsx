@@ -28,7 +28,7 @@ export default function DashboardWallets({ wallets, iconSize, textSizes, refetch
       <div>
         {wallets?.map((wallet) => (
           <WalletItem key={wallet.id} wallet={wallet} onClick={openModal} iconSize={iconSize}
-            textSizes={textSizes} layout="compact" className="mb-2" />
+            textSizes={textSizes} layout="compact" className="mb-2" showDetails={true} />
         ))}
       </div>
       <EditWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={handleDeleteWallet} />
