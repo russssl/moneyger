@@ -3,9 +3,9 @@ import { type AuthVariables } from "../authenticate";
 import { authenticated, getUserData } from "../authenticate";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { and, eq, ilike, not, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import db from "@/server/db";
-import { transactions } from "@/server/db/transaction";
+import { type NewTransaction, transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
 import { getCurrentExchangeRate } from "../services/wallets";
 import { type NewTransfer, transfers } from "@/server/db/transfer";
@@ -229,18 +229,17 @@ async (c) => {
         eq(transactions.userId, user.id),
       ),
     });
-
     if (!transaction) {
       throw new HTTPException(404, { message: "We couldn't find that transaction." });
     }
-
-    const updateValues = {
+    
+    const updateValues: Partial<NewTransaction> = {
       amount,
       transaction_date,
       description,
       ...(categoryId !== undefined && { categoryId: categoryId || undefined }),
     };
-    const updatedTransaction = await tx.update(transactions).set(updateValues as Partial<typeof transactions.$inferInsert>).where(and(
+    const updatedTransaction = await tx.update(transactions).set(updateValues).where(and(
       eq(transactions.id, id),
       eq(transactions.userId, user.id),
     )).returning().execute().then((res) => res[0]);
@@ -249,6 +248,62 @@ async (c) => {
       throw new HTTPException(500, { message: "We couldn't update this transaction. Please try again." });
     }
 
+
+    if (updatedTransaction.type !== "transfer") {
+      const wallet = await tx.query.wallets.findFirst({
+        where: and(
+          eq(wallets.id, transaction.walletId),
+          eq(wallets.userId, user.id),
+        ),
+      });
+      if (!wallet) {
+        throw new HTTPException(404, { message: "We couldn't find that wallet." });
+      }
+
+      await tx.update(wallets).set({
+        balance: wallet.balance + (updatedTransaction.type === "income" ? amount : -amount),
+      }).where(and(
+        eq(wallets.id, transaction.walletId),
+        eq(wallets.userId, user.id),
+      )).execute();
+    } else if (updatedTransaction.type === "transfer") {
+
+      const transfer = await tx.query.transfers.findFirst({
+        where: and(
+          eq(transfers.transactionId, transaction.id),
+          eq(transfers.fromWalletId, transaction.walletId),
+          eq(transfers.userId, user.id),
+        ),
+      });
+
+      if (!transfer) {
+        throw new HTTPException(404, { message: "We couldn't find that transfer." });
+      }
+
+      const transferWallets = await tx.query.wallets.findMany({
+        where: and(
+          inArray(wallets.id, [transfer.fromWalletId, transfer.toWalletId]),
+          eq(wallets.userId, user.id),
+        ),
+      });
+      const fromWallet = transferWallets.find((w) => w.id === transfer.fromWalletId);
+      const toWallet = transferWallets.find((w) => w.id === transfer.toWalletId);
+      if (!fromWallet || !toWallet) {
+        throw new HTTPException(404, { message: "We couldn't find that wallet." });
+      }
+
+      await Promise.all([
+        tx.update(wallets).set({
+          balance: fromWallet.balance + transfer.amountSent,
+        }).where(eq(wallets.id, transfer.fromWalletId)).execute(),
+        tx.update(wallets).set({
+          balance: toWallet.balance - transfer.amountReceived,
+        }).where(eq(wallets.id, transfer.toWalletId)).execute(),
+      ]); 
+
+    } else {
+      throw new HTTPException(400, { message: "Invalid transaction type." });
+    }
     return updatedTransaction;
   });
 

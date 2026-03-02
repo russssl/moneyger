@@ -193,8 +193,6 @@ export default function TransactionsPage() {
             <DataTable
               columns={columns}
               data={transactions?.items ?? []}
-              filterColumn="description"
-              filterPlaceholder={tGeneral("enter_description")}
               initialPageSize={pageSize}
               totalRowCount={transactions?.total}
             />

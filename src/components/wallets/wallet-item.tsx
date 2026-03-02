@@ -44,11 +44,6 @@ export default function WalletItem({
   const isGrid = layout === "grid";
   const isCompact = layout === "compact";
 
-  const showDetails = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    console.log("show details");
-  }
-
   return (
     <div
       onClick={() => onClick(wallet.id)}
