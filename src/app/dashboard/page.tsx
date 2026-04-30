@@ -6,6 +6,7 @@ import { QuickActions } from "./quick-actions/quick-actions";
 import PagesHeader from "../pages-header";
 import TotalBalance from "@/components/wallets/total-balance";
 import { TransactionList } from "@/components/transactions/transaction-list";
+import NetWorthChart from "@/components/stats/net-worth-chart";
 
 function getWelcomeMessage() {
   const hour = new Date().getHours();
@@ -47,12 +48,15 @@ export default async function HomePage() {
           <QuickActions />
         </div>
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 items-stretch">
-          <div className="flex flex-col h-full">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 items-start">
+          <div className="lg:col-span-5">
             <TotalBalance />
           </div>
-          <div className="flex flex-col h-full">
+          <div className="lg:col-span-7">
             <TransactionList />
+          </div>
+          <div className="lg:col-span-12">
+            <NetWorthChart />
           </div>
         </section>
       </main>

@@ -43,16 +43,14 @@ export default function DatePicker({ value, onChange, closeOnSelect = true, plac
           <Button
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal",
+              "w-full justify-start text-left font-normal gap-2",
               !value && "text-muted-foreground"
             )}
           >
-            {value ? (
-              DateTime.fromJSDate(value).toFormat("DDD")
-            ) : (
-              <span>{placeholder}</span>
-            )}
-            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+            <span className="flex-1 truncate">
+              {value ? DateTime.fromJSDate(value).toFormat("DDD") : placeholder}
+            </span>
+            <CalendarIcon className="h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent

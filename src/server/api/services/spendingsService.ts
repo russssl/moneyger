@@ -1,41 +1,58 @@
-import { type Transaction, transactions } from "@/server/db/transaction";
-import { categories } from "@/server/db/category";
-import { and, eq, gte, inArray, lte, sql, type SQLWrapper } from "drizzle-orm";
+import { transactions } from "@/server/db/transaction";
+import { wallets } from "@/server/db/wallet";
+import { user } from "@/server/db/user";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
+import db from "@/server/db";
+import { getCurrentExchangeRate } from "./wallets";
 
-type SpendingOptions = {
-  startDate: Date | null,
-  endDate: Date | null,
-  categories: string[] | null,
-  walletId: string | null,
-  userId: string
-  ctx: any // TODO: add type
-}
-// TODO: add Transaction && totalSpending: number as union type
-export async function getSpendingsInRange({userId, startDate, endDate, categories: categoryIds, walletId, ctx} : SpendingOptions): Promise<Transaction> {
-  const whereClause: SQLWrapper[] = [eq(transactions.userId, userId), eq(transactions.type, "expense")];
+export async function getNetWorthForMonth(userId: string, month: number, year: number): Promise<number> {
+  const startDate = new Date(year, month, 1);
+  const endExclusive = new Date(year, month + 1, 1);
 
-  if (startDate) {
-    whereClause.push(gte(transactions.transaction_date, startDate));
-  }
-  if (endDate) {
-    whereClause.push(lte(transactions.transaction_date, endDate));
-  }
-  if (walletId) {
-    whereClause.push(eq(transactions.walletId, walletId));
-  }
-  if (categoryIds && categoryIds.length > 0) {
-    whereClause.push(inArray(transactions.categoryId, categoryIds));
-  }
+  const [userRow] = await db
+    .select({ currency: user.currency })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
 
-  const spendingData = await ctx.db
+  const userMainCurrency = userRow?.currency ?? "USD";
+
+  const grouped = await db
     .select({
-      category: categories.name,
-      totalSpent: sql<number>`sum(${transactions.amount})`.as("totalSpent"),
-    })  
+      currency: wallets.currency,
+      net: sql<number>`
+        coalesce(
+          sum(
+            case
+              when ${transactions.type} = 'income' then ${transactions.amount}
+              when ${transactions.type} = 'expense' then -${transactions.amount}
+              when ${transactions.type} = 'adjustment' then ${transactions.amount}
+              else 0
+            end
+          ),
+          0
+        )
+      `.as("net"),
+    })
     .from(transactions)
-    .leftJoin(categories, eq(transactions.categoryId, categories.id))
-    .where(and(...whereClause))
-    .groupBy(categories.name);
+    .leftJoin(wallets, eq(transactions.walletId, wallets.id))
+    .where(and(
+      eq(transactions.userId, userId),
+      gte(transactions.transaction_date, startDate),
+      lt(transactions.transaction_date, endExclusive),
+    ))
+    .groupBy(wallets.currency);
 
-  return spendingData;
+  let total = 0;
+  for (const row of grouped) {
+    const fromCurrency = row.currency ?? userMainCurrency;
+    if (fromCurrency === userMainCurrency) {
+      total += row.net ?? 0;
+      continue;
+    }
+    const exchangeRateData = await getCurrentExchangeRate(fromCurrency, userMainCurrency);
+    total += (row.net ?? 0) * exchangeRateData.rate;
+  }
+
+  return Number(total.toFixed(2));
 }

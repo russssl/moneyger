@@ -84,7 +84,7 @@ export function TransactionList() {
 
   return (
     <>
-      <Card className="w-full h-full flex flex-col">
+      <Card className="w-full flex flex-col">
         <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-base sm:text-lg">{t("transactions_title")}</CardTitle>
           <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground">
@@ -94,7 +94,7 @@ export function TransactionList() {
             </Link>
           </Button>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col px-4 sm:px-6">
+        <CardContent className="flex flex-col px-4 sm:px-6">
           {error && (
             <div className="p-4 flex-1 flex items-start justify-center">
               <ErrorAlert error={error} className="w-full max-w-md" />
@@ -141,7 +141,12 @@ export function TransactionList() {
               {isMobile ? (
                 <div className="flex flex-col gap-2.5">
                   {transactions.items.map((transaction) => (
-                    <TransactionItem key={transaction.id} transaction={transaction} onDelete={handleDeleteTransaction} isDeleting={removeTransactionMutation.isPending} />
+                    <TransactionItem
+                      key={transaction.id}
+                      transaction={transaction}
+                      onDelete={handleDeleteTransaction}
+                      isDeleting={removeTransactionMutation.isPending}
+                    />
                   ))}
                 </div>
               ) : (
@@ -160,11 +165,13 @@ export function TransactionList() {
                     {transactions.items.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell className="w-24 whitespace-nowrap">
-                          {transaction.transaction_date ? (
-                            new Date(transaction.transaction_date).toLocaleDateString(undefined, { month: "numeric", day: "numeric", year: "numeric" })
-                          ) : (
-                            "-"
-                          )}
+                          {transaction.transaction_date
+                            ? new Date(transaction.transaction_date).toLocaleDateString(undefined, {
+                              month: "numeric",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                            : "-"}
                         </TableCell>
                         <TableCell className="text-right whitespace-nowrap">
                           {transaction.amount ? formatCurrency(transaction.amount, transaction.wallet.currency) : null}
@@ -174,7 +181,10 @@ export function TransactionList() {
                           {transaction.category ? (
                             <div className="flex items-center gap-2">
                               {transaction.category.iconName && (
-                                <Icon name={transaction.category.iconName as IconName} className="w-4 h-4 flex-shrink-0" />
+                                <Icon
+                                  name={transaction.category.iconName as IconName}
+                                  className="w-4 h-4 flex-shrink-0"
+                                />
                               )}
                               <span className="truncate">{transaction.category.name}</span>
                             </div>
@@ -208,7 +218,7 @@ export function TransactionList() {
                   </TableBody>
                 </Table>
               )}
-              <div className="mt-3 sm:mt-4 md:mt-6 pt-3 sm:pt-4 border-t">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
                 <Button onClick={() => setIsModalOpen(true)} className="w-full h-10 sm:h-11">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   {t("add_transaction")}
