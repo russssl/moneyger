@@ -1,7 +1,7 @@
 
 import * as React from "react"
 import { Globe } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ interface LanguageSelectProps {
 
 
 export function LanguageSelect({language, setLanguage}: LanguageSelectProps) {
-  const t = useTranslations("settings");
+  const { t } = useTranslation("settings");
   return (
     <>
       <Label>{t("language")}</Label>
@@ -44,7 +44,7 @@ export function LanguageToggle() {
     window.location.reload();
   };
   
-  const t = useTranslations("settings");
+  const { t } = useTranslation("settings");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

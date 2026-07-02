@@ -1,4 +1,3 @@
-"use client"
 import { useEffect, useState } from "react"
 import { Wallet, MoreVertical, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -7,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import EditWalletModal from "@/components/wallets/edit-wallet-modal"
 import { LoadingSpinner } from "@/components/ui/loading"
 import { NoItems } from "@/components/common/no-items"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { type Wallet as WalletType } from "@/server/db/wallet"
 import { useFetch } from "@/hooks/use-api"
 
@@ -15,8 +14,8 @@ export default function Wallets({className}: {className?: string | undefined}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [items, setItems] = useState<WalletType[]>([]);
-  const { data: wallets, isLoading, refetch } = useFetch<WalletType[]>("/api/wallets");
-  const t = useTranslations("finances");
+  const { data: wallets, isLoading, refetch } = useFetch<WalletType[]>("/api/wallets", { queryKey: ["wallets", "list"] });
+  const { t } = useTranslation("finances");
 
   useEffect(() => {
     if (wallets) {
@@ -85,7 +84,7 @@ type FinanceItemProps = {
 
 function FinanceItem({ item, onEdit, onDelete }: FinanceItemProps) {
   const details = `${item.balance?.toLocaleString()} ${item.currency}`;
-  const t = useTranslations("service");
+  const { t } = useTranslation("service");
   
   return (
     <div className="flex items-center justify-between space-x-4 mb-4">

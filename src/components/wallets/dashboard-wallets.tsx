@@ -1,8 +1,7 @@
-"use client"
 import { type Wallet } from "@/server/db/wallet";
 import EditWalletModal from "@/components/wallets/edit-wallet-modal";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import WalletItem from "./wallet-item";
 
 export default function DashboardWallets({ wallets, iconSize, textSizes, refetch }: { wallets: Wallet[], iconSize: string, textSizes: {
@@ -12,7 +11,7 @@ export default function DashboardWallets({ wallets, iconSize, textSizes, refetch
 }, refetch: () => void }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const openModal = (id: string) => {
     setSelectedId(id);
@@ -20,7 +19,7 @@ export default function DashboardWallets({ wallets, iconSize, textSizes, refetch
   };
 
   const handleDeleteWallet = () => {
-    router.refresh();
+    window.location.reload();
   }
   
   return (

@@ -8,16 +8,15 @@ import {
   ModalTitle,
 } from "@/components/common/modal";
 import { useEffect, useState, useReducer } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { ErrorAlert } from "./error-alert";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { type NewUser } from "@/server/db/user";
 import { defineStepper } from "@stepperize/react";
-import { useTheme } from "next-themes";
+import { useTheme, type Theme } from "@/components/common/theme-provider";
 import { type Wallet as WalletType } from "@/server/db/wallet";
 import { type Category } from "@/server/db/category";
 import LoadingButton from "./loading-button";
-import { useTranslations as useServiceTranslations } from "next-intl";
 import type { IconName } from "@/components/ui/icon-picker";
 import { toast } from "sonner";
 import type { WalletFormState, WalletFormAction } from "./setup-modal/types";
@@ -48,9 +47,9 @@ function walletFormReducer(state: WalletFormState, action: WalletFormAction): Wa
 }
 
 function SetupModalContent({ useStepper }: { useStepper: any }) {
-  const t = useTranslations("setup-modal");
-  const tGeneral = useTranslations("general");
-  const tCategories = useTranslations("categories");
+  const { t } = useTranslation("setup-modal");
+  const { t: tGeneral } = useTranslation("general");
+  const { t: tCategories } = useTranslation("categories");
 
   // useStepper must be called inside Scoped context
   const stepper = useStepper();
@@ -68,19 +67,21 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState<IconName | undefined>(undefined);
   const { setTheme, theme } = useTheme();
-  const saveDataMutation = useMutation<Partial<NewUser>>("/api/user", "POST");
-  const createWalletMutation = useMutation<any, any>("/api/wallets", "POST");
-  const createCategoriesMutation = useMutation<any, any>("/api/categories/batch", "POST");
+  const saveDataMutation = useMutation<Partial<NewUser>>("/api/user", "POST", { invalidates: [["user", "me"]] });
+  const createWalletMutation = useMutation<any, any>("/api/wallets", "POST", { invalidates: [["wallets"]] });
+  const createCategoriesMutation = useMutation<any, any>("/api/categories/batch", "POST", { invalidates: [["categories"]] });
   const createCategoryMutation = useMutation<{ name: string; type: string; iconName?: string }, Category>(
     "/api/categories",
-    "POST"
+    "POST",
+    { invalidates: [["categories"]] }
   );
   const deleteCategoryMutation = useMutation<{ id: string }, void>(
     (data) => `/api/categories/${data.id}`,
-    "DELETE"
+    "DELETE",
+    { invalidates: [["categories"]] }
   );
 
-  const { data: categories, refetch: refetchCategories, isLoading: isLoadingCategories } = useFetch<Category[]>("/api/categories");
+  const { data: categories, refetch: refetchCategories, isLoading: isLoadingCategories } = useFetch<Category[]>("/api/categories", { queryKey: ["categories"] });
   const shouldFetchDefaults = stepper.current.id === "categories" && (categories?.length ?? 0) === 0;
   const { data: defaultsData, isLoading: isLoadingDefaultsTemplate } = useFetch<{
     income: Array<{ key: string; type: "income"; iconName: string }>;
@@ -89,8 +90,8 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
 
   const { data: userData, refetch: refetchUserData } = useFetch<{
     currency: string | undefined;
-  }>("/api/user/me");
-  const { refetch: refetchWallets } = useFetch<WalletType[]>("/api/wallets");
+  }>("/api/user/me", { queryKey: ["user", "me"] });
+  const { refetch: refetchWallets } = useFetch<WalletType[]>("/api/wallets", { queryKey: ["wallets", "list"] });
 
   // Track if we've done initial navigation to prevent interference with manual navigation
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -126,7 +127,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
     }
   }, [currency, walletState.currency]);
 
-  const serviceTranslations = useServiceTranslations("service");
+  const { t: serviceTranslations } = useTranslation("service");
 
 
   async function saveCurrency() {
@@ -183,7 +184,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
 
       // Ensure theme is applied (already set via handleThemeSelection, but ensure it's persisted)
       if (selectedTheme) {
-        setTheme(selectedTheme);
+        setTheme(selectedTheme as Theme);
       }
 
       // Create wallet if wallet name is provided
@@ -264,7 +265,7 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
 
   const handleThemeSelection = (themeValue: string) => {
     setSelectedTheme(themeValue);
-    setTheme(themeValue);
+    setTheme(themeValue as Theme);
   };
 
   const handleNext = () => {
@@ -384,13 +385,15 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
 }
 
 export default function SetupModal() {
-  const t = useTranslations("setup-modal");
+  const { t } = useTranslation("setup-modal");
   const [open, setOpen] = useState(false);
   const { data: userData, isLoading: isLoadingUser } = useFetch<{ currency: string | undefined }>(
     "/api/user/me",
+    { queryKey: ["user", "me"] },
   );
   const { data: wallets, isLoading: isLoadingWallets } = useFetch<WalletType[]>(
     "/api/wallets",
+    { queryKey: ["wallets", "list"] },
   );
 
   // Define stepper with translations

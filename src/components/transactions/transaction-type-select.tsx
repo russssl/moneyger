@@ -1,6 +1,8 @@
+"use client";
+
 import { ArrowUpIcon, ArrowDownIcon, ArrowLeftRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 type TransactionType = "income" | "expense" | "transfer";
 
@@ -19,7 +21,7 @@ const ShortcutBadge = ({ shortcut, ariaLabel }: { shortcut: string; ariaLabel: s
 };
 
 export default function TransactionTypeSelect({ value, setValue }: { value: TransactionType, setValue: (value: TransactionType) => void}) {
-  const t = useTranslations("general");
+  const { t } = useTranslation("general");
 
   const keyIndicators = {
     expense: "E",

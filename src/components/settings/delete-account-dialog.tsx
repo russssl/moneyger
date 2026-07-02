@@ -1,4 +1,3 @@
-"use client"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -6,20 +5,20 @@ import { Modal, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalT
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { useMutation } from "@/hooks/use-api"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useNavigate } from "@tanstack/react-router"
 import LoadingButton from "@/components/common/loading-button"
 
 export default function DeleteAccountDialog() {
-  const t = useTranslations("settings")
-  const tService = useTranslations("service")
-  const router = useRouter()
+  const { t } = useTranslation("settings")
+  const { t: tService } = useTranslation("service")
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [confirmationText, setConfirmationText] = useState("")
 
-  const deleteAccountMutation = useMutation<Record<string, never>, { message: string }>("/api/user", "DELETE")
+  const deleteAccountMutation = useMutation<Record<string, never>, { message: string }>("/api/user", "DELETE", { invalidates: [["session"], ["user", "me"]] })
 
   const confirmationWord = t("delete_account_confirmation_word")
   const isConfirmed = confirmationText === confirmationWord
@@ -39,7 +38,7 @@ export default function DeleteAccountDialog() {
       toast.success(t("delete_account_success") || "Account deleted successfully")
       setOpen(false)
       setConfirmationText("")
-      router.push("/login")
+      navigate({ to: "/login" })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("unknown_error") || "Failed to delete account")
     }

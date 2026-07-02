@@ -1,3 +1,4 @@
+
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Wallet, Plus, ArrowRightLeft, Target, PiggyBank } from "lucide-react"
@@ -5,7 +6,7 @@ import { cn } from "@/lib/utils"
 import EditTransactionModal from "@/components/transactions/edit-transaction-modal"
 import { useState } from "react"
 import EditWalletModal from "@/components/wallets/edit-wallet-modal"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 
 type Action = {
   icon: any
@@ -103,7 +104,7 @@ export function BottomBarActionButton({ updateList }: { updateList: () => void }
       }
     }
   }
-  const t = useTranslations("quick_actions")
+  const { t } = useTranslation("quick_actions")
   return (
     <>
       <Drawer>

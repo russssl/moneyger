@@ -1,5 +1,5 @@
 "use client";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { Globe } from "lucide-react";
 import CurrencySelect from "@/components/common/currency-select";
 
@@ -9,7 +9,7 @@ type CurrencyStepProps = {
 };
 
 export function CurrencyStep({ currency, setCurrency }: CurrencyStepProps) {
-  const t = useTranslations("setup-modal");
+  const { t } = useTranslation("setup-modal");
   return (
     <div className="flex flex-col gap-4 duration-300 animate-in fade-in slide-in-from-right-4">
       <div className="mb-2 flex items-center gap-3">

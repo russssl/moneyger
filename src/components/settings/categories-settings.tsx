@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { type Category } from "@/server/db/category";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import LoadingButton from "@/components/common/loading-button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { IconPicker, Icon, type IconName } from "@/components/ui/icon-picker";
@@ -40,8 +40,8 @@ function LoadDefaultsModal({
   onClose: () => void;
   onConfirm: (templates: DefaultTemplate[]) => Promise<void>;
 }) {
-  const t = useTranslations("categories");
-  const tGeneral = useTranslations("general");
+  const { t } = useTranslation("categories");
+  const { t: tGeneral } = useTranslation("general");
   const [templates, setTemplates] = useState<DefaultTemplate[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,9 +110,9 @@ function LoadDefaultsModal({
 }
 
 export default function CategoriesSettings() {
-  const t = useTranslations("categories");
-  const tGeneral = useTranslations("general");
-  const tFinances = useTranslations("finances");
+  const { t } = useTranslation("categories");
+  const { t: tGeneral } = useTranslation("general");
+  const { t: tFinances } = useTranslation("finances");
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isCreateMode, setIsCreateMode] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
@@ -122,26 +122,30 @@ export default function CategoriesSettings() {
     iconName: undefined
   });
 
-  const { data: categories, refetch, isLoading } = useFetch<Category[]>("/api/categories");
+  const { data: categories, refetch, isLoading } = useFetch<Category[]>("/api/categories", { queryKey: ["categories"] });
 
   const createCategory = useMutation<{ name: string; type: string; iconName?: string }, Category>(
     "/api/categories",
-    "POST"
+    "POST",
+    { invalidates: [["categories"]] }
   );
 
   const updateCategory = useMutation<{ name: string; iconName?: string }, Category>(
     () => `/api/categories/${editingCategory?.id}`,
-    "PUT"
+    "PUT",
+    { invalidates: [["categories"]] }
   );
 
   const deleteCategory = useMutation<{ id: string }, void>(
     (data) => `/api/categories/${data.id}`,
-    "DELETE"
+    "DELETE",
+    { invalidates: [["categories"]] }
   );
 
   const createCategoriesBatch = useMutation<{ categories: Array<{ name: string; type: string; iconName?: string }> }, Category[]>(
     "/api/categories/batch",
-    "POST"
+    "POST",
+    { invalidates: [["categories"]] }
   );
 
   const [loadDefaultsModal, setLoadDefaultsModal] = useState<null | { type: "income" | "expense" }>(null);

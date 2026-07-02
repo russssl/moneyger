@@ -1,13 +1,14 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 // import { Button } from "@/components/ui/button"
 import { UserCog } from "lucide-react"
 // import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 // import { Separator } from "@/components/ui/separator"
-import { getTranslations } from "next-intl/server"
+import { useTranslation } from "react-i18next"
 import DeleteAccountDialog from "./delete-account-dialog"
-export default async function AccountSettings({...props}) {
-  const t = await getTranslations("settings")
-  // const tService = await getTranslations("service")
+export default function AccountSettings({...props}) {
+  const { t } = useTranslation("settings")
+  // const { t: tService } = useTranslation("service")
   return (
     <>
       <Card {...props} className="sm:max-w-md">

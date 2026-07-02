@@ -1,15 +1,15 @@
-"use client"
 import { User, Palette, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useNavigate, useLocation } from "@tanstack/react-router"
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/components/ui/select"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 
 export default function SettingsSelect({ ...props }) {
-  const t = useTranslations("settings");
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { t } = useTranslation("settings");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   
   // Settings sections
   const settingsSections = [
@@ -22,7 +22,7 @@ export default function SettingsSelect({ ...props }) {
 
   useEffect(() => {
     if (!searchParams.has("category")) {
-      router.replace("?category=account", { scroll: false });
+      navigate({ to: location.pathname, search: "category=account", replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -36,7 +36,7 @@ export default function SettingsSelect({ ...props }) {
 
   const handleSectionChange = (sectionId: string) => {
     setActiveSection(sectionId);
-    router.push(`?category=${sectionId}`, { scroll: false });
+    navigate({ to: location.pathname, search: `category=${sectionId}` });
   };
 
   return (

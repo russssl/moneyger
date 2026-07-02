@@ -1,9 +1,8 @@
-"use client"
 
 import * as React from "react"
 import { Computer, Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useTranslations } from "next-intl"
+import { useTheme } from "@/components/common/theme-provider"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,7 +13,7 @@ import {
 
 export function ThemeToggle({ ...props }) {
   const { setTheme } = useTheme()
-  const t = useTranslations("theme-toggle")
+  const { t } = useTranslation("theme-toggle")
   return (
     <DropdownMenu {...props}>
       <DropdownMenuTrigger asChild>

@@ -1,11 +1,10 @@
-"use client"
 import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
 import { Progress } from "@/components/ui/progress";
 import { ChevronRight, Target } from "lucide-react";
 import { Icon, type IconName } from "@/components/ui/icon-picker";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { useTranslation } from "react-i18next";
+import { Link } from "@tanstack/react-router";
 
 interface WalletItemProps {
   wallet: Wallet;
@@ -36,7 +35,7 @@ export default function WalletItem({
   className,
   showDetails = true,
 }: WalletItemProps) {
-  const t = useTranslations("finances");
+  const { t } = useTranslation("finances");
   const isSavingAccount = wallet.isSavingAccount ?? false;
   const goal = wallet.savingAccountGoal ?? 0;
   const isGoalReached = goal > 0 && wallet.balance >= goal;
@@ -141,7 +140,7 @@ export default function WalletItem({
               })}
             </span>
             {showDetails && (
-              <Link href={`/transactions?walletId=${wallet.id}`} onClick={(e) => e.stopPropagation()} title={t("show_details")} aria-label={t("show_details")} className="flex items-center justify-center rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-accent/50 active:bg-accent/70 touch-manipulation">
+              <Link to="/transactions" search={{ walletId: wallet.id }} onClick={(e) => e.stopPropagation()} title={t("show_details")} aria-label={t("show_details")} className="flex items-center justify-center rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-accent/50 active:bg-accent/70 touch-manipulation">
                 <ChevronRight className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
               </Link>
             )}

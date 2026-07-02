@@ -1,4 +1,3 @@
-"use client"
 import * as React from "react"
 import { LayoutDashboard, PiggyBank, ReceiptText } from "lucide-react"
 import { NavMain } from "@/components/layout/nav-main"

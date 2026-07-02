@@ -1,11 +1,10 @@
-"use client"
 import { cn } from "@/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
 import EditWalletModal from "@/components/wallets/edit-wallet-modal";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { Grid3x3, List } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { NoItems } from "@/components/common/no-items";
@@ -29,8 +28,8 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
   const [isInitialized, setIsInitialized] = useState(false);
-  const router = useRouter();
-  const t = useTranslations("finances");
+  const navigate = useNavigate();
+  const { t } = useTranslation("finances");
   const isMobile = useIsMobile();
 
   // Mark as initialized after first render
@@ -51,7 +50,7 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
   };
 
   const handleDeleteWallet = () => {
-    router.refresh();
+    window.location.reload();
   }
 
   const savingsWallets = wallets.filter(w => w.isSavingAccount);

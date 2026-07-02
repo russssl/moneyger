@@ -1,4 +1,3 @@
-"use client"
 import { useState, useEffect } from "react";
 import { User as UserIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -6,20 +5,20 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import LoadingButton from "@/components/common/loading-button";
 import { LanguageSelect } from "@/components/common/language-select";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { updateUser } from "@/hooks/use-session";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { type User } from "@/server/db/user";
 import { ErrorAlert } from "@/components/common/error-alert";
 
 export default function ProfileSettings({...props}) {
-  const {data: userSettings, isLoading, error} = useFetch<User>("/api/user/me");
+  const {data: userSettings, isLoading, error} = useFetch<User>("/api/user/me", { queryKey: ["user", "me"] });
   const { session } = props;
   const [email, setEmail] = useState(userSettings?.email ?? "");
   const [username, setUsername] = useState(userSettings?.username ?? "");
   const [language, setLanguage] = useState<string | undefined>("en");
 
-  const t = useTranslations("settings");
+  const { t } = useTranslation("settings");
 
   useEffect(() => {
     const savedLocale = document.cookie
@@ -35,7 +34,7 @@ export default function ProfileSettings({...props}) {
       setUsername(userSettings.username ?? "");
     }
   }, [userSettings]);
-  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string }, { message: string }>("/api/user", "POST");
+  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string }, { message: string }>("/api/user", "POST", { invalidates: [["user", "me"]] });
   if (!session) {
     return null;
   }

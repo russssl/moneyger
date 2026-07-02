@@ -1,4 +1,3 @@
-"use client"
 import { useMemo, useState, useEffect } from "react"
 import { Key, Check, X } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
@@ -7,7 +6,7 @@ import PasswordInput from "@/components/auth/password-input"
 import LoadingButton from "@/components/common/loading-button"
 import { ErrorAlert } from "@/components/common/error-alert"
 import { checkStrength, getStrengthText, getStrengthColor } from "@/hooks/passwordUtil"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { useMutation } from "@/hooks/use-api"
 import { Button } from "@/components/ui/button"
 import PasskeySettingsModal from "./passkey-settings-modal"
@@ -39,8 +38,8 @@ export default function PasswordSettings({ passwordExists, ...props }: PasswordS
   }, [newPassword, confirmPassword])
 
   const strength = checkStrength(newPassword);
-  const t = useTranslations("register_login");
-  const settingsT = useTranslations("settings");
+  const { t } = useTranslation("register_login");
+  const { t: settingsT } = useTranslation("settings");
   const strengthScore = useMemo(() => {
     return strength.filter((req) => req.met).length;
   }, [strength]);

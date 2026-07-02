@@ -1,16 +1,20 @@
+
 import { Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardTitle, CardDescription, CardContent, CardHeader } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { getTranslations } from "next-intl/server";
+import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 
-export default async function Sessions() {
-  const t = await getTranslations("settings");
-  const authHeaders: any = await headers();
-  const sessions = await auth.api.listSessions({
-    headers: authHeaders
-  });
+export default function Sessions() {
+  const { t } = useTranslation("settings");
+  const [sessionCount, setSessionCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/auth/sessions")
+      .then((res) => res.json())
+      .then((data) => setSessionCount(data.length ?? 0))
+      .catch(() => {});
+  }, []);
 
   return (
     <Card>
@@ -27,7 +31,7 @@ export default async function Sessions() {
         <Button
           variant="destructive"
           // onClick={handleRevokeAllOtherSessions}
-          disabled={sessions.length <= 1}
+          disabled={sessionCount <= 1}
         >
           {t("revoke_all_other_sessions")}
         </Button>

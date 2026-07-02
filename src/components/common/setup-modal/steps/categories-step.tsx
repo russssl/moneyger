@@ -1,5 +1,5 @@
 "use client";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { Tag, Plus, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -96,9 +96,9 @@ function AddCategoryForm({
   isCreatePending: boolean;
   inputId: string;
 }) {
-  const tGeneral = useTranslations("general");
-  const tCategories = useTranslations("categories");
-  const tFinances = useTranslations("finances");
+  const { t: tGeneral } = useTranslation("general");
+  const { t: tCategories } = useTranslation("categories");
+  const { t: tFinances } = useTranslation("finances");
   return (
     <div className="border-t pt-2 sm:pt-4 space-y-2 sm:space-y-3">
       <h4 className="text-xs sm:text-sm font-semibold">{tCategories("add_category")}</h4>
@@ -161,8 +161,8 @@ export function CategoriesStep({
   isCreatePending,
   isDeletePending,
 }: CategoriesStepProps) {
-  const t = useTranslations("setup-modal");
-  const tGeneral = useTranslations("general");
+  const { t } = useTranslation("setup-modal");
+  const { t: tGeneral } = useTranslation("general");
   const incomeCategories = categories?.filter((c) => c.type === "income") ?? [];
   const expenseCategories = categories?.filter((c) => c.type === "expense") ?? [];
   const showSkeleton = isLoading || isLoadingDefaults;

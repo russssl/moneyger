@@ -1,11 +1,12 @@
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import ConnectedAccount from "./account/connected-account"
 import GitHub from "../icons/github"
 import Google from "../icons/google"
-import { getTranslations } from "next-intl/server";
+import { useTranslation } from "react-i18next";
 
-export default async function ConnectedAccountSettings({...props}) {
-  const t = await getTranslations("settings");
+export default function ConnectedAccountSettings({...props}) {
+  const { t } = useTranslation("settings");
 
   return (
     <Card {...props} className="sm:max-w-md">

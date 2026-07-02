@@ -1,4 +1,3 @@
-"use client"
 import { Button } from "@/components/ui/button"
 import { TrashIcon, ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon } from "lucide-react"
 import { type TransactionWithCategory } from "@/server/db/transaction"

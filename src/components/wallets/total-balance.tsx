@@ -1,4 +1,3 @@
-"use client"
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import {Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,7 +6,7 @@ import { useFetch } from "@/hooks/use-api";
 import { useEffect, useState } from "react";
 import { NoItems } from "@/components/common/no-items";
 import { type Wallet } from "@/server/db/wallet";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
 
 
@@ -22,7 +21,7 @@ const TEXT_SIZES = {
 } as const;
 
 export default function TotalBalance() {
-  const t = useTranslations("finances");
+  const { t } = useTranslation("finances");
 
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [totalBalance, setTotalBalance] = useState<number>(0);
@@ -38,7 +37,7 @@ export default function TotalBalance() {
       amountLeftToGoal: number;
     } | null;
   }>("/api/wallets/full", {
-    queryKey: ["wallets"],
+    queryKey: ["wallets", "full"],
   });
 
   useEffect(() => {

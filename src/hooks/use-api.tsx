@@ -1,5 +1,4 @@
 import { useQuery, useMutation as useTanstackMutation, useQueryClient, type QueryKey } from "@tanstack/react-query"
-import { getSession } from "./use-session"
 import { useState } from "react";
 
 type ReqOptions = RequestInit & { query?: Record<string, any>; body?: string }
@@ -55,11 +54,7 @@ export async function fetchWithToken(
   options: ReqOptions = {}
 ) {
   try {
-    const session = await getSession();
     const headers = new Headers(options.headers);
-    if (session.data?.session.token) {
-      headers.set("Authorization", `Bearer ${session.data.session.token}`);
-    }
 
     // Handle query parameters
     let finalUrl = url;

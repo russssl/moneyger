@@ -1,10 +1,9 @@
-"use client"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "@/components/common/modal"
 import { Button } from "@/components/ui/button"
 import { Key, Plus, Trash, X } from "lucide-react"
 import { passkey } from "@/hooks/use-session"
 import { toast } from "sonner"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { useState, useEffect, useCallback } from "react"
 import LoadingButton from "@/components/common/loading-button"
 import { NoItems } from "@/components/common/no-items"
@@ -21,8 +20,8 @@ export default function PasskeySettingsModal({
   onOpenChange: (open: boolean) => void
   getPasskeys: () => Promise<Passkey[]>
 }) {
-  const t = useTranslations("settings")
-  const tService = useTranslations("service")
+  const { t } = useTranslation("settings")
+  const { t: tService } = useTranslation("service")
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showNameDialog, setShowNameDialog] = useState(false)

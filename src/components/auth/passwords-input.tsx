@@ -1,9 +1,11 @@
+"use client";
+
 import { useEffect, useMemo, useState } from "react";
 import { checkStrength, getStrengthColor, getStrengthText } from "@/hooks/passwordUtil";
 import { Label } from "@/components/ui/label";
 import PasswordInput from "@/components/auth/password-input";
 import { AlertCircle, Check, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 
 export default function PasswordsInput({
   setPassword,
@@ -13,7 +15,7 @@ export default function PasswordsInput({
   
   const strength = checkStrength(localPassword);
   const strengthScore = useMemo(() => strength.filter((req) => req.met).length, [strength]);
-  const t = useTranslations("register_login");
+  const { t } = useTranslation("register_login");
 
   const isPasswordValid = useMemo(() => {
     const bothPasswordsSet = localPassword.length > 0 && confirmPassword.length > 0;

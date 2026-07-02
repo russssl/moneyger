@@ -1,10 +1,9 @@
-"use client"
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@/hooks/use-api";
 import { type SocialProvider, signIn } from "@/hooks/use-session";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 
 type ExtendedProvider = {
     id: string;
@@ -13,14 +12,15 @@ type ExtendedProvider = {
 }
 
 export default function ConnectedAccount({ accounts, provider }: { accounts: any[], provider: ExtendedProvider }) {
-  const t = useTranslations("settings");
+  const { t } = useTranslation("settings");
   const [localAccounts, setLocalAccounts] = useState(accounts);
   const removeAccountMutation = useMutation<{providerId: string}, any>(
     (data) => {
       const params = new URLSearchParams({ providerId: data.providerId });
       return `/api/user/accounts?${params.toString()}`;
     },
-    "DELETE"
+    "DELETE",
+    { invalidates: [["session"]] }
   );
 
   const signInWithProvider = async (providerName: SocialProvider["provider"]) => {

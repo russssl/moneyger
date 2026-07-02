@@ -17,7 +17,7 @@ import { useFetch, useMutation } from "@/hooks/use-api";
 import { toast } from "sonner";
 import { type NewWallet, type Wallet } from "@/server/db/wallet";
 import LoadingButton from "@/components/common/loading-button";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { ErrorAlert } from "@/components/common/error-alert";
 import { currencies } from "@/hooks/currencies";
 import AddonInput from "@/components/common/addon-input";
@@ -92,7 +92,7 @@ export default function EditWalletModal({
   defaultIsSavingAccount = false,
 }: EditWalletModalProps) {
   // Create mutations for wallet operations
-  const t = useTranslations("finances");
+  const { t } = useTranslation("finances");
   const createWallet = useMutation<any, NewWallet>("/api/wallets", "POST", {
     invalidates: [["wallets"]],
   });

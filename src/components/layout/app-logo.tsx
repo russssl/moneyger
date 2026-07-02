@@ -1,13 +1,12 @@
-"use client"
 import { useSidebar } from "@/components/ui/sidebar"
-import { useRouter } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 export default function AppLogo() {
   const { state } = useSidebar()
-  const router = useRouter()
-  const t = useTranslations("settings")
+  const navigate = useNavigate()
+  const { t } = useTranslation("settings")
   const goHome = () => {
-    router.push("/")
+    navigate({ to: "/" })
   }
   return (
     <div className="flex items-center justify-center">

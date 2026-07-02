@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Modal, ModalBody, ModalContent, ModalDescription, ModalFooter, ModalHeader, ModalTitle,
 } from "@/components/common/modal";
@@ -10,7 +12,7 @@ import AutogrowingTextarea from "@/components/common/autogrowing-textarea";
 import { currencies, type Currency } from "@/hooks/currencies";
 import AddonInput from "@/components/common/addon-input";
 import TransactionTypeSelect from "./transaction-type-select";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import CurrencySelect from "@/components/wallets/wallet-select";
 import { type Wallet as WalletType } from "@/server/db/wallet";
@@ -70,10 +72,10 @@ export default function EditTransactionModal({
   onSave,
   defaultTab = "expense",
 }: EditTransactionModalProps) {
-  const t = useTranslations("finances");
-  const tService = useTranslations("service");
-  const tGeneral = useTranslations("general");
-  const locale = useLocale();
+  const { t, i18n } = useTranslation("finances");
+  const { t: tService } = useTranslation("service");
+  const { t: tGeneral } = useTranslation("general");
+  const locale = i18n.language;
   const [state, dispatch] = useReducer(reducer, initialState(defaultTab));
   const {
     date,
@@ -85,7 +87,7 @@ export default function EditTransactionModal({
     selectedCategory,
   } = state;
 
-  const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null);
+  const { data: walletsData, isLoading: isLoadingWallets } = useFetch<WalletType[]>(open ? "/api/wallets" : null, { queryKey: ["wallets", "list"] });
   const createTransaction = useMutation<any, NewTransaction>("/api/transactions", "POST", {
     invalidates: [["transactions"], ["wallets"]],
   } );

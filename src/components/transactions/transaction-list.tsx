@@ -1,14 +1,13 @@
-"use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ArrowLeftRightIcon, ArrowDownIcon, ArrowUpIcon, Banknote, PlusCircle, ArrowRightIcon } from "lucide-react"
 import { useState } from "react"
-import Link from "next/link"
+import { Link } from "@tanstack/react-router"
 import { type TransactionWithCategory } from "@/server/db/transaction"
 import { Button } from "@/components/ui/button"
 import EditTransactionModal from "@/components/transactions/edit-transaction-modal"
 import { formatCurrency } from "@/hooks/currencies"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 import {
@@ -41,8 +40,8 @@ export function TransactionList() {
   });
   const { isLoading, error, refetch, data: transactions } = fetchTransactions;
   
-  const t = useTranslations("finances")
-  const tGeneral = useTranslations("general")
+  const { t } = useTranslation("finances")
+  const { t: tGeneral } = useTranslation("general")
   const isMobile = useIsMobile()
   
   const removeTransactionMutation = useMutation<{id: string}, any>(
@@ -84,17 +83,17 @@ export function TransactionList() {
 
   return (
     <>
-      <Card className="w-full flex flex-col">
+      <Card className="w-full h-full flex flex-col">
         <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
           <CardTitle className="text-base sm:text-lg">{t("transactions_title")}</CardTitle>
           <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground">
-            <Link href="/transactions">
+            <Link to="/transactions">
               <span className="mr-1">{tGeneral("view_all")}</span>
               <ArrowRightIcon className="h-3 w-3" />
             </Link>
           </Button>
         </CardHeader>
-        <CardContent className="flex flex-col px-4 sm:px-6">
+        <CardContent className="flex-1 flex flex-col px-4 sm:px-6">
           {error && (
             <div className="p-4 flex-1 flex items-start justify-center">
               <ErrorAlert error={error} className="w-full max-w-md" />

@@ -7,6 +7,7 @@ import { haveIBeenPwned, username, lastLoginMethod } from "better-auth/plugins"
 import { passkey } from "@better-auth/passkey";
 
 export const auth = betterAuth({
+  baseURL: env.PUBLIC_APP_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
@@ -20,9 +21,9 @@ export const auth = betterAuth({
     },
   },
   plugins: [haveIBeenPwned(), lastLoginMethod(), passkey({
-    rpID: process.env.NODE_ENV === "production" ? new URL(env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").hostname : "localhost",
+    rpID: process.env.NODE_ENV === "production" ? new URL(env.PUBLIC_APP_URL || "http://localhost:3000").hostname : "localhost",
     rpName: "Moneyger",
-    origin: process.env.NODE_ENV === "production" ? new URL(env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").origin : "http://localhost:3000",
+    origin: process.env.NODE_ENV === "production" ? new URL(env.PUBLIC_APP_URL || "http://localhost:3000").origin : "http://localhost:3000",
     authenticatorSelection: {
       authenticatorAttachment: "platform",
       residentKey: "preferred",
@@ -40,7 +41,10 @@ export const auth = betterAuth({
     }
   },
   trustedOrigins: [
-    process.env.NODE_ENV === "production" ? new URL(env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").origin : "http://localhost:3000",
+    process.env.NODE_ENV === "production"
+      ? new URL(env.PUBLIC_APP_URL || "http://localhost:3000").origin
+      : "http://localhost:3000",
+    ...(process.env.NODE_ENV !== "production" ? ["http://localhost:5173"] : []),
   ],
   user: {
     additionalFields: {

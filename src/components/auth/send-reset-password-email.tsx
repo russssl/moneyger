@@ -1,4 +1,3 @@
-"use client"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,17 +5,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import LoadingButton from "@/components/common/loading-button"
-import Link from "next/link"
+import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 import { requestPasswordReset } from "@/hooks/use-session";
 import { ErrorAlert } from "@/components/common/error-alert"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 
 export default function SendResetPasswordEmailForm() {
-  const t = useTranslations("register_login");
-  const router = useRouter()
+  const { t } = useTranslation("register_login");
+  const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -45,7 +44,7 @@ export default function SendResetPasswordEmailForm() {
         description: "Please check your email for the reset link",
         variant: "success",
       })
-      router.push("/login")
+      navigate({ to: "/login" })
     } catch (error) {
       console.error(error)
       setError("An error occurred while sending the reset link")
@@ -72,7 +71,7 @@ export default function SendResetPasswordEmailForm() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="email">Email</Label>
                 <Button variant="link" className="text-sm" asChild>
-                  <Link href="/login" className="px-0">
+                  <Link to="/login" className="px-0">
                     <ArrowLeft className="h-4 w-4" />
                     {t("back_to_login")}
                   </Link>

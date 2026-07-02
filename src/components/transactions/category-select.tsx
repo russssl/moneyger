@@ -10,7 +10,7 @@ import { AlertCircle, Plus, X } from "lucide-react";
 import { useFetch, useMutation } from "@/hooks/use-api";
 import { type Category } from "@/server/db/category";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import LoadingButton from "@/components/common/loading-button";
 import { IconPicker, Icon, type IconName } from "@/components/ui/icon-picker";
 
@@ -27,16 +27,17 @@ export default function CategorySelect({
   selectedCategory,
   onCategoryChange,
 }: CategorySelectProps) {
-  const t = useTranslations("finances");
-  const tGeneral = useTranslations("general");
-  const tCategories = useTranslations("categories");
+  const { t } = useTranslation("finances");
+  const { t: tGeneral } = useTranslation("general");
+  const { t: tCategories } = useTranslation("categories");
   
   const [showCreateCategory, setShowCreateCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryIcon, setNewCategoryIcon] = useState<IconName | undefined>(undefined);
   
   const { data: categoriesData, refetch: refetchCategories } = useFetch<Category[]>(
-    "/api/categories"
+    "/api/categories",
+    { queryKey: ["categories"] }
   );
   
   const createCategory = useMutation<{ name: string; type: string; iconName?: string }, Category>(

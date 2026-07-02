@@ -7,9 +7,25 @@ import { transactions } from "@/server/db/transaction";
 import { categories } from "@/server/db/category";
 import { and, eq, sql, gte, lte } from "drizzle-orm";
 import db from "@/server/db";
+import { getNetWorthForMonth } from "../services/spendingsService";
 
 
 const statsRouter = new Hono<AuthVariables>();
+
+statsRouter.get("/net-worth", authenticated, async (c) => {
+  const { user } = await getUserData(c);
+
+  // Return net worth for the last 12 months
+  const now = new Date();
+  const points: Array<{ month: string; netWorth: number }> = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const netWorth = await getNetWorthForMonth(user.id, d.getMonth(), d.getFullYear());
+    points.push({ month: d.toISOString().slice(0, 7), netWorth });
+  }
+
+  return c.json(points);
+});
 
 statsRouter.get("/spendings", authenticated, zValidator(
   "query",

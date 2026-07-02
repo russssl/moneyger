@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // above line is added because ts luxon has some issues with types
-"use client"
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 import {
   Card,

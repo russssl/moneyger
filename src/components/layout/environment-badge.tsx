@@ -1,21 +1,28 @@
-"use client"
 
 import { Badge } from "@/components/ui/badge"
-import { env } from "@/env"
+
+function getEnvironment(): string {
+  if (typeof window !== "undefined" && "ENV" in window) {
+    return (window as any).ENV?.PUBLIC_ENVIRONMENT || "development"
+  }
+  try {
+    return String(process.env.PUBLIC_ENVIRONMENT || "development")
+  } catch {
+    return "development"
+  }
+}
 
 export function EnvironmentBadge() {
-  const environment = env.NEXT_PUBLIC_ENVIRONMENT
+  const environment = getEnvironment()
 
-  // Only show badge for non-production environments
   if (environment === "production") {
     return null
   }
 
-  const envStr = String(environment)
-  const isStaging = envStr === "staging" || envStr.startsWith("staging-")
+  const isStaging = environment === "staging" || environment.startsWith("staging-")
   const isDev = environment === "development"
 
-  const badgeText = isStaging ? envStr : isDev ? "DEV" : envStr
+  const badgeText = isStaging ? environment : isDev ? "DEV" : environment
 
   return (
     <Badge
@@ -32,4 +39,3 @@ export function EnvironmentBadge() {
     </Badge>
   )
 }
-

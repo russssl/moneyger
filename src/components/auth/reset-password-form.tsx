@@ -1,18 +1,17 @@
-"use client"
 import { useState } from "react";
 import PasswordsInput from "./passwords-input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import LoadingButton from "@/components/common/loading-button";
 import { resetPassword } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import {ErrorAlert} from "@/components/common/error-alert";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation"
+import { useNavigate } from "@tanstack/react-router"
 
 export default function ResetPasswordForm({ token }: { token: string }) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -33,7 +32,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         description: "You can now login with your new password",
         variant: "success",
       })
-      router.push("/login")
+      navigate({ to: "/login" })
     } catch (error) {
       console.error(error)
       setError("An error occurred while resetting your password")
@@ -49,7 +48,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
           <CardTitle className="flex justify-between items-center">
             <div>Reset Password</div>
             <Button variant="link" className="text-sm px-0" asChild>
-              <Link href="/login" className="px-0">
+              <Link to="/login" className="px-0">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Login
               </Link>

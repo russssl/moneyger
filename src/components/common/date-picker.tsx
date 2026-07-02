@@ -1,4 +1,3 @@
-"use client"
 
 import { DateTime } from "luxon"
 import { CalendarIcon } from "lucide-react"

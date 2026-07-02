@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     environment:
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-      NEXT_PUBLIC_ENVIRONMENT: ${NEXT_PUBLIC_ENVIRONMENT:-development}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL}
+      PUBLIC_ENVIRONMENT: ${PUBLIC_ENVIRONMENT:-development}
     ports:
       - 3000:3000
     volumes:

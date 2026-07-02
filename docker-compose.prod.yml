@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       AUTH_SECRET: ${AUTH_SECRET}
-      NEXT_PUBLIC_APP_URL: https://moneyger.dev
+      PUBLIC_APP_URL: https://moneyger.dev
       REDIS_URL: redis://redis:6379
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}

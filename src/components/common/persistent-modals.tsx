@@ -1,9 +1,9 @@
 "use client";
 import SetupModal from "./setup-modal";
-import { useAuthSession } from "@/hooks/use-session";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function PersistentModals() {
-  const { data: session } = useAuthSession();
+  const { data: session } = useAuth();
   
   return (
     session ? (

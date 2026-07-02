@@ -1,10 +1,10 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import "dotenv/config"
+import { createEnv } from "@t3-oss/env-core"
+import { z } from "zod"
 
 export const env = createEnv({
   server: {
     AUTH_SECRET: z.string(),
-    // Support both DATABASE_URL and individual postgres vars
     POSTGRES_USER: z.string(),
     POSTGRES_PASSWORD: z.string(),
     POSTGRES_DB: z.string(),
@@ -26,16 +26,11 @@ export const env = createEnv({
     EXCHANGE_RATE_API_KEY: z.string().optional(),
     REDIS_URL: z.string().url().default("redis://localhost:6379"),
     PORT: z.string().default("3000"),
+    PUBLIC_APP_URL: z.string().url(),
+    PUBLIC_ENVIRONMENT: z.string().default("development"),
   },
-  client: {
-    NEXT_PUBLIC_ENVIRONMENT: z
-      .union([
-        z.enum(["development", "staging", "production"]),
-        z.string().regex(/^staging-[a-fA-F0-9]+$/, "staging-<shortSha> for deployed builds"),
-      ])
-      .default("development"),
-    NEXT_PUBLIC_APP_URL: z.string().url(),
-  },
+  clientPrefix: "",
+  client: {},
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
     POSTGRES_USER: process.env.POSTGRES_USER,
@@ -44,11 +39,8 @@ export const env = createEnv({
     POSTGRES_HOST: process.env.POSTGRES_HOST,
     POSTGRES_PORT: process.env.POSTGRES_PORT,
     NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
-    REDIS_KV_REST_API_READ_ONLY_TOKEN:
-      process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
+    REDIS_KV_REST_API_READ_ONLY_TOKEN: process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
     REDIS_KV_REST_API_TOKEN: process.env.REDIS_KV_REST_API_TOKEN,
     REDIS_KV_REST_API_URL: process.env.REDIS_KV_REST_API_URL,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
@@ -60,7 +52,9 @@ export const env = createEnv({
     EXCHANGE_RATE_API_KEY: process.env.EXCHANGE_RATE_API_KEY,
     REDIS_URL: process.env.REDIS_URL,
     PORT: process.env.PORT,
+    PUBLIC_APP_URL: process.env.PUBLIC_APP_URL,
+    PUBLIC_ENVIRONMENT: process.env.PUBLIC_ENVIRONMENT,
   },
   skipValidation: process.env.CI === "true" || process.env.SKIP_ENV_VALIDATION === "true",
   emptyStringAsUndefined: true,
-});
+})

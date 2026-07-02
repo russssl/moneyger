@@ -1,6 +1,5 @@
-"use client"
 import { ChevronsUpDown, LogOut, Moon, Sun, Settings } from "lucide-react"
-import { useTheme, } from "next-themes"
+import { useTheme } from "@/components/common/theme-provider"
 import { Avatar, AvatarFallback} from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -18,7 +17,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { LoadingSpinner } from "@/components/ui/loading"
-import { useTranslations } from "next-intl"
+import { useTranslation } from "react-i18next"
 import { type Session, signOut } from "@/hooks/use-session";
 function CurrentThemeIcon() {
   const {theme} = useTheme()
@@ -28,7 +27,7 @@ function CurrentThemeIcon() {
     </div>
   )
 }
-import { redirect } from "next/navigation"
+import { useNavigate } from "@tanstack/react-router"
 
 function useSetTheme() {
   const { theme, setTheme } = useTheme()
@@ -48,7 +47,8 @@ export function NavUser({
   session: Session | null,
 }) {
   const { isMobile } = useSidebar()
-  const t = useTranslations("navbar")
+  const navigate = useNavigate()
+  const { t } = useTranslation("navbar")
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -111,7 +111,7 @@ export function NavUser({
             <DropdownMenuItem onClick={() => signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  redirect("/login")
+                  navigate({ to: "/login", replace: true })
                 }
               }
             })}>

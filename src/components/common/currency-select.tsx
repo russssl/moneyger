@@ -1,5 +1,7 @@
+"use client";
+
 import { currencies } from "@/hooks/currencies";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -12,7 +14,7 @@ interface CurrencySelectProps {
 
 export default function CurrencySelect({ selectedCurrency, setSelectedCurrency, className }: CurrencySelectProps) {
   const currencyOptions = currencies();
-  const t = useTranslations("currency-select");
+  const { t } = useTranslation("currency-select");
 
   const value = selectedCurrency ?? "";
 

@@ -4,12 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorAlert } from "@/components/common/error-alert";
 import LoadingButton from "@/components/common/loading-button";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Key } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -53,8 +54,9 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
 
-  const t = useTranslations("register_login");
-  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { t } = useTranslation("register_login");
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Only get the last login method on the client side to avoid hydration issues
@@ -80,7 +82,8 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
         return;
       }
 
-      router.push("/dashboard");
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      navigate({ to: "/dashboard" });
     } catch (e) {
       console.error(e);
       setError(t("unknown_error"));
@@ -99,8 +102,9 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     await signIn.passkey({
       autoFill: false,
       fetchOptions: {
-        onSuccess: () => {
-          router.push("/dashboard");
+        onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      navigate({ to: "/dashboard" });
         },
         onError: (ctx) => {
           setError(ctx.error.message ?? t("unknown_error"));
@@ -161,7 +165,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
             {t("login")}
           </LoadingButton>
           <div className="text-center mt-3">
-            <Link href="/forgot-password" className="text-blue-500 ml-2">
+            <Link to="/forgot-password" className="text-blue-500 ml-2">
               {t("forgot_password")}
             </Link>
           </div>

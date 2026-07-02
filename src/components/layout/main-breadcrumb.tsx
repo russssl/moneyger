@@ -1,5 +1,5 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { useLocation, Link } from "@tanstack/react-router";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,7 +7,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useTranslations } from "next-intl";
+import { useTranslation } from "react-i18next";
 import { 
   Home, 
   BarChart3, 
@@ -20,9 +20,9 @@ import {
 } from "lucide-react";
 
 export default function MainBreadcrumb() {
-  const pathname = usePathname();
-  const t = useTranslations();
-  const segments = pathname.split("/").filter(Boolean);
+  const location = useLocation();
+  const { t } = useTranslation();
+  const segments = location.pathname.split("/").filter(Boolean);
 
   // Add home icon for root dashboard
   const getSegmentIcon = (segment: string, index: number) => {
@@ -49,7 +49,7 @@ export default function MainBreadcrumb() {
   const breadcrumbItems = [];
   
   // Add Dashboard as first item if not already present
-  if (!segments.includes("dashboard") && pathname !== "/") {
+  if (!segments.includes("dashboard") && location.pathname !== "/") {
     breadcrumbItems.push({
       segment: "dashboard",
       href: "/dashboard",
@@ -83,12 +83,14 @@ export default function MainBreadcrumb() {
                   <span>{formatSegment(item.segment)}</span>
                 </div>
               ) : (
-                <BreadcrumbLink 
-                  href={item.href}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                >
-                  {icon}
-                  <span>{formatSegment(item.segment)}</span>
+                <BreadcrumbLink asChild>
+                  <Link
+                    to={item.href}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                  >
+                    {icon}
+                    <span>{formatSegment(item.segment)}</span>
+                  </Link>
                 </BreadcrumbLink>
               )}
               {!isLast && (
