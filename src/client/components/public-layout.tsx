@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import { EnvironmentBadge } from "@/components/layout/environment-badge"
+import { EnvironmentBadge } from "@/client/components/layout/environment-badge"
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (

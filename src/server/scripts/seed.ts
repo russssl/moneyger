@@ -1,7 +1,7 @@
 import { user, wallets, transactions, transfers, categories } from "../db/schema";
 import db from "../db";
 import { and, eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { auth } from "@/server/lib/auth";
 import crypto from "crypto";
 import { execSync } from "child_process";
 
@@ -128,9 +128,9 @@ async function seedDemoUser() {
       id: walletId,
       userId: demoUser.id,
       name: `${currency} Wallet ${String(i + 1).padStart(3, "0")}`,
-      balance: initialBalance,
+      balance: String(initialBalance),
       isSavingAccount,
-      savingAccountGoal,
+      savingAccountGoal: String(savingAccountGoal),
       description: `Seed wallet ${i + 1}`,
       currency,
     });
@@ -195,7 +195,7 @@ async function seedDemoUser() {
     batch.push({
       userId: demoUser.id,
       walletId,
-      amount,
+      amount: String(amount),
       type,
       categoryId: cat.id,
       transaction_date: txDate,
@@ -253,7 +253,7 @@ async function seedDemoUser() {
     transferTxBatch.push({
       userId: demoUser.id,
       walletId: fromWalletId,
-      amount,
+      amount: String(amount),
       type: "transfer",
       transaction_date: date,
     });
@@ -263,9 +263,9 @@ async function seedDemoUser() {
       transactionId: "",
       fromWalletId,
       toWalletId,
-      amountSent: amount,
-      amountReceived,
-      exchangeRate,
+      amountSent: String(amount),
+      amountReceived: String(amountReceived),
+      exchangeRate: String(exchangeRate),
       createdAt: date,
       updatedAt: date,
     });
@@ -281,8 +281,8 @@ async function seedDemoUser() {
 
   console.log("🏦 Syncing final wallet balances...");
   for (const w of walletsToInsert) {
-    const finalBalance = walletBalanceById.get(w.id!) ?? w.balance ?? 0;
-    await db.update(wallets).set({ balance: finalBalance }).where(and(eq(wallets.id, w.id!), eq(wallets.userId, demoUser.id)));
+    const finalBalance = walletBalanceById.get(w.id!) ?? 0;
+    await db.update(wallets).set({ balance: String(finalBalance) }).where(and(eq(wallets.id, w.id!), eq(wallets.userId, demoUser.id)));
   }
 
   console.log("✨ Seeding complete, email: demo@demo.com, password: Tr0ub4dor&3-Correct-Horse-Battery-Staple");

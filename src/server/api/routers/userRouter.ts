@@ -23,7 +23,7 @@ userRouter.get("/me", authenticated, async (c) => {
 });
 
 userRouter.post("/setPassword", authenticated, createRateLimiter("sensitive"), zValidator("json", z.object({
-  password: z.string(),
+  password: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number"),
   confirmPassword: z.string(),
 })), async (c) => {
   const { user, context } = await getUserData(c);
@@ -77,7 +77,7 @@ userRouter.post("/", authenticated, zValidator("json", z.object({
 
 userRouter.post("/updatePassword", authenticated, createRateLimiter("sensitive"), zValidator("json", z.object({
   oldPassword: z.string(),
-  newPassword: z.string(),
+  newPassword: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number"),
 })), async (c) => {
   const { user, context } = await getUserData(c);
   const { oldPassword, newPassword } = c.req.valid("json");

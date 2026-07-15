@@ -47,10 +47,10 @@ walletsRouter.get("/full", authenticated, async (c) => {
     // Calculate amount left to goal with currency conversion
     let amountLeftToGoal = 0;
     for (const wallet of savingsWallets) {
-      if (wallet.savingAccountGoal && wallet.savingAccountGoal > 0) {
+      if (wallet.savingAccountGoal && Number(wallet.savingAccountGoal) > 0) {
         const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency);
-        const goalInMainCurrency = wallet.savingAccountGoal * exchangeRateData.rate;
-        const balanceInMainCurrency = wallet.balance * exchangeRateData.rate;
+        const goalInMainCurrency = Number(wallet.savingAccountGoal) * exchangeRateData.rate;
+        const balanceInMainCurrency = Number(wallet.balance) * exchangeRateData.rate;
         const remaining = Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
         amountLeftToGoal += remaining;
       }
@@ -122,8 +122,8 @@ walletsRouter.post("/", authenticated, zValidator(
       name,
       currency,
       isSavingAccount: isSavingAccount ?? false,
-      savingAccountGoal: savingAccountGoal ?? 0,
-      balance: balance ?? 0,
+      savingAccountGoal: String(savingAccountGoal ?? 0),
+      balance: String(balance ?? 0),
       iconName: iconName ?? undefined,
     }).returning();
 
@@ -137,7 +137,7 @@ walletsRouter.post("/", authenticated, zValidator(
       const transactionValues = {
         userId: user.id,
         walletId: wallet.id,
-        amount: balance,
+        amount: String(balance),
         type: "adjustment",
         transaction_date: new Date(),
         description: "Initial balance",
@@ -170,7 +170,7 @@ walletsRouter.post("/:id", authenticated, zValidator(
       name,
       currency,
       ...(isSavingAccount !== undefined && { isSavingAccount }),
-      ...(savingAccountGoal !== undefined && { savingAccountGoal: savingAccountGoal ?? 0 }),
+      ...(savingAccountGoal !== undefined && { savingAccountGoal: String(savingAccountGoal ?? 0) }),
       ...(iconName !== undefined && { iconName: iconName ?? undefined }),
     }).where(and(
       eq(wallets.userId, user.id),

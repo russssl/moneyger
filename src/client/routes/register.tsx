@@ -1,8 +1,8 @@
 
 import { createFileRoute, Navigate } from "@tanstack/react-router"
-import RegisterForm from "@/components/auth/register-form"
+import RegisterForm from "@/client/components/auth/register-form"
 import { PublicLayout } from "@/client/components/public-layout"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/client/hooks/use-auth"
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,

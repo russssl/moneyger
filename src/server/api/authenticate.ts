@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/server/lib/auth";
 import { type AuthContext } from "better-auth";
 import { type MiddlewareHandler, type Env, type Context } from "hono";
 

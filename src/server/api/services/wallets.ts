@@ -13,7 +13,7 @@ export async function calculateWalletBalance(walletId: string) {
 
   const balance = transactions.reduce((acc, transaction) => {
     if (!transaction.amount) return acc;
-    return acc + transaction.amount;
+    return acc + Number(transaction.amount);
   }, 0);
 
   return balance;
@@ -274,8 +274,8 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
   for (const wallet of res_wallets) {
     // If we're calculating a past balance, we need to sum only transactions up to that point
     const walletBalance = startDate 
-      ? wallet.transactions.filter(t => t.type != "adjustment").reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
-      : wallet.balance;
+      ? wallet.transactions.filter(t => t.type != "adjustment").reduce((acc: number, t: Transaction) => acc + Number(t.amount ?? 0), 0)
+      : Number(wallet.balance);
 
     const exchangeRateData = await getCurrentExchangeRate(wallet.currency, userMainCurrency);
     totalBalance += walletBalance * exchangeRateData.rate;
@@ -285,9 +285,9 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
     totalBalance: Number(totalBalance.toFixed(2)),
     wallets: res_wallets.map((wallet) => ({
       ...wallet,
-      balance: startDate
-        ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + (t.amount ?? 0), 0)
-        : wallet.balance,
+      balance: String(startDate
+        ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + Number(t.amount ?? 0), 0)
+        : Number(wallet.balance)),
     }))
   }
 }
@@ -321,9 +321,9 @@ export async function calculateWalletTrends(
     
     // Calculate trend with 1 decimal place
     const trend = Number(
-      (!pastWallet || pastWallet.balance === 0)
-        ? (currentWallet.balance > 0 ? 100 : 0)
-        : ((currentWallet.balance - pastWallet.balance) / Math.abs(pastWallet.balance)) * 100
+      (!pastWallet || Number(pastWallet.balance) === 0)
+        ? (Number(currentWallet.balance) > 0 ? 100 : 0)
+        : ((Number(currentWallet.balance) - Number(pastWallet.balance)) / Math.abs(Number(pastWallet.balance))) * 100
     ).toFixed(1);
 
     acc[currentWallet.id] = Number(trend);

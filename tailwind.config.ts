@@ -5,13 +5,13 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 export default {
   darkMode: ["class"],
   content: [
-    "./src/**/*.{js,ts,jsx,tsx}", // Good
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
 
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ["var(--font-geist-sans)", ...fontFamily.sans]
+  			sans: ["var(--font-sans)", ...fontFamily.sans]
   		},
   		borderRadius: {
   			lg: "var(--radius)",

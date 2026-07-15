@@ -1,6 +1,6 @@
 
 import { createFileRoute } from "@tanstack/react-router"
-import SendResetPasswordEmailForm from "@/components/auth/send-reset-password-email"
+import SendResetPasswordEmailForm from "@/client/components/auth/send-reset-password-email"
 import { PublicLayout } from "@/client/components/public-layout"
 
 export const Route = createFileRoute("/forgot-password")({

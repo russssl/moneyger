@@ -1,8 +1,8 @@
 services:
-  next-app:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     environment:
       PUBLIC_APP_URL: ${PUBLIC_APP_URL}
       PUBLIC_ENVIRONMENT: ${PUBLIC_ENVIRONMENT:-development}

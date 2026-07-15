@@ -68,7 +68,9 @@ const config = {
   },
   "ignorePatterns": [
     "public/service-worker.js",
-    "src/env.js"
+    "src/env.js",
+    "dist",
+    "dist-server"
   ]
 }
 module.exports = config;

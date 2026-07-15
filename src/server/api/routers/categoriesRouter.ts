@@ -103,7 +103,7 @@ categoriesRouter.delete("/:id", authenticated, async (c) => {
 
   // Check if category is used in transactions
   const categoryInUse = await db.query.transactions.findFirst({
-    where: eq(transactions.categoryId, id),
+    where: and(eq(transactions.categoryId, id), eq(transactions.userId, user.id)),
   });
 
   if (categoryInUse) {

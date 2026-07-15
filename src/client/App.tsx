@@ -2,9 +2,9 @@ import { RouterProvider, createRouter } from "@tanstack/react-router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useState } from "react"
 import { I18nextProvider } from "react-i18next"
-import { ThemeProvider } from "@/components/common/theme-provider"
+import { ThemeProvider } from "@/client/components/common/theme-provider"
 import { PostHogProvider } from "./providers"
-import i18n from "@/i18n/client"
+import i18n from "@/client/i18n/client"
 import { routeTree } from "./routeTree.gen"
 
 const router = createRouter({ routeTree })

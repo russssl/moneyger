@@ -1,10 +1,10 @@
 import { type ReactNode } from "react"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/layout/app-sidebar"
-import { BottomBar } from "@/components/layout/bottom-bar"
-import { EnvironmentBadge } from "@/components/layout/environment-badge"
-import PersistentModals from "@/components/common/persistent-modals"
-import { useAuth } from "@/hooks/use-auth"
+import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar"
+import { AppSidebar } from "@/client/components/layout/app-sidebar"
+import { BottomBar } from "@/client/components/layout/bottom-bar"
+import { EnvironmentBadge } from "@/client/components/layout/environment-badge"
+import PersistentModals from "@/client/components/common/persistent-modals"
+import { useAuth } from "@/client/hooks/use-auth"
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { data: session } = useAuth()

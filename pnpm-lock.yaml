@@ -206,7 +206,7 @@ importers:
     devDependencies:
       '@tanstack/router-plugin':
         specifier: ^1.115.0
-        version: 1.168.18(@tanstack/react-router@1.170.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.19.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4))
+        version: 1.168.18(@tanstack/react-router@1.170.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.25.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4))
       '@types/eslint':
         specifier: ^8.56.10
         version: 8.56.12
@@ -234,6 +234,9 @@ importers:
       drizzle-kit:
         specifier: ^0.30.4
         version: 0.30.6
+      esbuild:
+        specifier: ^0.25.12
+        version: 0.25.12
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
@@ -5571,7 +5574,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.168.18(@tanstack/react-router@1.170.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.19.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4))':
+  '@tanstack/router-plugin@1.168.18(@tanstack/react-router@1.170.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(esbuild@0.25.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/template': 7.29.7
@@ -5580,7 +5583,7 @@ snapshots:
       '@tanstack/router-generator': 1.167.17
       '@tanstack/router-utils': 1.162.2
       chokidar: 5.0.0
-      unplugin: 3.3.0(esbuild@0.19.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4))
+      unplugin: 3.3.0(esbuild@0.25.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4))
       zod: 4.4.3
     optionalDependencies:
       '@tanstack/react-router': 1.170.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -7279,13 +7282,13 @@ snapshots:
 
   undici-types@6.21.0: {}
 
-  unplugin@3.3.0(esbuild@0.19.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4)):
+  unplugin@3.3.0(esbuild@0.25.12)(rollup@4.62.2)(vite@6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       picomatch: 4.0.4
       webpack-virtual-modules: 0.6.2
     optionalDependencies:
-      esbuild: 0.19.12
+      esbuild: 0.25.12
       rollup: 4.62.2
       vite: 6.4.3(@types/node@22.20.0)(jiti@1.21.7)(tsx@4.22.4)
 

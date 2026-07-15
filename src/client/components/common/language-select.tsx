@@ -1,0 +1,63 @@
+
+import * as React from "react"
+import { Globe } from "lucide-react"
+import { useTranslation } from "react-i18next"
+import { Button } from "@/client/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/client/components/ui/dropdown-menu"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from "@/client/components/ui/select";
+import { Label } from "@/client/components/ui/label";
+
+interface LanguageSelectProps {
+  language: string | undefined | null;
+  setLanguage: (languageCode: string | undefined | null) => void;
+}
+
+
+export function LanguageSelect({language, setLanguage}: LanguageSelectProps) {
+  const { t } = useTranslation("settings");
+  return (
+    <>
+      <Label>{t("language")}</Label>
+      <Select onValueChange={setLanguage} value={language ?? ""}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={t("select_language")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="en">{t("english")}</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    </>
+  )
+}
+
+export function LanguageToggle() {
+
+  const setLocale = (locale: string) => {
+    document.cookie = `locale=${locale}; path=/; max-age=31536000`;
+    window.location.reload();
+  };
+  
+  const { t } = useTranslation("settings");
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon">
+          <Globe />
+          <span className="sr-only">{t("language")}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setLocale("en")}>
+          {t("english")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

@@ -1,9 +1,9 @@
 
 import { createFileRoute, Navigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
-import { useAuth } from "@/hooks/use-auth"
-import PagesHeader from "@/components/layout/pages-header"
-import SavingsPageContent from "@/components/savings/savings-content"
+import { useAuth } from "@/client/hooks/use-auth"
+import PagesHeader from "@/client/components/layout/pages-header"
+import SavingsPageContent from "@/client/components/savings/savings-content"
 import { AppLayout } from "@/client/components/app-layout"
 
 export const Route = createFileRoute("/savings")({

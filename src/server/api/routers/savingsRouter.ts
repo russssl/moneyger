@@ -25,10 +25,10 @@ savingsRouter.get("/", authenticated, async (c) => {
   // Calculate amountLeftToGoal with currency conversion
   let amountLeftToGoal = 0;
   for (const wallet of wallets) {
-    if (wallet.savingAccountGoal && wallet.savingAccountGoal > 0) {
+    if (wallet.savingAccountGoal && Number(wallet.savingAccountGoal) > 0) {
       const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency);
-      const goalInMainCurrency = wallet.savingAccountGoal * exchangeRateData.rate;
-      const balanceInMainCurrency = wallet.balance * exchangeRateData.rate;
+      const goalInMainCurrency = Number(wallet.savingAccountGoal) * exchangeRateData.rate;
+      const balanceInMainCurrency = Number(wallet.balance) * exchangeRateData.rate;
       const remaining = Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
       amountLeftToGoal += remaining;
     }

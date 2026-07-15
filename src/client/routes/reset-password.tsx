@@ -1,6 +1,6 @@
 
 import { createFileRoute, useLocation } from "@tanstack/react-router"
-import ResetPasswordForm from "@/components/auth/reset-password-form"
+import ResetPasswordForm from "@/client/components/auth/reset-password-form"
 import { PublicLayout } from "@/client/components/public-layout"
 
 export const Route = createFileRoute("/reset-password")({

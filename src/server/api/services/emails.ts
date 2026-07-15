@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { ResetPasswordEmailTemplate } from "@/components/common/email-template";
+import { ResetPasswordEmailTemplate } from "@/server/components/email-template";
 import { Resend } from "resend";
 
 export async function sendResetPasswordEmail(
@@ -16,7 +16,7 @@ export async function sendResetPasswordEmail(
 
   try {
     const { data, error } = await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>",
+      from: env.EMAIL_FROM || "Moneyger <onboarding@resend.dev>",
       to: email,
       subject: "Reset Your Password",
       react: ResetPasswordEmailTemplate({

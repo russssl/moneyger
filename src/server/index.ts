@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { Hono } from "hono"
 import { cors } from "hono/cors"
-import { auth } from "@/lib/auth"
+import { auth } from "@/server/lib/auth"
 import { type AuthVariables } from "@/server/api/authenticate"
 import userRouter from "@/server/api/routers/userRouter"
 import walletsRouter from "@/server/api/routers/walletsRouter"
@@ -15,7 +15,7 @@ import { rateLimit, createRateLimiter, RATE_LIMITS } from "@/server/api/middlewa
 import { isUnderAttack } from "@/server/api/middleware/attackDetection"
 import { env } from "@/env"
 import { readFileSync } from "fs"
-import { join, extname } from "path"
+import { join } from "path"
 
 const app = new Hono<AuthVariables>()
 
@@ -29,13 +29,21 @@ app.use("*", async (c, next) => {
   c.header("X-XSS-Protection", "1; mode=block")
   c.header("Referrer-Policy", "strict-origin-when-cross-origin")
   c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+  c.header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https:; frame-src 'none'; object-src 'none'")
 })
 
 // CORS
 app.use("*", cors({
   origin: process.env.NODE_ENV === "production"
     ? (env.PUBLIC_APP_URL || "http://localhost:3000")
-    : ["http://localhost:5173", "http://localhost:3000"],
+    : (origin) => {
+        if (!origin) return origin;
+        try {
+          const url = new URL(origin);
+          if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return origin;
+        } catch {}
+        return "http://localhost:3000";
+      },
   allowHeaders: ["Content-Type", "Authorization", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"],
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   exposeHeaders: ["Content-Length", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"],
@@ -68,7 +76,7 @@ app.get("/api/healthcheck", createRateLimiter("public"), (c) => {
 })
 
 // Auth handler with rate limiting
-app.on(["GET", "POST"], "/api/auth/*", rateLimit({
+app.on(["GET", "POST", "PUT", "DELETE"], "/api/auth/*", rateLimit({
   ...RATE_LIMITS.auth,
   keyGenerator: (c) => {
     const forwarded = c.req.header("x-forwarded-for")
@@ -101,63 +109,30 @@ app.route("/api/transactions", transactionsRouter)
 app.route("/api/savings", savingsRouter)
 app.route("/api/categories", categoriesRouter)
 
-// Serve static files in production
+// Serve static assets in production
 const distDir = join(process.cwd(), "dist")
-const indexHtml = join(distDir, "index.html")
+const indexHtmlPath = join(distDir, "index.html")
+
+app.use("/assets/*", serveStatic({ root: distDir }))
+app.use("/favicon.ico", serveStatic({ root: distDir }))
+app.use("/favicon.svg", serveStatic({ root: distDir }))
+app.use("/icons/*", serveStatic({ root: distDir }))
 
 // SPA fallback - serve index.html for all non-API, non-auth routes
 app.get("*", async (c) => {
   const path = new URL(c.req.url).pathname
 
-  // Skip API and auth routes
   if (path.startsWith("/api/") || path.startsWith("/auth/")) {
     return c.notFound()
   }
 
   try {
-    const filePath = join(distDir, path === "/" ? "index.html" : path)
-    const ext = extname(filePath)
-
-    // If it has a file extension, try to serve the static file
-    if (ext) {
-      const data = readFileSync(filePath)
-      const contentType = getContentType(ext)
-      return c.body(data, 200, { "Content-Type": contentType })
-    }
-
-    // Otherwise serve index.html for SPA routing
-    const html = readFileSync(indexHtml, "utf-8")
+    const html = readFileSync(indexHtmlPath, "utf-8")
     return c.html(html)
   } catch {
-    // Fallback to index.html for SPA
-    try {
-      const html = readFileSync(indexHtml, "utf-8")
-      return c.html(html)
-    } catch {
-      return c.notFound()
-    }
+    return c.notFound()
   }
 })
-
-function getContentType(ext: string): string {
-  const map: Record<string, string> = {
-    ".html": "text/html",
-    ".css": "text/css",
-    ".js": "application/javascript",
-    ".json": "application/json",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".gif": "image/gif",
-    ".svg": "image/svg+xml",
-    ".ico": "image/x-icon",
-    ".woff": "font/woff",
-    ".woff2": "font/woff2",
-    ".ttf": "font/ttf",
-    ".eot": "application/vnd.ms-fontobject",
-  }
-  return map[ext] ?? "application/octet-stream"
-}
 
 app.onError((err, c) => {
   console.error(err)
@@ -169,7 +144,7 @@ app.onError((err, c) => {
 
 app.notFound((c) => c.json({ message: "The requested resource could not be found." }, 404))
 
-const port = Number(env.PORT) || 3000
+const port = Number(env.PORT)
 
 console.log(`Server running on http://localhost:${port}`)
 

@@ -1,9 +1,9 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import LoginProviders from "@/components/auth/login-providers"
-import { ThemeToggle } from "@/components/common/theme-toggle"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/client/components/ui/card"
+import LoginProviders from "@/client/components/auth/login-providers"
+import { ThemeToggle } from "@/client/components/common/theme-toggle"
 import { PublicLayout } from "@/client/components/public-layout"
 
 export const Route = createFileRoute("/login")({

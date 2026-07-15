@@ -2,36 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Next.js: debug server-side",
+      "name": "Debug Hono Server",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "node",
+      "runtimeArgs": ["--import", "tsx"],
       "env": {
         "NODE_OPTIONS": "--inspect"
       },
-      "args": ["node_modules/next/dist/bin/next", "dev"],
+      "args": ["${workspaceFolder}/src/server/index.ts"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"]
     },
     {
-      "name": "Next.js: debug client-side",
+      "name": "Debug Vite Client",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3000"
-    },
-    {
-      "name": "Next.js: debug client-side (Firefox)",
-      "type": "firefox",
-      "request": "launch",
-      "url": "http://localhost:3000",
-      "reAttach": true,
-      "pathMappings": [
-        {
-          "url": "webpack://_N_E",
-          "path": "${workspaceFolder}"
-        }
-      ]
+      "url": "http://localhost:5173"
     },
     {
       "name": "Debug Drizzle Migrations",
