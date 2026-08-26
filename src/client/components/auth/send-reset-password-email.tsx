@@ -44,7 +44,7 @@ export default function SendResetPasswordEmailForm() {
         description: "Please check your email for the reset link",
         variant: "success",
       })
-      navigate({ to: "/login" })
+      void navigate({ to: "/login" })
     } catch (error) {
       console.error(error)
       setError("An error occurred while sending the reset link")

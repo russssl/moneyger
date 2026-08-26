@@ -116,7 +116,6 @@ function SetupModalContent({ useStepper }: { useStepper: any }) {
       // Update currency state when userData changes
       setCurrency(userData.currency ?? undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData, hasInitialized, theme]);
 
   // Initialize wallet currency when main currency changes

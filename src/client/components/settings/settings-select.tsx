@@ -22,7 +22,6 @@ export default function SettingsSelect({ ...props }) {
     if (!(location.search as Record<string, string>)?.category) {
       void navigate({ to: location.pathname, search: { category: "account" }, replace: true });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSectionChange = (sectionId: string) => {

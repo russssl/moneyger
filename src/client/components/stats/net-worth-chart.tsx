@@ -24,6 +24,10 @@ export default function NetWorthChart({ className }: { className?: string | unde
   const { data, isLoading, error } = useFetch<NetWorthPoint[]>("/api/stats/net-worth", {
     queryKey: ["stats", "net-worth"],
   })
+  const { data: userData } = useFetch<{ currency?: string }>("/api/user/me", {
+    queryKey: ["user", "me"],
+  })
+  const displayCurrency = userData?.currency ?? "USD"
 
   if (isLoading) {
     return (
@@ -82,7 +86,7 @@ export default function NetWorthChart({ className }: { className?: string | unde
               <StatCardValue className="text-2xl">
                 {new Intl.NumberFormat("en-US", {
                   style: "currency",
-                  currency: "USD",
+                  currency: displayCurrency,
                 }).format(latest.netWorth)}
               </StatCardValue>
               {trend && delta !== undefined && (
@@ -90,7 +94,7 @@ export default function NetWorthChart({ className }: { className?: string | unde
                   {delta > 0 ? "+" : ""}
                   {new Intl.NumberFormat("en-US", {
                     style: "currency",
-                    currency: "USD",
+                    currency: displayCurrency,
                     maximumFractionDigits: 0,
                   }).format(delta)}{" "}
                   {t("vs_last_month")}

@@ -68,7 +68,7 @@ function TransactionsPage() {
         else next.set(k, v)
       })
       const qs = next.toString()
-      navigate({ to: location.pathname, search: qs || undefined, replace: true, resetScroll: false })
+      void navigate({ to: location.pathname, search: qs || undefined, replace: true, resetScroll: false })
     },
     [location.pathname, navigate, searchParams]
   )

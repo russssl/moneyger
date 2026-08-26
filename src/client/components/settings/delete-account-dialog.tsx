@@ -38,7 +38,7 @@ export default function DeleteAccountDialog() {
       toast.success(t("delete_account_success") || "Account deleted successfully")
       setOpen(false)
       setConfirmationText("")
-      navigate({ to: "/login" })
+      void navigate({ to: "/login" })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("unknown_error") || "Failed to delete account")
     }

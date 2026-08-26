@@ -2,7 +2,6 @@ import { cn } from "@/client/lib/utils";
 import { type Wallet } from "@/server/db/wallet";
 import EditWalletModal from "@/client/components/wallets/edit-wallet-modal";
 import { useState, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { Grid3x3, List } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/client/components/ui/card";
@@ -28,7 +27,6 @@ export default function SavingsList({ wallets, refetch }: { wallets: Wallet[], r
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode);
   const [isInitialized, setIsInitialized] = useState(false);
-  const navigate = useNavigate();
   const { t } = useTranslation("finances");
   const isMobile = useIsMobile();
 

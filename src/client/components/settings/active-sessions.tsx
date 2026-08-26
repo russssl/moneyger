@@ -42,8 +42,8 @@ function getDeviceIcon(ua?: string | null) {
   return <Monitor className="h-4 w-4" />
 }
 
-function parseUA(ua?: string | null) {
-  if (!ua) return "Unknown device"
+function parseUA(ua: string | null | undefined, unknownLabel = "Unknown device") {
+  if (!ua) return unknownLabel
   const parser = new UAParser(ua)
   const browser = parser.getBrowser()
   const os = parser.getOS()
@@ -94,7 +94,7 @@ export default function ActiveSessions() {
     queryFn: async () => {
       const res = await (authClient as unknown as { listSessions: () => Promise<{ data?: Session[]; error?: { message?: string } }> }).listSessions()
       if (res.error) throw new Error(res.error.message || t("unknown_error"))
-      return (res.data ?? []) as Session[]
+      return (res.data ?? [])
     },
     refetchOnWindowFocus: true,
   })
@@ -191,10 +191,10 @@ export default function ActiveSessions() {
                       <div className="mt-0.5 p-1.5 rounded-full bg-muted">{getDeviceIcon(s.userAgent)}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">{parseUA(s.userAgent)}</span>
+                          <span className="text-sm font-medium truncate">{parseUA(s.userAgent, t("unknown_device"))}</span>
                           {isCurrent && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary text-primary-foreground font-medium">{t("current")}</span>}
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">
+                        <div className="text-xs text-muted-foreground">
                           {s.ipAddress ? `${s.ipAddress} • ` : ""}
                           <span className="inline-flex items-center gap-1">
                             <Clock className="h-3 w-3" />

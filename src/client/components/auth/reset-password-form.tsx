@@ -32,7 +32,7 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         description: "You can now login with your new password",
         variant: "success",
       })
-      navigate({ to: "/login" })
+      void navigate({ to: "/login" })
     } catch (error) {
       console.error(error)
       setError("An error occurred while resetting your password")

@@ -108,10 +108,10 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut({
+            <DropdownMenuItem onClick={() => void signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  navigate({ to: "/login", replace: true })
+                  void navigate({ to: "/login", replace: true })
                 }
               }
             })}>

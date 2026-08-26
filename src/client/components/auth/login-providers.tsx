@@ -85,7 +85,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
               void navigate({ to: "/dashboard" })
             },
           },
-        } as unknown as Parameters<typeof signIn.passkey>[0])
+        })
       } catch {
         // ignore — autofill not available or no passkey
       }
@@ -203,16 +203,18 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
   useEffect(() => {
     fetch("/api/oidc-config")
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data?.enabled) setOidcConfig(data)
+      .then((data: unknown) => {
+        if (data && typeof data === "object" && "enabled" in data && (data as { enabled: boolean }).enabled) {
+          setOidcConfig(data as { enabled: boolean; name: string; providerId: string })
+        }
       })
-      .catch(() => {})
+      .catch(() => { /* ignore oidc config fetch failure */ })
   }, [])
 
   const signInWithOIDC = async (providerId: string) => {
     // genericOAuth registers as social provider; 1.7 also supports signIn.social for OIDC
     try {
-      await (signIn as unknown as { social: (opts: { provider: string }) => Promise<void> }).social({ provider: providerId as never });
+      await (signIn as unknown as { social: (opts: { provider: string }) => Promise<void> }).social({ provider: providerId });
     } catch {
       // fallback to oauth2 endpoint for older genericOAuth
       await (signIn as unknown as { oauth2: (opts: { providerId: string }) => Promise<void> }).oauth2({ providerId });
