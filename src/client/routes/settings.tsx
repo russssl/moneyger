@@ -13,6 +13,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/cli
 import { Label } from "@/client/components/ui/label"
 import { Palette, UserCog } from "lucide-react"
 import { ThemeSwitch } from "@/client/components/common/theme-toggle"
+import { ThemePicker } from "@/client/components/common/theme-picker"
 import GitHub from "@/client/components/icons/github"
 import Google from "@/client/components/icons/google"
 import PagesHeader from "@/client/components/layout/pages-header"
@@ -27,8 +28,7 @@ function SettingsPage() {
   const { data: session, isLoading: isPending } = useAuth()
   const { t } = useTranslation("settings")
   const location = useLocation()
-  const searchParams = new URLSearchParams(location.search)
-  const selectedCategory = searchParams.get("category") || "account"
+  const selectedCategory = (location.search as Record<string, string>)?.category || "account"
   const accounts: any[] = []
 
   if (isPending) return null
@@ -49,7 +49,9 @@ function SettingsPage() {
             <PasswordSettings passwordExists={true} />
             <Card className="sm:max-w-md">
               <CardHeader>
-                <CardTitle className="flex items-center">{t("connected_accounts")}</CardTitle>
+                <CardTitle className="flex items-center">
+                  {t("connected_accounts")}
+                </CardTitle>
                 <CardDescription>{t("connected_accounts_description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -93,6 +95,18 @@ function SettingsPage() {
                   <ThemeSwitch />
                   <p className="text-sm text-muted-foreground">{t("select_theme_preference")}</p>
                 </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Palette className="h-5 w-5 mr-2" />
+                  {t("color_scheme")}
+                </CardTitle>
+                <CardDescription>{t("select_color_scheme")}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ThemePicker />
               </CardContent>
             </Card>
           </div>

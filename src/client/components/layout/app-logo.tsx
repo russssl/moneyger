@@ -6,11 +6,14 @@ export default function AppLogo() {
   const navigate = useNavigate()
   const { t } = useTranslation("settings")
   const goHome = () => {
-    navigate({ to: "/" })
+    void navigate({ to: "/" })
   }
   return (
     <div className="flex items-center justify-center">
-      <div className="text-2xl font-bold text-blue-600 tracking-wide cursor-pointer" onClick={goHome}>
+      <div
+        className="text-xl font-semibold text-foreground tracking-tight cursor-pointer transition-opacity duration-200 hover:opacity-70"
+        onClick={goHome}
+      >
         {state === "collapsed" ? t("app_name_short") : t("app_name")}
       </div>
     </div>

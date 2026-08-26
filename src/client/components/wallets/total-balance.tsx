@@ -55,7 +55,9 @@ export default function TotalBalance() {
         "bg-card"
       )}>
         <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
-          <CardTitle className="text-base sm:text-lg">{t("wallets_title")}</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            {t("wallets_title")}
+          </CardTitle>
         </CardHeader>
         <CardContent className={cn(
           "pt-0 flex-1 flex flex-col px-4 sm:px-6",

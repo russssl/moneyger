@@ -157,6 +157,8 @@
     "customize_appearance": "Customize the appearance of the app.",
     "mode": "Mode",
     "select_theme_preference": "Select a theme preference or use your system settings.",
+    "color_scheme": "Color Scheme",
+    "select_color_scheme": "Choose a color palette for the app.",
     "passwords_match": "Passwords match",
     "requirement_met": " - Requirement met",
     "requirement_not_met": " - Requirement not met",

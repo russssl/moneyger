@@ -37,13 +37,13 @@ app.use("*", cors({
   origin: process.env.NODE_ENV === "production"
     ? (env.PUBLIC_APP_URL || "http://localhost:3000")
     : (origin) => {
-        if (!origin) return origin;
-        try {
-          const url = new URL(origin);
-          if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return origin;
-        } catch {}
-        return "http://localhost:3000";
-      },
+      if (!origin) return origin;
+      try {
+        const url = new URL(origin);
+        if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return origin;
+      } catch {}
+      return "http://localhost:3000";
+    },
   allowHeaders: ["Content-Type", "Authorization", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"],
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   exposeHeaders: ["Content-Length", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"],

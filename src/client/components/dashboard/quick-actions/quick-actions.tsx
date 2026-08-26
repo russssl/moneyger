@@ -76,8 +76,10 @@ export function QuickActions({ className }: { className?: string }) {
 
   return (
     <div className={cn("relative", className)}>
-      <div className="mb-2 sm:mb-3 md:mb-4">
-        <h3 className="font-semibold text-sm sm:text-base md:text-lg">{t("title")}</h3>
+      <div className="mb-3 sm:mb-4 md:mb-5">
+        <h3 className="font-semibold text-sm sm:text-base md:text-lg">
+          {t("title")}
+        </h3>
         <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("add_transaction_description")}</p>
       </div>
       <div className="relative">

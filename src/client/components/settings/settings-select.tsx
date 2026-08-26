@@ -1,6 +1,6 @@
 import { User, Palette, Tag } from "lucide-react"
 import { cn } from "@/client/lib/utils"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useNavigate, useLocation } from "@tanstack/react-router"
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from "@/client/components/ui/select"
 import { useTranslation } from "react-i18next"
@@ -9,34 +9,23 @@ export default function SettingsSelect({ ...props }) {
   const { t } = useTranslation("settings");
   const navigate = useNavigate();
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  
-  // Settings sections
+  const activeSection = (location.search as Record<string, string>)?.category || "account";
+
   const settingsSections = [
     { id: "account", label: t("account"), icon: User },
     { id: "appearance", label: t("appearance"), icon: Palette },
     { id: "categories", label: t("categories"), icon: Tag },
   ];
-  // Initialize state based on current param or default to 'account'
-  const [activeSection, setActiveSection] = useState(searchParams.get("category") || "account")
 
   useEffect(() => {
-    if (!searchParams.has("category")) {
-      navigate({ to: location.pathname, search: "category=account", replace: true });
+    if (!(location.search as Record<string, string>)?.category) {
+      void navigate({ to: location.pathname, search: { category: "account" }, replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const currentSection = searchParams.get("category");
-    if (currentSection && currentSection !== activeSection) {
-      setActiveSection(currentSection);
-    }
-  }, [searchParams, activeSection]);
-
   const handleSectionChange = (sectionId: string) => {
-    setActiveSection(sectionId);
-    navigate({ to: location.pathname, search: `category=${sectionId}` });
+    void navigate({ to: location.pathname, search: { category: sectionId } });
   };
 
   return (

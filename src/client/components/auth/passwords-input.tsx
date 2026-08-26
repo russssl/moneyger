@@ -28,41 +28,41 @@ export default function PasswordsInput({
   }, [isPasswordValid, localPassword, setPassword]);
 
   return (
-    <div>
-      <div className="space-y-2">
-        <Label htmlFor="password">
+    <div className="space-y-3.5">
+      <div className="space-y-1.5">
+        <Label htmlFor="password" className="text-sm font-medium">
           {t("password")}
-          <span className="text-destructive ms-1">*</span>
         </Label>
-        <PasswordInput 
-          password={localPassword} 
-          setPassword={setLocalPassword} 
-          placeholder={t("password")} 
+        <PasswordInput
+          id="password"
+          autoComplete="new-password"
+          password={localPassword}
+          setPassword={setLocalPassword}
+          placeholder={t("password")}
           disabled={false}
         />
       </div>
-      <div className="space-y-2 mt-4">
-        <Label htmlFor="password-confirmation">
+      <div className="space-y-1.5">
+        <Label htmlFor="password-confirmation" className="text-sm font-medium">
           {t("confirm_password")}
-          <span className="text-destructive ms-1">*</span>
         </Label>
-        <PasswordInput 
-          password={confirmPassword} 
-          setPassword={setConfirmPassword} 
+        <PasswordInput
+          id="password-confirmation"
+          autoComplete="new-password"
+          password={confirmPassword}
+          setPassword={setConfirmPassword}
           placeholder={t("confirm_password")}
           disabled={false}
         />
       </div>
-      <div className="mt-3">
-        {!isPasswordValid && confirmPassword.length > 0 && (
-          <div className="flex items-center space-x-2 text-red-500">
-            <AlertCircle size={16} />
-            <span>{t("passwords_do_not_match")}</span>
-          </div>
-        )}
-      </div>
+      {!isPasswordValid && confirmPassword.length > 0 && (
+        <p className="flex items-center gap-1.5 text-xs text-destructive">
+          <AlertCircle size={14} aria-hidden="true" />
+          {t("passwords_do_not_match")}
+        </p>
+      )}
       <div
-        className="mb-4 mt-3 h-1 w-full overflow-hidden rounded-full bg-border"
+        className="h-1 w-full overflow-hidden rounded-full bg-border"
         role="progressbar"
         aria-valuenow={strengthScore}
         aria-valuemin={0}
@@ -74,27 +74,29 @@ export default function PasswordsInput({
           style={{ width: `${(strengthScore / 4) * 100}%` }}
         />
       </div>
-      <p id="password-strength" className="mb-2 text-sm font-medium text-foreground">
-        {t(getStrengthText(strengthScore))}. {t("must_contain")}:
-      </p>
+      <div className="space-y-2">
+        <p id="password-strength" className="text-xs font-medium text-foreground">
+          {t(getStrengthText(strengthScore))}. {t("must_contain")}:
+        </p>
 
-      <ul className="space-y-1.5" aria-label="Password requirements">
-        {strength.map((req, index) => (
-          <li key={index} className="flex items-center gap-2">
-            {req.met ? (
-              <Check size={16} className="text-emerald-500" aria-hidden="true" />
-            ) : (
-              <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
-            )}
-            <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
-              {t(req.text)}
-              <span className="sr-only">
-                {req.met ? " - Requirement met" : " - Requirement not met"}
+        <ul className="space-y-1" aria-label="Password requirements">
+          {strength.map((req, index) => (
+            <li key={index} className="flex items-center gap-2">
+              {req.met ? (
+                <Check size={14} className="text-emerald-500 shrink-0" aria-hidden="true" />
+              ) : (
+                <X size={14} className="text-muted-foreground/60 shrink-0" aria-hidden="true" />
+              )}
+              <span className={`text-xs leading-tight ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
+                {t(req.text)}
+                <span className="sr-only">
+                  {req.met ? " - Requirement met" : " - Requirement not met"}
+                </span>
               </span>
-            </span>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }

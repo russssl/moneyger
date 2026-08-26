@@ -85,7 +85,9 @@ export function TransactionList() {
     <>
       <Card className="w-full h-full flex flex-col">
         <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
-          <CardTitle className="text-base sm:text-lg">{t("transactions_title")}</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            {t("transactions_title")}
+          </CardTitle>
           <Button asChild variant="ghost" size="sm" className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground">
             <Link to="/transactions">
               <span className="mr-1">{tGeneral("view_all")}</span>

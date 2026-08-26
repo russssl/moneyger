@@ -101,7 +101,7 @@ function TransactionsPage() {
         <PagesHeader />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
           <div className="mb-4 sm:mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-2">
               {t("transactions_title")}
             </h1>
           </div>

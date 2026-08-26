@@ -35,39 +35,39 @@ function DashboardPage() {
       <div className="min-h-screen bg-background">
         <PagesHeader />
         <main
-        className="max-w-[1700px] mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-6 md:py-8 pb-20 md:pb-12"
-        aria-label={tBreadcrumbs("dashboard")}
-      >
-        <header className="mb-4 sm:mb-6 md:mb-8">
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-1 sm:mb-2">
-            {t(getWelcomeMessage(), { name: displayName })}
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
-            {t("welcome_subtitle")}
-          </p>
-        </header>
+          className="max-w-[1700px] mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-6 md:py-8 pb-20 md:pb-12"
+          aria-label={tBreadcrumbs("dashboard")}
+        >
+          <header className="mb-6 sm:mb-8 md:mb-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight mb-1 sm:mb-2">
+              {t(getWelcomeMessage(), { name: displayName })}
+            </h1>
+            <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
+              {t("welcome_subtitle")}
+            </p>
+          </header>
 
-        <div className="mb-4 sm:mb-6 md:mb-8 hidden sm:block">
-          <QuickActions />
-        </div>
+          <div className="mb-4 sm:mb-6 md:mb-8 hidden sm:block">
+            <QuickActions />
+          </div>
 
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 items-stretch">
-          <div className="lg:col-span-5 flex">
-            <div className="w-full min-h-[280px]">
-              <TotalBalance />
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6 items-stretch">
+            <div className="lg:col-span-5 flex">
+              <div className="w-full min-h-[280px]">
+                <TotalBalance />
+              </div>
             </div>
-          </div>
-          <div className="lg:col-span-7 flex">
-            <div className="w-full min-h-[280px]">
-              <TransactionList />
+            <div className="lg:col-span-7 flex">
+              <div className="w-full min-h-[280px]">
+                <TransactionList />
+              </div>
             </div>
-          </div>
-          <div className="lg:col-span-12">
-            <NetWorthChart />
-          </div>
-        </section>
-      </main>
-    </div>
+            <div className="lg:col-span-12">
+              <NetWorthChart />
+            </div>
+          </section>
+        </main>
+      </div>
     </AppLayout>
   )
 }

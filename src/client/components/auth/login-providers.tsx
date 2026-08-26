@@ -11,23 +11,23 @@ import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/client/ho
 import { Button } from "@/client/components/ui/button";
 import { Link } from "@tanstack/react-router";
 
-const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/80 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
+const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/60 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
 function ProviderButton({ provider, onClick, last, t }: { provider: SocialProvider, onClick: () => void, last: boolean, t: (key: string) => string }) {
   return (
-    <Button  type="button" onClick={onClick}  variant="outline"
-      className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
-      <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+    <Button type="button" onClick={onClick} variant="outline"
+      className="w-full h-10 text-sm flex items-center justify-center hover:bg-accent/50 transition-colors group relative overflow-hidden">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-4 w-4 items-center justify-center text-muted-foreground [&_svg]:h-4 [&_svg]:w-4">
           {provider.icon}
-        </div>
-        <span className="font-medium text-sm">{provider.name}</span>
+        </span>
+        <span className="font-medium">{provider.name}</span>
       </div>
       {last && (
-        <div className="absolute right-3 flex items-center gap-1">
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-xs text-green-600 font-medium">{t("last_used")}</span>
-        </div>
+        <span className="absolute right-3 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
+          <span className="text-xs font-medium text-accent">{t("last_used")}</span>
+        </span>
       )}
     </Button>
   );
@@ -35,13 +35,11 @@ function ProviderButton({ provider, onClick, last, t }: { provider: SocialProvid
 
 function PasskeyButton({ onClick, t }: { onClick: () => void, t: (key: string) => string }) {
   return (
-    <Button variant="outline" onClick={onClick} className="w-full h-12 flex items-center justify-center hover:bg-accent hover:border-accent-foreground/20 transition-all duration-200 group relative overflow-hidden">
-      <div className="flex items-center gap-3">
-        <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-          <Key size={16} />
-        </div>
-        <span className="font-medium text-sm">{t("passkey")}</span>
-      </div>
+    <Button variant="outline" onClick={onClick} className="w-full h-10 text-sm flex items-center justify-center hover:bg-accent/50 transition-colors group relative overflow-hidden">
+      <span className="flex items-center gap-2.5">
+        <Key size={16} className="text-muted-foreground" />
+        <span className="font-medium">{t("passkey")}</span>
+      </span>
     </Button>
   );
 }
@@ -82,7 +80,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
       }
 
       await queryClient.invalidateQueries({ queryKey: ["session"] });
-      navigate({ to: "/dashboard" });
+      void navigate({ to: "/dashboard" });
     } catch (e) {
       console.error(e);
       setError(t("unknown_error"));
@@ -102,8 +100,8 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
       autoFill: false,
       fetchOptions: {
         onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["session"] });
-      navigate({ to: "/dashboard" });
+          await queryClient.invalidateQueries({ queryKey: ["session"] });
+          void navigate({ to: "/dashboard" });
         },
         onError: (ctx) => {
           setError(ctx.error.message ?? t("unknown_error"));
@@ -114,34 +112,40 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
 
   return (
     <>
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div>
-          <div className="space-y-1">
-            <Label htmlFor="email">
+      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+        <div className="space-y-3.5">
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm font-medium">
               {t("email")}
-              <span className="text-destructive ms-1">*</span>
             </Label>
             <Input
               id="email"
               placeholder={t("email")}
               type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="h-10 text-[16px] sm:text-sm"
             />
           </div>
-          <div className="space-y-1 mt-2">
-            <Label htmlFor="password">
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-sm font-medium">
               {t("password")}
-              <span className="text-destructive ms-1">*</span>
             </Label>
             <div className="relative">
               <Input
                 id="password"
-                className="pe-9"
+                className="pe-9 h-10 text-[16px] sm:text-sm"
                 placeholder={t("password")}
                 type={isVisible ? "text" : "password"}
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <button
                 className={passwordButtonStyle}
@@ -159,33 +163,36 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
               </button>
             </div>
           </div>
-          {error && <ErrorAlert error={error} className="mt-3" />}
-          <LoadingButton loading={loading} className="w-full mt-5" type="submit">
-            {t("login")}
-          </LoadingButton>
-          <div className="text-center mt-3">
-            <Link to="/forgot-password" className="text-blue-500 ml-2">
-              {t("forgot_password")}
-            </Link>
-          </div>
+        </div>
+        {error && <ErrorAlert error={error} className="mt-3" />}
+        <LoadingButton loading={loading} className="w-full mt-4 h-10 text-sm font-medium" type="submit">
+          {t("login")}
+        </LoadingButton>
+        <div className="text-center">
+          <Link
+            to="/forgot-password"
+            className="inline-flex min-h-[44px] items-center px-2 text-sm text-muted-foreground underline underline-offset-4 decoration-muted-foreground/30 hover:text-foreground hover:decoration-foreground/40 transition-colors"
+          >
+            {t("forgot_password")}
+          </Link>
         </div>
       </form>
-      <div className="relative mt-6 mb-2">
+      <div className="relative my-5">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-background px-2 text-muted-foreground">
+        <div className="relative flex justify-center">
+          <span className="bg-background px-3 text-xs tracking-wide uppercase text-muted-foreground">
             {t("or_continue_with")}
           </span>
         </div>
       </div>
       <div className="space-y-2">
         {providers.map((provider) => (
-          <ProviderButton 
-            key={provider.provider} 
-            provider={provider} 
-            onClick={() => signInWithProvider(provider)} 
+          <ProviderButton
+            key={provider.provider}
+            provider={provider}
+            onClick={() => signInWithProvider(provider)}
             last={lastLoginMethod === provider.provider}
             t={t}
           />

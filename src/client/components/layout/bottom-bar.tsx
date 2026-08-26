@@ -15,7 +15,7 @@ import {
 export function BottomBar({ updateList }: { updateList: () => void }) {
   const { t } = useTranslation("navbar")
   const { t: tBreadcrumbs } = useTranslation("breadcrumbs")
-  const itemStyle = "flex flex-col items-center justify-center py-1 text-muted-foreground hover:text-foreground active:text-foreground"
+  const itemStyle = "flex flex-col items-center justify-center py-1.5 text-muted-foreground hover:text-foreground active:text-foreground transition-colors duration-200"
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background md:hidden">
       <div className="safe-area-bottom">
