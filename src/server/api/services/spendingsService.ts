@@ -1,12 +1,11 @@
 import { transactions } from "@/server/db/transaction";
 import { wallets } from "@/server/db/wallet";
 import { user } from "@/server/db/user";
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, eq, lt, sql } from "drizzle-orm";
 import db from "@/server/db";
 import { getCurrentExchangeRate } from "./wallets";
 
 export async function getNetWorthForMonth(userId: string, month: number, year: number): Promise<number> {
-  const startDate = new Date(year, month, 1);
   const endExclusive = new Date(year, month + 1, 1);
 
   const [userRow] = await db
@@ -38,7 +37,6 @@ export async function getNetWorthForMonth(userId: string, month: number, year: n
     .leftJoin(wallets, eq(transactions.walletId, wallets.id))
     .where(and(
       eq(transactions.userId, userId),
-      gte(transactions.transaction_date, startDate),
       lt(transactions.transaction_date, endExclusive),
     ))
     .groupBy(wallets.currency);
@@ -46,12 +44,13 @@ export async function getNetWorthForMonth(userId: string, month: number, year: n
   let total = 0;
   for (const row of grouped) {
     const fromCurrency = row.currency ?? userMainCurrency;
+    const net = Number(row.net ?? 0);
     if (fromCurrency === userMainCurrency) {
-      total += row.net ?? 0;
+      total += net;
       continue;
     }
     const exchangeRateData = await getCurrentExchangeRate(fromCurrency, userMainCurrency);
-    total += (row.net ?? 0) * exchangeRateData.rate;
+    total += net * exchangeRateData.rate;
   }
 
   return Number(total.toFixed(2));

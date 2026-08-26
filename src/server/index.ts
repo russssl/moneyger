@@ -70,9 +70,51 @@ app.use("*", async (c, next) => {
   await next()
 })
 
+// OIDC config for login UI — single generic provider, customizable via OIDC_NAME
+app.get("/api/oidc-config", (c) => {
+  const isHttpsUrl = (url?: string) => {
+    try {
+      return !!url && new URL(url).protocol === "https:"
+    } catch {
+      return false
+    }
+  }
+  const isDev = env.NODE_ENV !== "production"
+  const enabled = !!env.OIDC_DISCOVERY_URL && !!env.OIDC_CLIENT_ID && !!env.OIDC_CLIENT_SECRET && (isDev || isHttpsUrl(env.OIDC_DISCOVERY_URL))
+  return c.json({
+    enabled,
+    name: env.OIDC_NAME || "OIDC",
+    providerId: "oidc",
+  })
+})
+
 // Healthcheck
 app.get("/api/healthcheck", createRateLimiter("public"), (c) => {
   return c.json({ status: "ok" })
+})
+
+// Revoke session cooldown — prevent attacker who just logged in from immediately revoking legitimate sessions
+const REVOKE_MIN_AGE_MS = 5 * 60 * 1000
+app.use("/api/auth/*", async (c, next) => {
+  const path = new URL(c.req.url).pathname
+  if (c.req.method !== "POST" || !path.startsWith("/api/auth/revoke")) return next()
+  try {
+    const sessionData = await auth.api.getSession({ headers: c.req.raw.headers })
+    const session = (sessionData as unknown as { session?: { createdAt?: string | Date } } | null)?.session
+    if (session?.createdAt) {
+      const age = Date.now() - new Date(session.createdAt).getTime()
+      if (age < REVOKE_MIN_AGE_MS) {
+        const waitSec = Math.ceil((REVOKE_MIN_AGE_MS - age) / 1000)
+        return c.json(
+          { message: `For security, please wait ${Math.ceil(waitSec / 60)} minute(s) after sign-in before revoking sessions.`, code: "REVOKE_COOLDOWN" },
+          403
+        )
+      }
+    }
+  } catch {
+    // if we can't determine session, let auth handler decide (e.g. 401)
+  }
+  await next()
 })
 
 // Auth handler with rate limiting

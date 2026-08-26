@@ -1,5 +1,5 @@
 import { Card, CardTitle, CardHeader, CardContent } from "@/client/components/ui/card";
-import {Briefcase } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import { cn } from "@/client/lib/utils";
 import DashboardWallets from "./dashboard-wallets";
 import { useFetch } from "@/client/hooks/use-api";
@@ -8,6 +8,7 @@ import { NoItems } from "@/client/components/common/no-items";
 import { type Wallet } from "@/server/db/wallet";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { StatCard, StatCardLabel, StatCardValue } from "@/client/components/ui/stat-card";
 
 
 const ICON_SIZE = "h-6 w-6 sm:h-8 sm:w-8";
@@ -50,26 +51,18 @@ export default function TotalBalance() {
 
   return (
     <div className="h-full">
-      <Card className={cn(
-        "w-full h-full flex flex-col",
-        "bg-card"
-      )}>
+      <Card className={cn("w-full h-full flex flex-col", "bg-card")}>
         <CardHeader className="pb-3 sm:pb-6 flex flex-row items-center justify-between gap-2 space-y-0">
-          <CardTitle className="text-base sm:text-lg">
-            {t("wallets_title")}
-          </CardTitle>
+          <CardTitle className="text-base sm:text-lg">{t("wallets_title")}</CardTitle>
         </CardHeader>
-        <CardContent className={cn(
-          "pt-0 flex-1 flex flex-col px-4 sm:px-6",
-        )}>
+        <CardContent className={cn("pt-0 flex-1 flex flex-col px-4 sm:px-6")}>
           <div className="space-y-3 sm:space-y-4 flex-1 flex flex-col">
             {isLoading ? (
               <>
-                <div className="flex items-baseline justify-between">
-                  <div className="flex flex-col gap-0.5">
-                    <Skeleton className="h-10 sm:h-6 md:h-8 w-48 sm:w-40" />
-                  </div>
-                </div>
+                <StatCard className="border-0 p-0 shadow-none">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-48" />
+                </StatCard>
                 <div className="space-y-1.5 flex-1 flex flex-col">
                   {[...Array(3)].map((_, i) => (
                     <div key={i} className="flex items-center justify-between p-2.5 sm:p-3 border rounded-md">
@@ -88,19 +81,20 @@ export default function TotalBalance() {
             ) : (
               <>
                 {wallets?.length > 0 && (
-                  <div className="flex items-baseline justify-between">
-                    <div className="flex flex-col gap-0.5">
-                      <div className={cn(
-                        "text-3xl sm:text-xl md:text-2xl",
-                        "font-semibold"
-                      )}>
-                        {totalBalance ? totalBalance.toLocaleString("en-US", {
+                  <StatCard className="border-0 p-0 shadow-none gap-1.5">
+                    <StatCardLabel>{t("total_balance")}</StatCardLabel>
+                    <StatCardValue className="text-2xl sm:text-2xl md:text-3xl">
+                      {totalBalance
+                        ? totalBalance.toLocaleString("en-US", {
                           style: "currency",
-                          currency: userMainCurrency ?? "USD"
-                        }) : "0"}
-                      </div>
-                    </div>
-                  </div>
+                          currency: userMainCurrency ?? "USD",
+                        })
+                        : new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: userMainCurrency ?? "USD",
+                        }).format(0)}
+                    </StatCardValue>
+                  </StatCard>
                 )}
                 <div className="space-y-1.5 flex-1 flex flex-col">
                   {wallets?.length === 0 ? (
@@ -108,9 +102,7 @@ export default function TotalBalance() {
                       <NoItems icon={Briefcase} title={t("no_wallets_found")} description={t("no_wallets_found_desc")} />
                     </div>
                   ) : (
-                    <>
-                      <DashboardWallets wallets={wallets} iconSize={ICON_SIZE} textSizes={TEXT_SIZES} refetch={refetch}/>
-                    </>
+                    <DashboardWallets wallets={wallets} iconSize={ICON_SIZE} textSizes={TEXT_SIZES} refetch={refetch} />
                   )}
                 </div>
               </>

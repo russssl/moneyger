@@ -9,6 +9,8 @@ import PasswordSettings from "@/client/components/settings/password-settings"
 import CategoriesSettings from "@/client/components/settings/categories-settings"
 import ConnectedAccount from "@/client/components/settings/account/connected-account"
 import DeleteAccountDialog from "@/client/components/settings/delete-account-dialog"
+import TwoFactorSettings from "@/client/components/settings/two-factor-settings"
+import ActiveSessions from "@/client/components/settings/active-sessions"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/client/components/ui/card"
 import { Label } from "@/client/components/ui/label"
 import { Palette, UserCog } from "lucide-react"
@@ -46,12 +48,9 @@ function SettingsPage() {
         {selectedCategory === "account" && (
           <div className={categoryGroupStyle}>
             <ProfileSettings session={session} />
-            <PasswordSettings passwordExists={true} />
             <Card className="sm:max-w-md">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  {t("connected_accounts")}
-                </CardTitle>
+                <CardTitle className="flex items-center">{t("connected_accounts")}</CardTitle>
                 <CardDescription>{t("connected_accounts_description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -70,13 +69,18 @@ function SettingsPage() {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <h3 className="font-medium text-destructive">{t("delete_account")}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("delete_account_description")}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t("delete_account_description")}</p>
                   <DeleteAccountDialog />
                 </div>
               </CardContent>
             </Card>
+          </div>
+        )}
+        {selectedCategory === "security" && (
+          <div className={categoryGroupStyle}>
+            <PasswordSettings passwordExists={true} />
+            <TwoFactorSettings />
+            <ActiveSessions />
           </div>
         )}
         {selectedCategory === "appearance" && (

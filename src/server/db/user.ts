@@ -15,8 +15,24 @@ export const user = pgTable("user", {
     .notNull(),
   username: text("username").unique(),
   displayUsername: text("display_username"),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
   currency: text("currency").default("USD"),
 });
+
+export const twoFactor = pgTable(
+  "two_factor",
+  {
+    id: text("id").primaryKey(),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    verified: boolean("verified").default(true),
+    failedVerificationCount: integer("failed_verification_count").default(0),
+    lockedUntil: timestamp("locked_until"),
+  },
+);
 
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
@@ -90,6 +106,7 @@ export const passkey = pgTable("passkey", {
 export const usersRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   sessions: many(session),
+  twoFactors: many(twoFactor),
 }));
 
 export const accountsRelations = relations(account, ({ one }) => ({

@@ -1,4 +1,4 @@
-import { User, Palette, Tag } from "lucide-react"
+import { User, Palette, Tag, Shield } from "lucide-react"
 import { cn } from "@/client/lib/utils"
 import { useEffect } from "react"
 import { useNavigate, useLocation } from "@tanstack/react-router"
@@ -13,6 +13,7 @@ export default function SettingsSelect({ ...props }) {
 
   const settingsSections = [
     { id: "account", label: t("account"), icon: User },
+    { id: "security", label: t("security", { defaultValue: "Security" }), icon: Shield },
     { id: "appearance", label: t("appearance"), icon: Palette },
     { id: "categories", label: t("categories"), icon: Tag },
   ];

@@ -4,12 +4,14 @@ import { Label } from "@/client/components/ui/label";
 import { ErrorAlert } from "@/client/components/common/error-alert";
 import LoadingButton from "@/client/components/common/loading-button";
 import { useNavigate } from "@tanstack/react-router";
-import { Eye, EyeOff, Key } from "lucide-react";
+import { Eye, EyeOff, Key, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/client/hooks/use-session";
+import { authClient } from "@/client/hooks/auth-client";
 import { Button } from "@/client/components/ui/button";
 import { Link } from "@tanstack/react-router";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/client/components/ui/input-otp";
 
 const passwordButtonStyle = "absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-lg text-muted-foreground/60 outline-offset-2 transition-colors hover:text-foreground focus:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -50,6 +52,10 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [useBackupCode, setUseBackupCode] = useState(false);
 
   const queryClient = useQueryClient();
   const { t } = useTranslation("register_login");
@@ -60,6 +66,35 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     const lastMethod = getLastUsedLoginMethod();
     setLastLoginMethod(lastMethod);
   }, []);
+
+  useEffect(() => {
+    // 1.7 passkeys through browser autofill — conditional mediation
+    let cancelled = false
+    const triggerAutofill = async () => {
+      try {
+        if (typeof window === "undefined" || !window.PublicKeyCredential) return
+        const isCMA = (window.PublicKeyCredential as unknown as { isConditionalMediationAvailable?: () => Promise<boolean> }).isConditionalMediationAvailable
+        if (!isCMA) return
+        const available = await isCMA.call(window.PublicKeyCredential)
+        if (!available || cancelled) return
+        await signIn.passkey({
+          autoFill: true,
+          fetchOptions: {
+            onSuccess: async () => {
+              await queryClient.invalidateQueries({ queryKey: ["session"] })
+              void navigate({ to: "/dashboard" })
+            },
+          },
+        } as unknown as Parameters<typeof signIn.passkey>[0])
+      } catch {
+        // ignore — autofill not available or no passkey
+      }
+    }
+    void triggerAutofill()
+    return () => {
+      cancelled = true
+    }
+  }, [queryClient, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +107,25 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
         return;
       }
 
-      const { error } = await signIn.email({ email, password });
+      const res = await signIn.email(
+        { email, password },
+        {
+          onSuccess: (ctx) => {
+            const data = ctx.data as unknown as { twoFactorRedirect?: boolean };
+            if (data?.twoFactorRedirect) {
+              setRequiresTwoFactor(true);
+            }
+          },
+        }
+      ) as unknown as { data?: { twoFactorRedirect?: boolean }; error?: { message?: string } };
 
-      if (error?.message) {
-        setError(error.message);
+      if ((res as unknown as { data?: { twoFactorRedirect?: boolean } })?.data?.twoFactorRedirect) {
+        setRequiresTwoFactor(true);
+        return;
+      }
+
+      if (res.error?.message) {
+        setError(res.error.message);
         return;
       }
 
@@ -89,10 +139,84 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     }
   };
 
+  const handleVerifyTwoFactor = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (useBackupCode) {
+      await handleVerifyBackupCode();
+      return;
+    }
+    if (twoFactorCode.length !== 6) {
+      setError(t("enter_6_digit_code_error"));
+      return;
+    }
+    setTwoFactorLoading(true);
+    setError("");
+    try {
+      const res = await (authClient as unknown as {
+        twoFactor: { verifyTotp: (opts: { code: string; trustDevice?: boolean }) => Promise<{ error?: { message?: string } }> };
+      }).twoFactor.verifyTotp({ code: twoFactorCode });
+      if (res.error) {
+        setError(res.error.message || t("invalid_code_try_backup"));
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      void navigate({ to: "/dashboard" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("unknown_error"));
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleVerifyBackupCode = async () => {
+    if (!twoFactorCode) {
+      setError(t("enter_backup_code_error"));
+      return;
+    }
+    setTwoFactorLoading(true);
+    setError("");
+    try {
+      const res = await (authClient as unknown as {
+        twoFactor: { verifyBackupCode: (opts: { code: string }) => Promise<{ error?: { message?: string } }> };
+      }).twoFactor.verifyBackupCode({ code: twoFactorCode });
+      if (res.error) {
+        setError(res.error.message || t("invalid_backup_code"));
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      void navigate({ to: "/dashboard" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("unknown_error"));
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
   const signInWithProvider = async (provider: SocialProvider) => {
     await signIn.social({
       provider: provider.provider,
     });
+  }
+
+  const [oidcConfig, setOidcConfig] = useState<{ enabled: boolean; name: string; providerId: string } | null>(null)
+
+  useEffect(() => {
+    fetch("/api/oidc-config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.enabled) setOidcConfig(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  const signInWithOIDC = async (providerId: string) => {
+    // genericOAuth registers as social provider; 1.7 also supports signIn.social for OIDC
+    try {
+      await (signIn as unknown as { social: (opts: { provider: string }) => Promise<void> }).social({ provider: providerId as never });
+    } catch {
+      // fallback to oauth2 endpoint for older genericOAuth
+      await (signIn as unknown as { oauth2: (opts: { providerId: string }) => Promise<void> }).oauth2({ providerId });
+    }
   }
 
   const logInWithPasskey = async () => {
@@ -110,6 +234,76 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     });
   }
 
+  if (requiresTwoFactor) {
+    return (
+      <form className="space-y-4" onSubmit={handleVerifyTwoFactor} noValidate>
+        <div className="text-center space-y-1">
+          <h3 className="text-sm font-medium">{t("two_factor_code")}</h3>
+          <p className="text-xs text-muted-foreground">
+            {useBackupCode ? t("enter_backup_code") : t("enter_6_digit_authenticator")}
+          </p>
+        </div>
+        <div className="flex justify-center py-2">
+          {useBackupCode ? (
+            <Input
+              placeholder={t("enter_backup_code")}
+              value={twoFactorCode}
+              onChange={(e) => setTwoFactorCode(e.target.value)}
+              className="h-10 text-sm text-center font-mono"
+              autoFocus
+            />
+          ) : (
+            <InputOTP maxLength={6} value={twoFactorCode} onChange={setTwoFactorCode}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          )}
+        </div>
+        {error && <ErrorAlert error={error} />}
+        <LoadingButton
+          loading={twoFactorLoading}
+          className="w-full h-10 text-sm font-medium"
+          type="submit"
+          disabled={useBackupCode ? !twoFactorCode : twoFactorCode.length !== 6}
+          onClick={useBackupCode ? (e) => { e.preventDefault(); void handleVerifyBackupCode(); } : undefined}
+        >
+          {t("verify")}
+        </LoadingButton>
+        <div className="flex flex-col gap-2 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setUseBackupCode(!useBackupCode)
+              setTwoFactorCode("")
+              setError("")
+            }}
+            className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            {useBackupCode ? t("use_authenticator_code") : t("use_backup_code")}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setRequiresTwoFactor(false)
+              setTwoFactorCode("")
+              setUseBackupCode(false)
+              setError("")
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            {t("back_to_login")}
+          </button>
+        </div>
+      </form>
+    )
+  }
+
   return (
     <>
       <form className="space-y-4" onSubmit={handleSubmit} noValidate>
@@ -123,7 +317,7 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
               placeholder={t("email")}
               type="email"
               inputMode="email"
-              autoComplete="email"
+              autoComplete="username webauthn"
               autoCapitalize="none"
               spellCheck={false}
               value={email}
@@ -198,6 +392,19 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
           />
         ))}
         <PasskeyButton onClick={() => logInWithPasskey()} t={t} />
+        {oidcConfig?.enabled && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void signInWithOIDC(oidcConfig.providerId).catch((e) => setError(e instanceof Error ? e.message : t("unknown_error")))}
+            className="w-full h-10 text-sm flex items-center justify-center hover:bg-accent/50 transition-colors"
+          >
+            <span className="flex items-center gap-2.5">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{t("continue_with_oidc", { name: oidcConfig.name })}</span>
+            </span>
+          </Button>
+        )}
       </div>
     </>
   );
