@@ -26,7 +26,7 @@ export const Route = createFileRoute("/settings")({
 })
 
 function SettingsPage() {
-  const categoryGroupStyle = "grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,350px)] gap-4 px-0 sm:px-4 justify-center md:justify-start w-full"
+  const categoryGroupStyle = "grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,350px)] gap-4 justify-center md:justify-start w-full"
   const { data: session, isLoading: isPending } = useAuth()
   const { t } = useTranslation("settings")
   const location = useLocation()
@@ -42,84 +42,86 @@ function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className="h-full gap-6 p-4 sm:p-6">
+      <div className="min-h-screen bg-background">
         <PagesHeader />
-        <SettingsSelect className="mt-4" />
-        {selectedCategory === "account" && (
-          <div className={categoryGroupStyle}>
-            <ProfileSettings session={session} />
-            <Card className="sm:max-w-md">
-              <CardHeader>
-                <CardTitle className="flex items-center">{t("connected_accounts")}</CardTitle>
-                <CardDescription>{t("connected_accounts_description")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ConnectedAccount accounts={accounts} provider={{ id: "github", name: "Github", icon: <GitHub /> }} />
-                <ConnectedAccount accounts={accounts} provider={{ id: "google", name: "Google", icon: <Google /> }} />
-              </CardContent>
-            </Card>
-            <Card className="sm:max-w-md">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <UserCog className="h-5 w-5 mr-2" />
-                  {t("account_actions")}
-                </CardTitle>
-                <CardDescription>{t("manage_account_status")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <h3 className="font-medium text-destructive">{t("delete_account")}</h3>
-                  <p className="text-sm text-muted-foreground">{t("delete_account_description")}</p>
-                  <DeleteAccountDialog />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        {selectedCategory === "security" && (
-          <div className={categoryGroupStyle}>
-            <PasswordSettings passwordExists={true} />
-            <TwoFactorSettings />
-            <ActiveSessions />
-          </div>
-        )}
-        {selectedCategory === "appearance" && (
-          <div className={categoryGroupStyle}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Palette className="h-5 w-5 mr-2" />
-                  {t("theme")}
-                </CardTitle>
-                <CardDescription>{t("customize_appearance")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <Label>{t("mode")}</Label>
-                  <ThemeSwitch />
-                  <p className="text-sm text-muted-foreground">{t("select_theme_preference")}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Palette className="h-5 w-5 mr-2" />
-                  {t("color_scheme")}
-                </CardTitle>
-                <CardDescription>{t("select_color_scheme")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ThemePicker />
-              </CardContent>
-            </Card>
-          </div>
-        )}
-        {selectedCategory === "categories" && (
-          <div className={categoryGroupStyle}>
-            <CategoriesSettings />
-          </div>
-        )}
+        <div className="max-w-[1700px] mx-auto p-4 sm:p-6">
+          <SettingsSelect />
+          {selectedCategory === "account" && (
+            <div className={categoryGroupStyle}>
+              <ProfileSettings session={session} />
+              <Card className="sm:max-w-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center">{t("connected_accounts")}</CardTitle>
+                  <CardDescription>{t("connected_accounts_description")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ConnectedAccount accounts={accounts} provider={{ id: "github", name: "Github", icon: <GitHub /> }} />
+                  <ConnectedAccount accounts={accounts} provider={{ id: "google", name: "Google", icon: <Google /> }} />
+                </CardContent>
+              </Card>
+              <Card className="sm:max-w-md">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <UserCog className="h-5 w-5 mr-2" />
+                    {t("account_actions")}
+                  </CardTitle>
+                  <CardDescription>{t("manage_account_status")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-2">
+                    <h3 className="font-medium text-destructive">{t("delete_account")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("delete_account_description")}</p>
+                    <DeleteAccountDialog />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          {selectedCategory === "security" && (
+            <div className={categoryGroupStyle}>
+              <PasswordSettings passwordExists={true} />
+              <TwoFactorSettings />
+              <ActiveSessions />
+            </div>
+          )}
+          {selectedCategory === "appearance" && (
+            <div className={categoryGroupStyle}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Palette className="h-5 w-5 mr-2" />
+                    {t("theme")}
+                  </CardTitle>
+                  <CardDescription>{t("customize_appearance")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-3">
+                    <Label>{t("mode")}</Label>
+                    <ThemeSwitch />
+                    <p className="text-sm text-muted-foreground">{t("select_theme_preference")}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Palette className="h-5 w-5 mr-2" />
+                    {t("color_scheme")}
+                  </CardTitle>
+                  <CardDescription>{t("select_color_scheme")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ThemePicker />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          {selectedCategory === "categories" && (
+            <div className={categoryGroupStyle}>
+              <CategoriesSettings />
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   )
