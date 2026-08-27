@@ -9,7 +9,7 @@
 
 - 💸 Basic income and expense tracking  
 - 🗂️ Categorization of transactions  
-- 🖥️ Responsive web interface with Next.js and Tailwind CSS  
+- 🖥️ Responsive web interface with React and Tailwind CSS  
 - 🔒 Type-safe database interactions with Drizzle ORM  
 - 🐳 Containerized setup for easy deployment  
 
@@ -17,9 +17,9 @@
 
 ## Tech Stack 🛠️
 
-- **Frontend:** Next.js, React, Tailwind CSS  
-- **Backend:** Node.js with Bun runtime, Drizzle ORM  
-- **Database:** PostgreSQL (or your choice via config)  
+- **Frontend:** React, TanStack Router, TanStack Query, Vite, Tailwind CSS  
+- **Backend:** Hono (Node.js), Drizzle ORM, PostgreSQL  
+- **Auth:** Better Auth  
 - **Containerization:** Docker & Docker Compose  
 
 ## Getting Started 🚀

@@ -1,4 +1,5 @@
 import { account, type Account, user as users} from "@/server/db/user";
+import { wallets } from "@/server/db/wallet";
 import { and, eq, ne } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -6,6 +7,7 @@ import { authenticated, type AuthVariables, getUserData } from "../authenticate"
 import { zValidator } from "@hono/zod-validator";
 import db from "@/server/db";
 import { createRateLimiter } from "../middleware/rateLimit";
+import bcrypt from "bcryptjs";
 
 const userRouter = new Hono<AuthVariables>();
 
@@ -23,10 +25,10 @@ userRouter.get("/me", authenticated, async (c) => {
 });
 
 userRouter.post("/setPassword", authenticated, createRateLimiter("sensitive"), zValidator("json", z.object({
-  password: z.string(),
+  password: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number"),
   confirmPassword: z.string(),
 })), async (c) => {
-  const { user, context } = await getUserData(c);
+  const { user } = await getUserData(c);
   const { password, confirmPassword } = c.req.valid("json");
 
   if (password !== confirmPassword) {
@@ -42,15 +44,23 @@ userRouter.post("/setPassword", authenticated, createRateLimiter("sensitive"), z
     return c.json({ error: "Password is already set" }, 400);
   }
 
-  const passwordHash = await context.password.hash(password);
-  await context.internalAdapter.updatePassword(user.id, passwordHash);
+  const passwordHash = await bcrypt.hash(password, 10);
+  await db.insert(account).values({
+    id: crypto.randomUUID(),
+    accountId: user.id,
+    providerId: "credential",
+    userId: user.id,
+    password: passwordHash,
+  }).execute();
 
   return c.json({ message: "Password set successfully" });
 });
 
+const ALLOWED_CURRENCIES = ["USD", "EUR", "GBP", "JPY", "PLN", "CHF", "UAH", "CZK"] as const;
+
 userRouter.post("/", authenticated, zValidator("json", z.object({
   email: z.string().email().optional(),
-  currency: z.string().optional(),
+  currency: z.string().optional().refine((v) => !v || (ALLOWED_CURRENCIES as readonly string[]).includes(v), { message: `Currency must be one of: ${ALLOWED_CURRENCIES.join(", ")}` }),
 })), async (c) => {
   const { user } = await getUserData(c);
 
@@ -64,12 +74,27 @@ userRouter.post("/", authenticated, zValidator("json", z.object({
     return c.json({ error: "User not found" }, 400);
   }
 
+  if (typeof email !== "undefined" && email.toLowerCase() !== userData.email.toLowerCase()) {
+    const existing = await db.query.user.findFirst({ where: eq(users.email, email.toLowerCase()) });
+    if (existing) {
+      return c.json({ error: "Email already in use" }, 409);
+    }
+  }
+
   const updateData: Record<string, unknown> = {};
-  if (typeof email !== "undefined") updateData.email = email;
+  if (typeof email !== "undefined") updateData.email = email.toLowerCase();
   if (typeof currency !== "undefined") updateData.currency = currency;
 
   if (Object.keys(updateData).length > 0) {
-    await db.update(users).set(updateData).where(eq(users.id, user.id)).execute();
+    try {
+      await db.update(users).set(updateData).where(eq(users.id, user.id)).execute();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("unique") || msg.includes("duplicate") || msg.includes("user_email_unique")) {
+        return c.json({ error: "Email already in use" }, 409);
+      }
+      throw e;
+    }
   }
 
   return c.json({ message: "User updated successfully" });
@@ -77,9 +102,9 @@ userRouter.post("/", authenticated, zValidator("json", z.object({
 
 userRouter.post("/updatePassword", authenticated, createRateLimiter("sensitive"), zValidator("json", z.object({
   oldPassword: z.string(),
-  newPassword: z.string(),
+  newPassword: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Z]/, "Password must contain at least one uppercase letter").regex(/[a-z]/, "Password must contain at least one lowercase letter").regex(/[0-9]/, "Password must contain at least one number"),
 })), async (c) => {
-  const { user, context } = await getUserData(c);
+  const { user } = await getUserData(c);
   const { oldPassword, newPassword } = c.req.valid("json");
 
   const userData = await db.query.user.findFirst({
@@ -94,22 +119,19 @@ userRouter.post("/updatePassword", authenticated, createRateLimiter("sensitive")
     },
   });
 
-  const credentialsProvider = userData?.accounts.find((account: Partial<Account>) => account.providerId === "credential");
+  const credentialsProvider = userData?.accounts.find((acc: Partial<Account>) => acc.providerId === "credential");
   if (!credentialsProvider) {
     return c.json({ error: "Credentials provider not found" }, 400);
   }
 
-  const passwordsAreSame = await context.password.verify({
-    password: oldPassword,
-    hash: credentialsProvider.password ?? "",
-  });
+  const isValid = credentialsProvider.password ? await bcrypt.compare(oldPassword, credentialsProvider.password) : false;
 
-  if (!passwordsAreSame) {
+  if (!isValid) {
     return c.json({ error: "Old password is incorrect" }, 400);
   }
 
-  const passwordHash = await context.password.hash(newPassword);
-  await context.internalAdapter.updatePassword(user.id, passwordHash);
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await db.update(account).set({ password: passwordHash }).where(and(eq(account.userId, user.id), eq(account.providerId, "credential"))).execute();
 
   return c.json({ message: "Password updated successfully" });
 });
@@ -135,16 +157,24 @@ userRouter.delete("/accounts", authenticated, zValidator("query", z.object({
 })), async (c) => {
   const { user } = await getUserData(c);
   const { providerId } = c.req.valid("query");
-  
+
   const accountToRemove = await db.query.account.findFirst({
     where: and(
       eq(account.userId, user.id),
       eq(account.providerId, providerId),
     ),
   });
-  
+
   if (!accountToRemove) {
     return c.json({ error: "Account not found" }, 400);
+  }
+
+  const remainingAccounts = await db.query.account.findMany({
+    where: eq(account.userId, user.id),
+  });
+  const remainingAfter = remainingAccounts.filter((a) => a.id !== accountToRemove.id);
+  if (remainingAfter.length === 0) {
+    return c.json({ error: "Cannot remove last login method. Set a password first." }, 400);
   }
 
   await db.delete(account).where(eq(account.id, accountToRemove.id)).execute();
@@ -155,6 +185,8 @@ userRouter.delete("/accounts", authenticated, zValidator("query", z.object({
 userRouter.delete("/", authenticated, createRateLimiter("sensitive"), async (c) => {
   const { user: currentUser } = await getUserData(c);
 
+  // wallets.userId FK is NO ACTION in migration 0000_dark_shinobi_shaw.sql; delete dependents first to avoid FK violation
+  await db.delete(wallets).where(eq(wallets.userId, currentUser.id)).execute();
   await db.delete(users).where(eq(users.id, currentUser.id)).execute();
 
   return c.json({ message: "User deleted successfully" });

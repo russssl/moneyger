@@ -1,7 +1,7 @@
 import { user, wallets, transactions, transfers, categories } from "../db/schema";
 import db from "../db";
 import { and, eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { auth } from "@/server/lib/auth";
 import crypto from "crypto";
 import { execSync } from "child_process";
 
@@ -19,6 +19,13 @@ const runCommand = (command: string) => {
 async function seedDemoUser() {
   console.log("🚀 Starting seeding process...");
 
+  const SEED_WALLETS = Number(process.env.SEED_WALLETS ?? 250);
+  const SEED_TRANSACTIONS = Number(process.env.SEED_TRANSACTIONS ?? 1_000_000);
+  const SEED_TRANSFERS = Number(process.env.SEED_TRANSFERS ?? 25_000);
+  const INSERT_BATCH_SIZE = Number(process.env.SEED_BATCH_SIZE ?? 5_000);
+  const DAYS_SPREAD = Number(process.env.SEED_DAYS_SPREAD ?? 365 * 3);
+  const MAX_TX_PER_WALLET = Number(process.env.SEED_MAX_TX_PER_WALLET ?? 25_000);
+
   // 1. Reset Docker
   console.log("♻️  Resetting Docker...");
   runCommand("docker compose down -v");
@@ -30,7 +37,7 @@ async function seedDemoUser() {
 
   // 3. Migrate database
   console.log("🛠  Migrating database...");
-  runCommand("bun run db:migrate");
+  runCommand("pnpm run db:migrate");
   console.log("✅ Database migrated.");
 
   let demoUser = await db
@@ -67,6 +74,13 @@ async function seedDemoUser() {
     return;
   }
 
+  // Ensure demo user is verified (so seed works even when REQUIRES_EMAIL_CONFIRMATION=true)
+  if (!demoUser.emailVerified) {
+    console.log("✉️  Marking demo user as emailVerified...");
+    await db.update(user).set({ emailVerified: true }).where(eq(user.email, "demo@demo.com"));
+    demoUser.emailVerified = true;
+  }
+
   // Ensure currency is USD
   console.log("💲 Setting currency to USD...");
   await db
@@ -74,24 +88,17 @@ async function seedDemoUser() {
     .set({ currency: "USD" })
     .where(eq(user.email, "demo@demo.com"));
 
-  // --- 5. Prepare Data Arrays ---
+  // --- 5. Prepare seed data ---
   const availableCurrencies = ["USD", "EUR", "GBP", "JPY", "PLN"] as const;
-  const walletNamesByType: Record<string, string[]> = {
-    USD: ["Main Checking", "Savings - Emergency", "Cash USD", "Brokerage"],
-    EUR: ["Euro Travel", "Revolut EUR", "Savings - House"],
-    GBP: ["UK Account", "Pocket Money"],
-    JPY: ["Japan Trip"],
-    PLN: ["Polish Zloty", "Family PLN"],
-  };
-  const walletsToInsert: typeof wallets.$inferInsert[] = [];
-  const transactionsToInsert: typeof transactions.$inferInsert[] = [];
 
-  console.log("🧠 Generating data in memory...");
+  console.log("🧠 Preparing categories...");
 
   const categoriesData: typeof categories.$inferInsert[] = [
     { name: "Salary", type: "income", iconName: "banknote", createdBy: demoUser.id },
     { name: "Investment", type: "income", iconName: "trending-up", createdBy: demoUser.id },
     { name: "Gifts", type: "income", iconName: "gift", createdBy: demoUser.id },
+    { name: "Bonus", type: "income", iconName: "sparkles", createdBy: demoUser.id },
+    { name: "Side Hustle", type: "income", iconName: "briefcase", createdBy: demoUser.id },
     { name: "Groceries", type: "expense", iconName: "shopping-cart", createdBy: demoUser.id },
     { name: "Housing", type: "expense", iconName: "home", createdBy: demoUser.id },
     { name: "Transport", type: "expense", iconName: "car", createdBy: demoUser.id },
@@ -99,77 +106,45 @@ async function seedDemoUser() {
     { name: "Health", type: "expense", iconName: "heart-pulse", createdBy: demoUser.id },
     { name: "Shopping", type: "expense", iconName: "shopping-bag", createdBy: demoUser.id },
     { name: "Dining", type: "expense", iconName: "utensils", createdBy: demoUser.id },
+    { name: "Subscriptions", type: "expense", iconName: "receipt", createdBy: demoUser.id },
+    { name: "Travel", type: "expense", iconName: "plane", createdBy: demoUser.id },
+    { name: "Education", type: "expense", iconName: "graduation-cap", createdBy: demoUser.id },
   ];
   console.log("💾 Inserting categories...");
   const insertedCategories = await db.insert(categories).values(categoriesData).returning();
-  const incomeCategories = insertedCategories.filter(c => c.type === "income");
-  const expenseCategories = insertedCategories.filter(c => c.type === "expense");
+  const incomeCategories = insertedCategories.filter((c) => c.type === "income");
+  const expenseCategories = insertedCategories.filter((c) => c.type === "expense");
 
-  let walletIndex = 0;
-  for (const currency of availableCurrencies) {
-    const names = walletNamesByType[currency] ?? [`Wallet ${currency}`];
-    for (let n = 0; n < names.length; n++) {
-      const walletId = crypto.randomUUID();
-      const name = names[n];
-      const isSavingAccount = (name?.toLowerCase().includes("savings")) || (currency === "EUR" && n === 2);
-      const baseBalance = isSavingAccount ? Math.floor(Math.random() * 15000) + 5000 : Math.floor(Math.random() * 8000) + 500;
-      const walletBalance = walletIndex === 0 ? baseBalance + 10000 : baseBalance;
-      const savingAccountGoal = isSavingAccount ? walletBalance + Math.floor(Math.random() * 5000) + 2000 : 0;
-      walletsToInsert.push({
-        id: walletId,
-        userId: demoUser.id,
-        name: name ?? `Wallet ${walletIndex + 1}`,
-        balance: walletBalance,
-        isSavingAccount: !!isSavingAccount,
-        savingAccountGoal,
-        description: `${currency} account for debugging`,
-        currency,
-      });
+  const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)]!;
+  const randInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-      const txCount = walletIndex === 0 ? 35 : walletIndex === 1 ? 5 : 12 + Math.floor(Math.random() * 15);
-      const daysSpread = 120;
-      for (let j = 0; j < txCount; j++) {
-        const isExpense = Math.random() > 0.45;
-        const type = isExpense ? "expense" : "income";
-        const list = type === "income" ? incomeCategories : expenseCategories;
-        const randomCategory = list[Math.floor(Math.random() * list.length)]!;
-        const amount = isExpense
-          ? (Math.random() < 0.2 ? Math.floor(Math.random() * 20) + 1 : Math.floor(Math.random() * 800) + 10)
-          : (Math.random() < 0.15 ? Math.floor(Math.random() * 5000) + 1000 : Math.floor(Math.random() * 1500) + 200);
-        const date = new Date();
-        date.setDate(date.getDate() - Math.floor(Math.random() * daysSpread));
-        date.setHours(0, 0, 0, 0);
-        transactionsToInsert.push({
-          userId: demoUser.id,
-          walletId,
-          amount,
-          type,
-          categoryId: randomCategory.id,
-          transaction_date: date,
-        });
-      }
-      walletIndex++;
-    }
-  }
-  // Add recent transactions (today / yesterday) on first wallet for date-filter debugging
-  const firstWallet = walletsToInsert[0];
-  if (firstWallet && expenseCategories[0]) {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-    const recentCats = [incomeCategories[0], expenseCategories[0], expenseCategories[1]].filter(Boolean);
-    const fallbackCatId = expenseCategories[0].id;
-    for (const d of [today, yesterday]) {
-      const cat = recentCats[Math.floor(Math.random() * recentCats.length)];
-      const categoryId: string = cat?.id ?? fallbackCatId;
-      transactionsToInsert.push({
-        userId: demoUser.id,
-        walletId: firstWallet.id!,
-        amount: Math.floor(Math.random() * 80) + 10,
-        type: "expense",
-        categoryId,
-        transaction_date: d,
-      });
-    }
+  console.log(`💼 Generating ${SEED_WALLETS} wallets...`);
+  const walletsToInsert: typeof wallets.$inferInsert[] = [];
+  const walletIds: string[] = [];
+  const walletCurrencyById = new Map<string, string>();
+  const walletBalanceById = new Map<string, number>();
+
+  for (let i = 0; i < SEED_WALLETS; i++) {
+    const currency = pick([...availableCurrencies]);
+    const walletId = crypto.randomUUID();
+    const isSavingAccount = Math.random() < 0.18;
+    const initialBalance = isSavingAccount ? randInt(2_000, 50_000) : randInt(0, 20_000);
+    const savingAccountGoal = isSavingAccount ? initialBalance + randInt(1_000, 20_000) : 0;
+
+    walletsToInsert.push({
+      id: walletId,
+      userId: demoUser.id,
+      name: `${currency} Wallet ${String(i + 1).padStart(3, "0")}`,
+      balance: String(initialBalance),
+      isSavingAccount,
+      savingAccountGoal: String(savingAccountGoal),
+      description: `Seed wallet ${i + 1}`,
+      currency,
+    });
+
+    walletIds.push(walletId);
+    walletCurrencyById.set(walletId, currency);
+    walletBalanceById.set(walletId, initialBalance);
   }
 
   // --- 6. Execute Inserts with GUARDS ---
@@ -182,63 +157,140 @@ async function seedDemoUser() {
     console.log("⚠️ No wallets to insert.");
   }
 
-  // B. Transactions
-  if (transactionsToInsert.length > 0) {
-    console.log(`💾 Inserting ${transactionsToInsert.length} transactions...`);
-    await db.insert(transactions).values(transactionsToInsert);
-  } else {
-    console.log("⚠️ No transactions to insert.");
+  console.log(`💸 Seeding ~${SEED_TRANSACTIONS.toLocaleString()} transactions in batches of ${INSERT_BATCH_SIZE.toLocaleString()}...`);
+  let insertedTx = 0;
+  const maxTxPerWallet = Math.max(1, Math.floor(Math.min(MAX_TX_PER_WALLET, SEED_TRANSACTIONS / Math.max(walletIds.length, 1) * 2)));
+  const txCountByWallet = new Map<string, number>();
+
+  let batch: typeof transactions.$inferInsert[] = [];
+  const baseDate = new Date();
+  baseDate.setHours(0, 0, 0, 0);
+
+  const flushBatch = async () => {
+    if (batch.length === 0) return;
+    await db.insert(transactions).values(batch);
+    insertedTx += batch.length;
+    batch = [];
+    if (insertedTx % (INSERT_BATCH_SIZE * 10) === 0) {
+      console.log(`✅ Inserted ${insertedTx.toLocaleString()} / ${SEED_TRANSACTIONS.toLocaleString()} transactions...`);
+    }
+  };
+
+  while (insertedTx < SEED_TRANSACTIONS) {
+    const walletId = pick(walletIds);
+    const wCount = (txCountByWallet.get(walletId) ?? 0);
+    if (wCount >= maxTxPerWallet) continue;
+    txCountByWallet.set(walletId, wCount + 1);
+
+    const expenseWeight = 0.58;
+    const isExpense = Math.random() < expenseWeight;
+    const type = isExpense ? "expense" : "income";
+    const catList = isExpense ? expenseCategories : incomeCategories;
+    const cat = pick(catList);
+
+    const amount = isExpense
+      ? (Math.random() < 0.75 ? randInt(5, 180) : randInt(181, 2200))
+      : (Math.random() < 0.85 ? randInt(80, 1800) : randInt(1801, 20000));
+
+    const daysAgo = randInt(0, DAYS_SPREAD);
+    const txDate = new Date(baseDate);
+    txDate.setDate(txDate.getDate() - daysAgo);
+
+    const delta = type === "income" ? amount : -amount;
+    walletBalanceById.set(walletId, (walletBalanceById.get(walletId) ?? 0) + delta);
+
+    batch.push({
+      userId: demoUser.id,
+      walletId,
+      amount: String(amount),
+      type,
+      categoryId: cat.id,
+      transaction_date: txDate,
+    });
+
+    if (batch.length >= INSERT_BATCH_SIZE) {
+      await flushBatch();
+    }
   }
+  await flushBatch();
+  console.log(`💾 Transactions inserted: ${insertedTx.toLocaleString()}.`);
 
   // Generate transfers: varied count, dates, and same- vs cross-currency
+  console.log(`🔁 Creating ${SEED_TRANSFERS.toLocaleString()} transfers (batched)...`);
   let transfersCreated = 0;
-  const maxTransferAttempts = 40;
-  for (let i = 0; i < maxTransferAttempts && transfersCreated < 25; i++) {
-    const fromWalletId = walletsToInsert[Math.floor(Math.random() * walletsToInsert.length)]?.id;
-    const toWalletId = walletsToInsert[Math.floor(Math.random() * walletsToInsert.length)]?.id;
-    if (!fromWalletId || !toWalletId || fromWalletId === toWalletId) continue;
+  let transferBatch: typeof transfers.$inferInsert[] = [];
+  let transferTxBatch: typeof transactions.$inferInsert[] = [];
 
-    const amount = Math.random() < 0.3 ? Math.floor(Math.random() * 200) + 20 : Math.floor(Math.random() * 1200) + 100;
-    const date = new Date();
-    date.setDate(date.getDate() - Math.floor(Math.random() * 90));
-    date.setHours(0, 0, 0, 0);
-    const sameCurrency = Math.random() > 0.4;
-    const exchangeRate = sameCurrency ? 1 : 0.8 + Math.random() * 0.4;
-    const amountReceived = amount * exchangeRate;
+  const flushTransfers = async () => {
+    if (transferTxBatch.length) {
+      const inserted = await db.insert(transactions).values(transferTxBatch).returning({ id: transactions.id });
+      for (let i = 0; i < inserted.length; i++) {
+        const txId = inserted[i]?.id;
+        const tr = transferBatch[i];
+        if (txId && tr) tr.transactionId = txId;
+      }
+      await db.insert(transfers).values(transferBatch.filter((t) => !!t.transactionId));
+      transferBatch = [];
+      transferTxBatch = [];
+    }
+  };
 
-    const [fromWallet, toWallet] = await Promise.all([
-      db.query.wallets.findFirst({ where: eq(wallets.id, fromWalletId), columns: { balance: true } }),
-      db.query.wallets.findFirst({ where: eq(wallets.id, toWalletId), columns: { balance: true } }),
-    ]);
-    if (!fromWallet || !toWallet || fromWallet.balance < amount) continue;
+  while (transfersCreated < SEED_TRANSFERS) {
+    const fromWalletId = pick(walletIds);
+    const toWalletId = pick(walletIds);
+    if (fromWalletId === toWalletId) continue;
 
-    const [transaction] = await db.insert(transactions).values({
+    const fromBal = walletBalanceById.get(fromWalletId) ?? 0;
+    const amount = Math.random() < 0.7 ? randInt(10, 400) : randInt(401, 5_000);
+    if (fromBal < amount) continue;
+
+    const fromCurrency = walletCurrencyById.get(fromWalletId) ?? "USD";
+    const toCurrency = walletCurrencyById.get(toWalletId) ?? "USD";
+    const sameCurrency = fromCurrency === toCurrency;
+    const exchangeRate = sameCurrency ? 1 : 0.7 + Math.random() * 0.8;
+    const amountReceived = Math.round(amount * exchangeRate * 100) / 100;
+
+    const daysAgo = randInt(0, Math.min(365, DAYS_SPREAD));
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - daysAgo);
+
+    walletBalanceById.set(fromWalletId, fromBal - amount);
+    walletBalanceById.set(toWalletId, (walletBalanceById.get(toWalletId) ?? 0) + amountReceived);
+
+    transferTxBatch.push({
       userId: demoUser.id,
       walletId: fromWalletId,
-      amount,
+      amount: String(amount),
       type: "transfer",
       transaction_date: date,
-    }).returning({ id: transactions.id });
-    if (!transaction) continue;
+    });
 
-    await db.insert(transfers).values({
+    transferBatch.push({
       userId: demoUser.id,
-      transactionId: transaction.id,
+      transactionId: "",
       fromWalletId,
       toWalletId,
-      amountSent: amount,
-      amountReceived,
-      exchangeRate,
+      amountSent: String(amount),
+      amountReceived: String(amountReceived),
+      exchangeRate: String(exchangeRate),
       createdAt: date,
       updatedAt: date,
     });
-    await Promise.all([
-      db.update(wallets).set({ balance: fromWallet.balance - amount }).where(and(eq(wallets.id, fromWalletId), eq(wallets.userId, demoUser.id))),
-      db.update(wallets).set({ balance: toWallet.balance + amountReceived }).where(and(eq(wallets.id, toWalletId), eq(wallets.userId, demoUser.id))),
-    ]);
+
     transfersCreated++;
+    if (transferTxBatch.length >= Math.min(INSERT_BATCH_SIZE, 2000)) {
+      await flushTransfers();
+      if (transfersCreated % 10_000 === 0) console.log(`✅ Transfers created: ${transfersCreated.toLocaleString()}`);
+    }
   }
-  console.log(`💾 Transfers created: ${transfersCreated}.`);
+  await flushTransfers();
+  console.log(`💾 Transfers created: ${transfersCreated.toLocaleString()}.`);
+
+  console.log("🏦 Syncing final wallet balances...");
+  for (const w of walletsToInsert) {
+    const finalBalance = walletBalanceById.get(w.id!) ?? 0;
+    await db.update(wallets).set({ balance: String(finalBalance) }).where(and(eq(wallets.id, w.id!), eq(wallets.userId, demoUser.id)));
+  }
 
   console.log("✨ Seeding complete, email: demo@demo.com, password: Tr0ub4dor&3-Correct-Horse-Battery-Staple");
 }

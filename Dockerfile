@@ -1,31 +1,26 @@
-FROM oven/bun:1 AS builder
+FROM node:22-slim AS builder
 
-# Accept build arguments for Next.js public environment variables
-ARG NEXT_PUBLIC_APP_URL
-ARG NEXT_PUBLIC_ENVIRONMENT
+ARG PUBLIC_APP_URL
+ARG PUBLIC_ENVIRONMENT
 
-# Set environment variables for build time
 ENV SKIP_ENV_VALIDATION=true
-ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-ENV NEXT_PUBLIC_ENVIRONMENT=${NEXT_PUBLIC_ENVIRONMENT}
+ENV PUBLIC_APP_URL=${PUBLIC_APP_URL}
+ENV PUBLIC_ENVIRONMENT=${PUBLIC_ENVIRONMENT}
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
-
-RUN bun install --frozen-lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY . .
+RUN pnpm run build
 
-RUN bun run build
-
-FROM oven/bun:1
+FROM node:22-slim
 
 WORKDIR /app
 
 COPY --from=builder /app ./
 
-# prod and staging ports
-EXPOSE 4000 4001 
+EXPOSE 3000
 
-CMD sh -c 'bun run db:migrate && bun start'
+CMD sh -c 'pnpm run db:migrate && pnpm start'

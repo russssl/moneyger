@@ -1,0 +1,112 @@
+import { useEffect, useState } from "react"
+import { Wallet, MoreVertical, PlusCircle } from "lucide-react"
+import { Button } from "@/client/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/client/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/client/components/ui/dropdown-menu"
+import EditWalletModal from "@/client/components/wallets/edit-wallet-modal"
+import { LoadingSpinner } from "@/client/components/ui/loading"
+import { NoItems } from "@/client/components/common/no-items"
+import { useTranslation } from "react-i18next"
+import { type Wallet as WalletType } from "@/server/db/wallet"
+import { useFetch } from "@/client/hooks/use-api"
+
+export default function Wallets({className}: {className?: string | undefined}) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+  const [items, setItems] = useState<WalletType[]>([]);
+  const { data: wallets, isLoading, refetch } = useFetch<WalletType[]>("/api/wallets", { queryKey: ["wallets", "list"] });
+  const { t } = useTranslation("finances");
+
+  useEffect(() => {
+    if (wallets) {
+      setItems(wallets);
+    }
+  }, [wallets]);
+
+  const openModal = (id?: string | null) => {
+    setSelectedId(id || undefined); 
+    setIsModalOpen(true);
+  };
+
+  const deleteWallet = async (id: string) => {
+    setItems(prevItems => prevItems.filter(item => item.id !== id));
+    setIsModalOpen(false);
+    setSelectedId(undefined);
+  };
+
+  return (
+    <div className={className}>
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{t("wallets_title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex justify-center mb-4 min-h-[120px] items-center">
+              <LoadingSpinner />
+            </div>
+          ) : items.length === 0 ? (
+            <div className="min-h-[120px] flex items-center justify-center">
+              <NoItems
+                icon={Wallet}
+                title={t("no_wallets")}
+                description={t("no_wallets_desc")}
+              />
+            </div>
+          ) : (
+            items.map(item => (
+              <FinanceItem key={item.id} item={item} onEdit={openModal} onDelete={() => deleteWallet(item.id)}/>
+            ))
+          )}
+          <div className="mt-4">
+            <Button className="w-full" onClick={() => openModal()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t("add_wallet")}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+      <EditWalletModal open={isModalOpen} onOpenChange={setIsModalOpen} onSave={() => refetch()} id={selectedId} onDelete={(id) => deleteWallet(id)}/>
+    </div>
+  );
+}
+
+type FinanceItemProps = {
+  item: {
+    id: string;
+    name: string | null;
+    balance?: string | number | null;
+    currency?: string | null;
+  };
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+};
+
+function FinanceItem({ item, onEdit, onDelete }: FinanceItemProps) {
+  const details = `${Number(item.balance ?? 0).toLocaleString()} ${item.currency}`;
+  const { t } = useTranslation("service");
+  
+  return (
+    <div className="flex items-center justify-between space-x-4 mb-4">
+      <div className="flex items-center space-x-4">
+        <Wallet className="h-8 w-8 text-blue-500" />
+        <div>
+          <p className="text-sm font-medium leading-none">{item.name}</p>
+          <p className="text-sm text-muted-foreground">{details}</p>
+        </div>
+      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onEdit(item.id)}>{t("edit")}</DropdownMenuItem>
+          <DropdownMenuItem className="text-red-600" onClick={() => onDelete(item.id)}>{t("delete")}</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}

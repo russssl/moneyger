@@ -2,7 +2,7 @@ import {
   pgTable,
   timestamp,
   varchar,
-  doublePrecision,
+  numeric,
   boolean,
 } from "drizzle-orm/pg-core";
 import { user } from "./user";
@@ -16,11 +16,11 @@ export const wallets = pgTable("wallet", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: varchar("user_id", { length: 255 })
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
-  balance: doublePrecision("balance").default(0).notNull(),
+  balance: numeric("balance").default("0").notNull(),
   isSavingAccount: boolean("is_saving_account").default(false),
-  savingAccountGoal: doublePrecision("saving_account_goal").default(0),
+  savingAccountGoal: numeric("saving_account_goal").default("0"),
   description: varchar("description", { length: 255 }),
   iconName: varchar("icon_name", { length: 255 }),
   currency: varchar("currency", { length: 255 }).notNull(),

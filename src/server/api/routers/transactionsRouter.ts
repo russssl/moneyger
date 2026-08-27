@@ -7,6 +7,7 @@ import { and, eq, ilike, inArray, not, sql } from "drizzle-orm";
 import db from "@/server/db";
 import { type NewTransaction, transactions } from "@/server/db/transaction";
 import {  wallets } from "@/server/db/wallet";
+import { categories } from "@/server/db/category";
 import { getCurrentExchangeRate } from "../services/wallets";
 import { type NewTransfer, transfers } from "@/server/db/transfer";
 import { HTTPException } from "hono/http-exception";
@@ -29,11 +30,12 @@ transactionsRouter.get("/", authenticated, zValidator("query", z.object({
     offset: offset ?? 0,
   };
 
+  const escapedDescription = description?.trim().replace(/[%_\\]/g, "\\$&");
   const where = and(
     eq(transactions.userId, user.id),
     walletId ? eq(transactions.walletId, walletId) : undefined,
     transaction_date ? eq(transactions.transaction_date, new Date(transaction_date)) : undefined,
-    description?.trim() ? ilike(transactions.description, `%${description.trim()}%`) : undefined,
+    escapedDescription ? ilike(transactions.description, `%${escapedDescription}%`) : undefined,
     typeFilter ? eq(transactions.type, typeFilter) : undefined,
     not(eq(transactions.type, "adjustment")),
   );
@@ -113,11 +115,24 @@ transactionsRouter.get("/:id", authenticated, zValidator("param", z.object({
 transactionsRouter.post("/", authenticated, zValidator("json", z.object({
   walletId: z.string(),
   toWalletId: z.string().optional(),
-  amount: z.number(),
-  transaction_date: z.coerce.date(),
-  description: z.string(),
-  categoryId: z.string(),
-  type: z.string(),
+  amount: z.number().positive("Amount must be positive").finite(),
+  transaction_date: z.coerce.date().refine((d) => !isNaN(d.getTime()), { message: "Invalid date" }),
+  description: z.string().max(255),
+  categoryId: z.string().optional(),
+  type: z.enum(["income", "expense", "transfer"]),
+}).superRefine((data, ctx) => {
+  if (data.type === "transfer" && !data.toWalletId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["toWalletId"], message: "Destination wallet required for transfers" });
+  }
+  if (data.type !== "transfer" && data.toWalletId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["toWalletId"], message: "Destination wallet only for transfers" });
+  }
+  if (data.type !== "transfer" && !data.categoryId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["categoryId"], message: "Category required for income/expense" });
+  }
+  if (data.type === "transfer" && data.walletId === data.toWalletId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["toWalletId"], message: "Source and destination must differ" });
+  }
 })), async (c) => {
   const { user } = await getUserData(c);
   const { walletId, toWalletId, amount, transaction_date, description, categoryId, type } = c.req.valid("json");
@@ -135,14 +150,24 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       throw new HTTPException(404, { message: "We couldn't find that wallet." });
     }
 
+    if (type !== "transfer" && categoryId) {
+      const cat = await tx.query.categories.findFirst({
+        where: and(eq(categories.id, categoryId), eq(categories.createdBy, user.id)),
+      });
+      if (!cat) throw new HTTPException(400, { message: "Invalid category" });
+      if (cat.type !== type) throw new HTTPException(400, { message: `Category type mismatch: expected ${type}` });
+    } else if (type !== "transfer" && !categoryId) {
+      throw new HTTPException(400, { message: "Category required" });
+    }
+
     const transactionValues = {
       userId: user.id,
       walletId,
-      amount,
+      amount: String(amount),
       transaction_date,
       description,
       type,
-      categoryId,
+      ...(categoryId ? { categoryId } : { categoryId: null }),
     };
     const transaction = await tx.insert(transactions).values(transactionValues).returning().execute().then((res) => res[0]);
   
@@ -152,9 +177,9 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
 
 
     if (type !== "transfer") {
-      const balance = type === "income" ? wallet.balance + amount : wallet.balance - amount; 
+      const balance = type === "income" ? Number(wallet.balance) + amount : Number(wallet.balance) - amount; 
       await tx.update(wallets).set({
-        balance,
+        balance: String(balance),
       }).where(and(
         eq(wallets.id, walletId),
         eq(wallets.userId, user.id),
@@ -184,36 +209,36 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
       transactionId: transaction.id,
       fromWalletId: walletId,
       toWalletId: toWalletId,
-      amountSent: amount,
-      amountReceived: amount,
-      exchangeRate: 1,
+      amountSent: String(amount),
+      amountReceived: String(amount),
+      exchangeRate: "1",
     }
     if (wallet.currency === destinationWallet.currency) {
-      newSourceBalance = wallet.balance - amount;
-      newDestinationBalance = destinationWallet.balance + amount;
+      newSourceBalance = Number(wallet.balance) - amount;
+      newDestinationBalance = Number(destinationWallet.balance) + amount;
       
-      transfer.exchangeRate = 1;
-      transfer.amountReceived = amount;
-      transfer.amountSent = amount;
+      transfer.exchangeRate = "1";
+      transfer.amountReceived = String(amount);
+      transfer.amountSent = String(amount);
     } else {
       const exchangeRateData = await getCurrentExchangeRate(wallet.currency, destinationWallet.currency);
-      newSourceBalance = wallet.balance - amount;
-      newDestinationBalance = destinationWallet.balance + amount * exchangeRateData.rate;
-      
-      transfer.exchangeRate = exchangeRateData.rate;
-      transfer.amountReceived = amount * exchangeRateData.rate;
-      transfer.amountSent = amount;
+      newSourceBalance = Number(wallet.balance) - amount;
+      newDestinationBalance = Number(destinationWallet.balance) + amount * exchangeRateData.rate;
+
+      transfer.exchangeRate = String(exchangeRateData.rate);
+      transfer.amountReceived = String(amount * exchangeRateData.rate);
+      transfer.amountSent = String(amount);
     }
 
     await Promise.all([
       tx.update(wallets).set({
-        balance: newSourceBalance,
+        balance: String(newSourceBalance),
       }).where(and(
         eq(wallets.id, walletId),
         eq(wallets.userId, user.id),
       )).execute(),
       tx.update(wallets).set({
-        balance: newDestinationBalance,
+        balance: String(newDestinationBalance),
       }).where(and(
         eq(wallets.id, toWalletId),
         eq(wallets.userId, user.id),
@@ -229,9 +254,9 @@ transactionsRouter.post("/", authenticated, zValidator("json", z.object({
 transactionsRouter.post("/:id", authenticated, zValidator("param", z.object({
   id: z.string(),
 })), zValidator("json", z.object({
-  amount: z.number(),
-  transaction_date: z.coerce.date(),
-  description: z.string(),
+  amount: z.number().positive("Amount must be positive").finite(),
+  transaction_date: z.coerce.date().refine((d) => !isNaN(d.getTime()), { message: "Invalid date" }),
+  description: z.string().max(255),
   categoryId: z.string().optional(),
 })),
 async (c) => {
@@ -249,12 +274,22 @@ async (c) => {
     if (!transaction) {
       throw new HTTPException(404, { message: "We couldn't find that transaction." });
     }
+    if (transaction.type === "transfer" && categoryId !== undefined) {
+      throw new HTTPException(400, { message: "Cannot change category for transfers" });
+    }
+    if (transaction.type !== "transfer" && categoryId !== undefined && categoryId) {
+      const cat = await tx.query.categories.findFirst({
+        where: and(eq(categories.id, categoryId), eq(categories.createdBy, user.id)),
+      });
+      if (!cat) throw new HTTPException(400, { message: "Invalid category" });
+      if (cat.type !== transaction.type) throw new HTTPException(400, { message: `Category type mismatch: expected ${transaction.type}` });
+    }
     
     const updateValues: Partial<NewTransaction> = {
-      amount,
+      amount: String(amount),
       transaction_date,
       description,
-      ...(categoryId !== undefined && { categoryId: categoryId || undefined }),
+      ...(categoryId !== undefined && { categoryId: categoryId || null }),
     };
     const updatedTransaction = await tx.update(transactions).set(updateValues).where(and(
       eq(transactions.id, id),
@@ -277,8 +312,19 @@ async (c) => {
         throw new HTTPException(404, { message: "We couldn't find that wallet." });
       }
 
+      const oldAmount = Number(transaction.amount);
+      const delta = amount - oldAmount;
+      const balanceAdjustment = updatedTransaction.type === "income" || updatedTransaction.type === "adjustment"
+        ? delta
+        : updatedTransaction.type === "expense"
+          ? -delta
+          : 0;
+      if (updatedTransaction.type !== "income" && updatedTransaction.type !== "expense" && updatedTransaction.type !== "adjustment") {
+        throw new HTTPException(400, { message: "Invalid transaction type." });
+      }
+
       await tx.update(wallets).set({
-        balance: wallet.balance + (updatedTransaction.type === "income" ? amount : -amount),
+        balance: String(Number(wallet.balance) + balanceAdjustment),
       }).where(and(
         eq(wallets.id, transaction.walletId),
         eq(wallets.userId, user.id),
@@ -309,14 +355,35 @@ async (c) => {
         throw new HTTPException(404, { message: "We couldn't find that wallet." });
       }
 
+      // Revert old transfer, then apply new amount with current exchange rate
+      const interimFromBalance = Number(fromWallet.balance) + Number(transfer.amountSent);
+      const interimToBalance = Number(toWallet.balance) - Number(transfer.amountReceived);
+
+      let newExchangeRate = "1";
+      let newAmountReceived = String(amount);
+      const newAmountSent = String(amount);
+      if (fromWallet.currency !== toWallet.currency) {
+        const exchangeRateData = await getCurrentExchangeRate(fromWallet.currency, toWallet.currency);
+        newExchangeRate = String(exchangeRateData.rate);
+        newAmountReceived = String(amount * exchangeRateData.rate);
+      }
+
+      const finalFromBalance = interimFromBalance - Number(newAmountSent);
+      const finalToBalance = interimToBalance + Number(newAmountReceived);
+
       await Promise.all([
         tx.update(wallets).set({
-          balance: fromWallet.balance + transfer.amountSent,
-        }).where(eq(wallets.id, transfer.fromWalletId)).execute(),
+          balance: String(finalFromBalance),
+        }).where(and(eq(wallets.id, transfer.fromWalletId), eq(wallets.userId, user.id))).execute(),
         tx.update(wallets).set({
-          balance: toWallet.balance - transfer.amountReceived,
-        }).where(eq(wallets.id, transfer.toWalletId)).execute(),
-      ]); 
+          balance: String(finalToBalance),
+        }).where(and(eq(wallets.id, transfer.toWalletId), eq(wallets.userId, user.id))).execute(),
+        tx.update(transfers).set({
+          amountSent: newAmountSent,
+          amountReceived: newAmountReceived,
+          exchangeRate: newExchangeRate,
+        }).where(and(eq(transfers.transactionId, transaction.id), eq(transfers.userId, user.id))).execute(),
+      ]);
 
     } else {
       throw new HTTPException(400, { message: "Invalid transaction type." });
@@ -362,9 +429,9 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
 
     if (transaction.type !== "transfer") {
 
-      const balance = transaction.type === "income" ? wallet.balance - transaction.amount : wallet.balance + transaction.amount;
+      const balance = transaction.type === "income" ? Number(wallet.balance) - Number(transaction.amount) : Number(wallet.balance) + Number(transaction.amount);
       await tx.update(wallets).set({
-        balance,
+        balance: String(balance),
       }).where(and(
         eq(wallets.id, transaction.walletId),
         eq(wallets.userId, user.id),
@@ -399,18 +466,18 @@ transactionsRouter.delete("/:id", authenticated, zValidator("param", z.object({
       throw new HTTPException(404, { message: "We couldn't find the destination wallet for this transfer." });
     }
 
-    const sourceBalance = wallet.balance + transfer.amountSent;
-    const destinationBalance = destinationWallet.balance - transfer.amountReceived;
+    const sourceBalance = Number(wallet.balance) + Number(transfer.amountSent);
+    const destinationBalance = Number(destinationWallet.balance) - Number(transfer.amountReceived);
 
     await Promise.all([
       tx.update(wallets).set({
-        balance: sourceBalance,
+        balance: String(sourceBalance),
       }).where(and(
         eq(wallets.id, transaction.walletId),
         eq(wallets.userId, user.id),
       )).execute(),
       tx.update(wallets).set({
-        balance: destinationBalance,
+        balance: String(destinationBalance),
       }).where(and(
         eq(wallets.id, transfer.toWalletId),
         eq(wallets.userId, user.id),

@@ -35,7 +35,7 @@ categoriesRouter.get("/", authenticated, zValidator("query", z.object({
 
 // Create category
 categoriesRouter.post("/", authenticated, zValidator("json", z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).transform((v) => v.trim()).pipe(z.string().min(1)),
   type: z.enum(["income", "expense"]),
   iconName: z.string().optional(),
 })), async (c) => {
@@ -55,10 +55,10 @@ categoriesRouter.post("/", authenticated, zValidator("json", z.object({
 // Batch create categories
 categoriesRouter.post("/batch", authenticated, zValidator("json", z.object({
   categories: z.array(z.object({
-    name: z.string().min(1),
+    name: z.string().min(1).transform((v) => v.trim()).pipe(z.string().min(1)),
     type: z.enum(["income", "expense"]),
     iconName: z.string().optional(),
-  })),
+  })).min(1).max(50),
 })), async (c) => {
   const { user } = await getUserData(c);
   const { categories: categoriesData } = c.req.valid("json");
@@ -77,7 +77,7 @@ categoriesRouter.post("/batch", authenticated, zValidator("json", z.object({
 
 // Update category
 categoriesRouter.put("/:id", authenticated, zValidator("json", z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).transform((v) => v.trim()).pipe(z.string().min(1)),
   iconName: z.string().optional(),
 })), async (c) => {
   const { user } = await getUserData(c);
@@ -103,7 +103,7 @@ categoriesRouter.delete("/:id", authenticated, async (c) => {
 
   // Check if category is used in transactions
   const categoryInUse = await db.query.transactions.findFirst({
-    where: eq(transactions.categoryId, id),
+    where: and(eq(transactions.categoryId, id), eq(transactions.userId, user.id)),
   });
 
   if (categoryInUse) {

@@ -1,4 +1,4 @@
-import { pgTable, timestamp, varchar, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, varchar, numeric } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { wallets } from "./wallet";
 import { relations } from "drizzle-orm";
@@ -21,9 +21,9 @@ export const transfers = pgTable("transfer", {
   toWalletId: varchar("to_wallet_id", { length: 255 })
     .notNull()
     .references(() => wallets.id, { onDelete: "cascade", onUpdate: "cascade" }),
-  amountSent: doublePrecision("amount_sent").notNull(),
-  amountReceived: doublePrecision("amount_received").notNull(), // this can be different from amountSent if the currency is different
-  exchangeRate: doublePrecision("exchange_rate").notNull(),
+  amountSent: numeric("amount_sent").notNull(),
+  amountReceived: numeric("amount_received").notNull(), // this can be different from amountSent if the currency is different
+  exchangeRate: numeric("exchange_rate").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -88,7 +88,7 @@ fi
 echo "Step 10: Running migrations to apply any new ones..."
 echo "Note: If production already has all migrations applied, this will show 'No pending migrations'"
 echo "      Migration output will be shown below..."
-if ! docker compose exec app bun run db:migrate; then
+if ! docker compose exec app pnpm run db:migrate; then
     echo ""
     echo "Error: Migration failed! Check the output above for details."
     echo ""
@@ -101,7 +101,7 @@ fi
 
 echo ""
 echo "Step 11: Verifying migration status..."
-docker compose exec -T app bun run drizzle-kit migrate 2>&1 | grep -q "No pending migrations" && echo "✓ All migrations are up to date" || echo "⚠ Some migrations may still be pending"
+docker compose exec -T app pnpm run drizzle-kit migrate 2>&1 | grep -q "No pending migrations" && echo "✓ All migrations are up to date" || echo "⚠ Some migrations may still be pending"
 
 echo "✓ Done!"
 

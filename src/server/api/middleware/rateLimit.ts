@@ -82,12 +82,68 @@ export async function checkRateLimit(
   windowMs: number,
   maxRequests: number
 ): Promise<RateLimitResult> {
-  const client = await redis();
+  const client = await redis() as unknown as Record<string, unknown> & {
+    zRemRangeByScore: (k: string, min: number, max: number) => Promise<unknown>;
+    zCard: (k: string) => Promise<number>;
+    zRange: (k: string, min: number, max: number) => Promise<string[]>;
+    zAdd: (k: string, members: Array<{ score: number; value: string }>) => Promise<unknown>;
+    expire: (k: string, seconds: number) => Promise<unknown>;
+    eval?: (script: string, opts: { keys: string[]; arguments: string[] }) => Promise<unknown>;
+  };
   const now = Date.now();
   const windowStart = now - windowMs;
   const requestId = `${now}-${Math.random().toString(36).substring(7)}`;
 
   try {
+    // Try atomic Lua script to avoid race between ZCARD and ZADD (burst over limit)
+    if (typeof client.eval === "function") {
+      try {
+        const lua = `
+          local key = KEYS[1]
+          local windowStart = tonumber(ARGV[1])
+          local now = tonumber(ARGV[2])
+          local maxRequests = tonumber(ARGV[3])
+          local requestId = ARGV[4]
+          local windowMs = tonumber(ARGV[5])
+          redis.call('ZREMRANGEBYSCORE', key, 0, windowStart)
+          local count = redis.call('ZCARD', key)
+          if count >= maxRequests then
+            local oldest = redis.call('ZRANGE', key, 0, 0)
+            local oldestTs = oldest[1] and tonumber(oldest[1]) or now
+            return {0, oldestTs}
+          end
+          redis.call('ZADD', key, now, requestId)
+          redis.call('EXPIRE', key, math.ceil((windowMs + 60000) / 1000))
+          return {1, maxRequests - count - 1}
+        `;
+        const res = (await client.eval(lua, {
+          keys: [key],
+          arguments: [String(windowStart), String(now), String(maxRequests), requestId, String(windowMs)],
+        })) as [number, number];
+        if (Array.isArray(res) && res.length === 2) {
+          const [allowed, second] = res;
+          if (allowed === 0) {
+            const oldestTimestamp = second;
+            const retryAfter = Math.ceil((oldestTimestamp + windowMs - now) / 1000);
+            return {
+              limit: maxRequests,
+              remaining: 0,
+              reset: Math.ceil((oldestTimestamp + windowMs) / 1000),
+              retryAfter: Math.max(1, retryAfter),
+            };
+          }
+          return {
+            limit: maxRequests,
+            remaining: second,
+            reset: Math.ceil((now + windowMs) / 1000),
+            requestTimestamp: now,
+          };
+        }
+      } catch {
+        // fallback to non-atomic path below
+      }
+    }
+
     await client.zRemRangeByScore(key, 0, windowStart);
     const count = await client.zCard(key);
 

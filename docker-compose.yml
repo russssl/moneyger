@@ -1,11 +1,18 @@
 services:
-  next-app:
+  app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     environment:
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-      NEXT_PUBLIC_ENVIRONMENT: ${NEXT_PUBLIC_ENVIRONMENT:-development}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL}
+      PUBLIC_ENVIRONMENT: ${PUBLIC_ENVIRONMENT:-development}
+      REQUIRES_EMAIL_CONFIRMATION: ${REQUIRES_EMAIL_CONFIRMATION:-false}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SECURE: ${SMTP_SECURE:-}
     ports:
       - 3000:3000
     volumes:

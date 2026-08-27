@@ -1,10 +1,10 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import "dotenv/config"
+import { createEnv } from "@t3-oss/env-core"
+import { z } from "zod"
 
 export const env = createEnv({
   server: {
     AUTH_SECRET: z.string(),
-    // Support both DATABASE_URL and individual postgres vars
     POSTGRES_USER: z.string(),
     POSTGRES_PASSWORD: z.string(),
     POSTGRES_DB: z.string(),
@@ -21,21 +21,38 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: z.string().optional(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
-    RESEND_API_KEY: z.string().optional(),
+    EMAIL_FROM: z.string().optional(),
+    REQUIRES_EMAIL_CONFIRMATION: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((v) => v === "true" || v === "1"),
+    EMAIL_VERIFICATION_EXPIRES_IN: z.coerce.number().optional().default(3600),
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
+    SMTP_SECURE: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((v) => v === "true" || v === "1"),
     EXCHANGE_RATE_URL: z.string().url().default("https://api.fxratesapi.com/"),
     EXCHANGE_RATE_API_KEY: z.string().optional(),
     REDIS_URL: z.string().url().default("redis://localhost:6379"),
     PORT: z.string().default("3000"),
+    PUBLIC_APP_URL: z.string().url(),
+    PUBLIC_ENVIRONMENT: z.string().default("development"),
+
+    OIDC_DISCOVERY_URL: z.string().url().optional(),
+    OIDC_CLIENT_ID: z.string().optional(),
+    OIDC_CLIENT_SECRET: z.string().optional(),
+    OIDC_NAME: z.string().default("OIDC"),
+    OIDC_ISSUER: z.string().optional(),
+    OIDC_SCOPES: z.string().optional(),
   },
-  client: {
-    NEXT_PUBLIC_ENVIRONMENT: z
-      .union([
-        z.enum(["development", "staging", "production"]),
-        z.string().regex(/^staging-[a-fA-F0-9]+$/, "staging-<shortSha> for deployed builds"),
-      ])
-      .default("development"),
-    NEXT_PUBLIC_APP_URL: z.string().url(),
-  },
+  clientPrefix: "",
+  client: {},
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
     POSTGRES_USER: process.env.POSTGRES_USER,
@@ -44,23 +61,35 @@ export const env = createEnv({
     POSTGRES_HOST: process.env.POSTGRES_HOST,
     POSTGRES_PORT: process.env.POSTGRES_PORT,
     NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     REDIS_KV_URL: process.env.REDIS_KV_URL,
-    REDIS_KV_REST_API_READ_ONLY_TOKEN:
-      process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
+    REDIS_KV_REST_API_READ_ONLY_TOKEN: process.env.REDIS_KV_REST_API_READ_ONLY_TOKEN,
     REDIS_KV_REST_API_TOKEN: process.env.REDIS_KV_REST_API_TOKEN,
     REDIS_KV_REST_API_URL: process.env.REDIS_KV_REST_API_URL,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+    REQUIRES_EMAIL_CONFIRMATION: process.env.REQUIRES_EMAIL_CONFIRMATION,
+    EMAIL_VERIFICATION_EXPIRES_IN: process.env.EMAIL_VERIFICATION_EXPIRES_IN,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+    SMTP_SECURE: process.env.SMTP_SECURE,
     EXCHANGE_RATE_URL: process.env.EXCHANGE_RATE_URL,
     EXCHANGE_RATE_API_KEY: process.env.EXCHANGE_RATE_API_KEY,
     REDIS_URL: process.env.REDIS_URL,
     PORT: process.env.PORT,
+    PUBLIC_APP_URL: process.env.PUBLIC_APP_URL,
+    PUBLIC_ENVIRONMENT: process.env.PUBLIC_ENVIRONMENT,
+    OIDC_DISCOVERY_URL: process.env.OIDC_DISCOVERY_URL,
+    OIDC_CLIENT_ID: process.env.OIDC_CLIENT_ID,
+    OIDC_CLIENT_SECRET: process.env.OIDC_CLIENT_SECRET,
+    OIDC_NAME: process.env.OIDC_NAME,
+    OIDC_ISSUER: process.env.OIDC_ISSUER,
+    OIDC_SCOPES: process.env.OIDC_SCOPES,
   },
   skipValidation: process.env.CI === "true" || process.env.SKIP_ENV_VALIDATION === "true",
   emptyStringAsUndefined: true,
-});
+})

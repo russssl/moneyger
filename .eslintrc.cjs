@@ -9,7 +9,6 @@ const config = {
     "drizzle"
   ],
   "extends": [
-    "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked"
   ],
@@ -69,7 +68,9 @@ const config = {
   },
   "ignorePatterns": [
     "public/service-worker.js",
-    "src/env.js"
+    "src/env.js",
+    "dist",
+    "dist-server"
   ]
 }
 module.exports = config;

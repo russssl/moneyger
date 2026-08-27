@@ -2,7 +2,7 @@ import {
   pgTable,
   timestamp,
   varchar,
-  doublePrecision,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { user } from "./user";
 import { wallets } from "./wallet";
@@ -21,7 +21,7 @@ export const transactions = pgTable("transaction", {
   walletId: varchar("wallet_id", { length: 255 })
     .notNull()
     .references(() => wallets.id, { onDelete: "cascade", onUpdate: "cascade" }),
-  amount: doublePrecision("amount").notNull(),
+  amount: numeric("amount").notNull(),
   transaction_date: timestamp("transaction_date"),
   description: varchar("description", { length: 255 }),
   categoryId: varchar("category_id", { length: 255 })
