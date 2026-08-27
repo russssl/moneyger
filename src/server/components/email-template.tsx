@@ -92,3 +92,47 @@ export const ResetPasswordEmailTemplate: React.FC<Readonly<{
     </p>
   </div>
 );
+
+export const VerificationEmailTemplate: React.FC<Readonly<{
+  firstName: string;
+  url: string;
+}>> = ({
+  firstName,
+  url,
+}) => (
+  <div style={containerStyle}>
+    <h1 style={headerStyle}>Verify Your Email</h1>
+    <p>Hello {firstName},</p>
+    <p>Thank you for creating an account! Please verify your email address by clicking the button below:</p>
+    
+    <div style={codeContainerStyle}>
+      <a 
+        href={url}
+        style={{
+          ...codeStyle,
+          textDecoration: "none",
+          display: "inline-block",
+          padding: "12px 24px",
+          backgroundColor: "#2563eb",
+          color: "white",
+          borderRadius: "6px",
+        }}
+      >
+        Verify Email
+      </a>
+    </div>
+
+    <p>If the button doesn&apos;t work, copy and paste this link into your browser:</p>
+    <p style={{ wordBreak: "break-all", color: "#2563eb", fontSize: "13px" }}>{url}</p>
+
+    <p><strong>Important Notice:</strong></p>
+    <ul style={securityListStyle}>
+      <li>This link will expire in 1 hour.</li>
+      <li>If you did not create this account, please ignore this email.</li>
+    </ul>
+
+    <p style={footerStyle}>
+      This is an automated message. Please do not reply to this email.
+    </p>
+  </div>
+);

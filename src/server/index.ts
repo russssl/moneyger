@@ -88,6 +88,13 @@ app.get("/api/oidc-config", (c) => {
   })
 })
 
+// Auth config for client UI (email verification requirement)
+app.get("/api/auth-config", (c) => {
+  return c.json({
+    requiresEmailConfirmation: Boolean(env.REQUIRES_EMAIL_CONFIRMATION),
+  })
+})
+
 // Healthcheck
 app.get("/api/healthcheck", createRateLimiter("public"), (c) => {
   return c.json({ status: "ok" })

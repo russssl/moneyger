@@ -13,8 +13,6 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-  username: text("username").unique(),
-  displayUsername: text("display_username"),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   currency: text("currency").default("USD"),
 });

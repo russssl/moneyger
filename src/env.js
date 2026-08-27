@@ -21,8 +21,22 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: z.string().optional(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
-    RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().optional(),
+    REQUIRES_EMAIL_CONFIRMATION: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((v) => v === "true" || v === "1"),
+    EMAIL_VERIFICATION_EXPIRES_IN: z.coerce.number().optional().default(3600),
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
+    SMTP_SECURE: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((v) => v === "true" || v === "1"),
     EXCHANGE_RATE_URL: z.string().url().default("https://api.fxratesapi.com/"),
     EXCHANGE_RATE_API_KEY: z.string().optional(),
     REDIS_URL: z.string().url().default("redis://localhost:6379"),
@@ -55,8 +69,14 @@ export const env = createEnv({
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,
+    REQUIRES_EMAIL_CONFIRMATION: process.env.REQUIRES_EMAIL_CONFIRMATION,
+    EMAIL_VERIFICATION_EXPIRES_IN: process.env.EMAIL_VERIFICATION_EXPIRES_IN,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASSWORD: process.env.SMTP_PASSWORD,
+    SMTP_SECURE: process.env.SMTP_SECURE,
     EXCHANGE_RATE_URL: process.env.EXCHANGE_RATE_URL,
     EXCHANGE_RATE_API_KEY: process.env.EXCHANGE_RATE_API_KEY,
     REDIS_URL: process.env.REDIS_URL,

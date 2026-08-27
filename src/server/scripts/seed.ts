@@ -74,6 +74,13 @@ async function seedDemoUser() {
     return;
   }
 
+  // Ensure demo user is verified (so seed works even when REQUIRES_EMAIL_CONFIRMATION=true)
+  if (!demoUser.emailVerified) {
+    console.log("✉️  Marking demo user as emailVerified...");
+    await db.update(user).set({ emailVerified: true }).where(eq(user.email, "demo@demo.com"));
+    demoUser.emailVerified = true;
+  }
+
   // Ensure currency is USD
   console.log("💲 Setting currency to USD...");
   await db

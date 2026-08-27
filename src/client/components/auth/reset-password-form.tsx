@@ -42,27 +42,25 @@ export default function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <div>Reset Password</div>
-            <Button variant="link" className="text-sm px-0" asChild>
-              <Link to="/login" className="px-0">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Login
-              </Link>
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ErrorAlert error={error} className="mb-4"/>
-          <PasswordsInput setPassword={setPassword} />
-          <LoadingButton variant="success" loading={isLoading} className="w-full mt-4" type="submit" onClick={handleSubmit}>
-            Reset Password
-          </LoadingButton>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <div>Reset Password</div>
+          <Button variant="link" className="text-sm px-0" asChild>
+            <Link to="/login" className="px-0">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Login
+            </Link>
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ErrorAlert error={error} className="mb-4"/>
+        <PasswordsInput setPassword={setPassword} />
+        <LoadingButton variant="success" loading={isLoading} className="w-full mt-4" type="submit" onClick={handleSubmit}>
+          Reset Password
+        </LoadingButton>
+      </CardContent>
+    </Card>
   )
 }

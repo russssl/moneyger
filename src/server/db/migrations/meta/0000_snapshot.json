@@ -1,5 +1,5 @@
 {
-  "id": "3fde2f3c-d4db-4b19-908d-ed780be69023",
+  "id": "2ad5717c-1ea4-418e-93cc-aeb3c87f6d36",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -287,6 +287,77 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.two_factor": {
+      "name": "two_factor",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "secret": {
+          "name": "secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "backup_codes": {
+          "name": "backup_codes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verified": {
+          "name": "verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": true
+        },
+        "failed_verification_count": {
+          "name": "failed_verification_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "locked_until": {
+          "name": "locked_until",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "two_factor_user_id_user_id_fk": {
+          "name": "two_factor_user_id_user_id_fk",
+          "tableFrom": "two_factor",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.user": {
       "name": "user",
       "schema": "",
@@ -336,17 +407,12 @@
           "notNull": true,
           "default": "now()"
         },
-        "username": {
-          "name": "username",
-          "type": "text",
+        "two_factor_enabled": {
+          "name": "two_factor_enabled",
+          "type": "boolean",
           "primaryKey": false,
-          "notNull": false
-        },
-        "display_username": {
-          "name": "display_username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": false
         },
         "currency": {
           "name": "currency",
@@ -365,13 +431,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
-        },
-        "user_username_unique": {
-          "name": "user_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
           ]
         }
       },
@@ -454,10 +513,10 @@
         },
         "balance": {
           "name": "balance",
-          "type": "double precision",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": true,
-          "default": 0
+          "default": "'0'"
         },
         "is_saving_account": {
           "name": "is_saving_account",
@@ -468,10 +527,10 @@
         },
         "saving_account_goal": {
           "name": "saving_account_goal",
-          "type": "double precision",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": false,
-          "default": 0
+          "default": "'0'"
         },
         "description": {
           "name": "description",
@@ -552,7 +611,7 @@
         },
         "amount": {
           "name": "amount",
-          "type": "double precision",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": true
         },
@@ -568,14 +627,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "note": {
-          "name": "note",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "category": {
-          "name": "category",
+        "category_id": {
+          "name": "category_id",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false
@@ -628,6 +681,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "cascade"
+        },
+        "transaction_category_id_category_id_fk": {
+          "name": "transaction_category_id_category_id_fk",
+          "tableFrom": "transaction",
+          "tableTo": "category",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -672,19 +738,19 @@
         },
         "amount_sent": {
           "name": "amount_sent",
-          "type": "double precision",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": true
         },
         "amount_received": {
           "name": "amount_received",
-          "type": "double precision",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": true
         },
         "exchange_rate": {
           "name": "exchange_rate",
-          "type": "double precision",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": true
         },
@@ -750,6 +816,79 @@
           "tableTo": "wallet",
           "columnsFrom": [
             "to_wallet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.category": {
+      "name": "category",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(255)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "icon_name": {
+          "name": "icon_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "''"
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'expense'"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "category_created_by_user_id_fk": {
+          "name": "category_created_by_user_id_fk",
+          "tableFrom": "category",
+          "tableTo": "user",
+          "columnsFrom": [
+            "created_by"
           ],
           "columnsTo": [
             "id"

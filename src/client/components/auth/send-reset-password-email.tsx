@@ -53,45 +53,43 @@ export default function SendResetPasswordEmailForm() {
     }
   }
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
-          <CardDescription>
-            Enter your email address and we&apos;ll send you a link to reset your password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ErrorAlert error={error} className="mb-4"/>
-          <form className="space-y-4" onSubmit={async (e) => {
-            e.preventDefault()
-            await handleSubmit()
-          }}>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="email">Email</Label>
-                <Button variant="link" className="text-sm" asChild>
-                  <Link to="/login" className="px-0">
-                    <ArrowLeft className="h-4 w-4" />
-                    {t("back_to_login")}
-                  </Link>
-                </Button>
-              </div>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t("enter_your_email")}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+        <CardDescription>
+          Enter your email address and we&apos;ll send you a link to reset your password.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ErrorAlert error={error} className="mb-4"/>
+        <form className="space-y-4" onSubmit={async (e) => {
+          e.preventDefault()
+          await handleSubmit()
+        }}>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email">Email</Label>
+              <Button variant="link" className="text-sm" asChild>
+                <Link to="/login" className="px-0">
+                  <ArrowLeft className="h-4 w-4" />
+                  {t("back_to_login")}
+                </Link>
+              </Button>
             </div>
-            <LoadingButton loading={isLoading} className="w-full" type="submit">
-              {t("send_reset_link")}
-            </LoadingButton>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            <Input
+              id="email"
+              type="email"
+              placeholder={t("enter_your_email")}
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <LoadingButton loading={isLoading} className="w-full" type="submit">
+            {t("send_reset_link")}
+          </LoadingButton>
+        </form>
+      </CardContent>
+    </Card>
   )
 }

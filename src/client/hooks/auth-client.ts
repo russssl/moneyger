@@ -1,10 +1,10 @@
 import { createAuthClient } from "better-auth/react"
-import { usernameClient, lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
+import { lastLoginMethodClient, twoFactorClient } from "better-auth/client/plugins"
 import { passkeyClient } from "@better-auth/passkey/client"
 
 export const authClient = createAuthClient({
   baseURL: "",
-  plugins: [usernameClient(), lastLoginMethodClient(), passkeyClient(), twoFactorClient({
+  plugins: [lastLoginMethodClient(), passkeyClient(), twoFactorClient({
     onTwoFactorRedirect() {
       // handled manually in login flow via twoFactorRedirect response; no auto redirect
     },

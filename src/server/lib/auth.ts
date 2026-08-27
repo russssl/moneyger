@@ -1,9 +1,9 @@
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import db from "@/server/db";
-import { sendResetPasswordEmail } from "@/server/api/services/emails";
+import { sendResetPasswordEmail, sendVerificationEmail } from "@/server/api/services/emails";
 import { env } from "@/env";
-import { haveIBeenPwned, username, lastLoginMethod, twoFactor, genericOAuth } from "better-auth/plugins"
+import { haveIBeenPwned, lastLoginMethod, twoFactor, genericOAuth } from "better-auth/plugins"
 import { passkey } from "@better-auth/passkey";
 
 const isHttpsUrl = (url?: string) => {
@@ -35,6 +35,12 @@ if (!isDev && !isHttpsUrl(env.PUBLIC_APP_URL)) {
   console.warn("[auth] PUBLIC_APP_URL should be https in production")
 }
 
+const requiresEmailConfirmation = Boolean(env.REQUIRES_EMAIL_CONFIRMATION)
+
+if (requiresEmailConfirmation && !env.SMTP_HOST) {
+  console.warn("[auth] REQUIRES_EMAIL_CONFIRMATION is enabled but no email provider is configured (SMTP_HOST). Verification emails will fail — set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL_FROM to allow account activation.")
+}
+
 export const auth = betterAuth({
   baseURL: env.PUBLIC_APP_URL,
   database: drizzleAdapter(db, {
@@ -60,11 +66,6 @@ export const auth = betterAuth({
         authenticatorAttachment: "platform",
         residentKey: "preferred",
         userVerification: "preferred",
-      },
-    }),
-    username({
-      usernameValidator: (username) => {
-        return username !== "admin" && username !== "demo";
       },
     }),
     twoFactor({
@@ -93,8 +94,22 @@ export const auth = betterAuth({
       }
     }
   },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail(
+        user.email,
+        user.name ?? user.email.split("@")[0],
+        url
+      );
+    },
+    sendOnSignUp: !!requiresEmailConfirmation,
+    sendOnSignIn: !!requiresEmailConfirmation,
+    autoSignInAfterVerification: true,
+    expiresIn: env.EMAIL_VERIFICATION_EXPIRES_IN ?? 3600,
+  },
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: !!requiresEmailConfirmation,
     sendResetPassword: async ({user, url}) => {
       await sendResetPasswordEmail(
         user.email, 

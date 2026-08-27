@@ -7,7 +7,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Key, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { type SocialProvider, signIn, getLastUsedLoginMethod } from "@/client/hooks/use-session";
+import { type SocialProvider, signIn, getLastUsedLoginMethod, sendVerificationEmail } from "@/client/hooks/use-session";
 import { authClient } from "@/client/hooks/auth-client";
 import { Button } from "@/client/components/ui/button";
 import { Link } from "@tanstack/react-router";
@@ -56,6 +56,9 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
   const [twoFactorCode, setTwoFactorCode] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [useBackupCode, setUseBackupCode] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const queryClient = useQueryClient();
   const { t } = useTranslation("register_login");
@@ -96,11 +99,35 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     }
   }, [queryClient, navigate]);
 
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError(t("please_provide_email_password"));
+      return;
+    }
+    setResendLoading(true);
+    setResendSuccess(false);
+    setError("");
+    try {
+      const res = await sendVerificationEmail({ email, callbackURL: "/" });
+      if ((res as unknown as { error?: { message?: string } })?.error) {
+        setError((res as unknown as { error: { message?: string } }).error.message ?? t("unknown_error"));
+      } else {
+        setResendSuccess(true);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("unknown_error"));
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
       setError("");
+      setEmailNotVerified(false);
+      setResendSuccess(false);
 
       if (!email || !password) {
         setError(t("please_provide_email_password"));
@@ -117,15 +144,23 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
             }
           },
         }
-      ) as unknown as { data?: { twoFactorRedirect?: boolean }; error?: { message?: string } };
+      ) as unknown as { data?: { twoFactorRedirect?: boolean }; error?: { message?: string; code?: string } };
 
       if ((res as unknown as { data?: { twoFactorRedirect?: boolean } })?.data?.twoFactorRedirect) {
         setRequiresTwoFactor(true);
         return;
       }
 
-      if (res.error?.message) {
-        setError(res.error.message);
+      if (res.error?.message || (res as unknown as { error?: { code?: string } })?.error?.code) {
+        const code = (res as unknown as { error?: { code?: string } })?.error?.code ?? "";
+        const msg = res.error?.message ?? "";
+        const isNotVerified = code === "EMAIL_NOT_VERIFIED" || msg.toLowerCase().includes("email not verified") || msg.toLowerCase().includes("not verified") || msg.toLowerCase().includes("verification");
+        if (isNotVerified) {
+          setEmailNotVerified(true);
+          setError(t("email_not_verified"));
+          return;
+        }
+        setError(msg || t("unknown_error"));
         return;
       }
 
@@ -361,6 +396,15 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
           </div>
         </div>
         {error && <ErrorAlert error={error} className="mt-3" />}
+        {emailNotVerified && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-900 p-3 space-y-2">
+            <p className="text-sm text-amber-800 dark:text-amber-200">{t("verify_email_required_desc")}</p>
+            {resendSuccess && <p className="text-xs text-green-600 dark:text-green-400">{t("verification_email_sent")}</p>}
+            <LoadingButton loading={resendLoading} onClick={handleResendVerification} variant="outline" className="w-full h-9 text-sm" type="button">
+              {t("resend_verification_email")}
+            </LoadingButton>
+          </div>
+        )}
         <LoadingButton loading={loading} className="w-full mt-4 h-10 text-sm font-medium" type="submit">
           {t("login")}
         </LoadingButton>

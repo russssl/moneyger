@@ -20,8 +20,6 @@ type UserData = {
     name: string;
     image?: string | null | undefined;
     currency?: string | null | undefined;
-    username?: string | null | undefined;
-    displayUsername?: string | null | undefined;
   };
   session: typeof auth.$Infer.Session.session;
   context: AuthContext;

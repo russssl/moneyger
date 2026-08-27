@@ -1,10 +1,8 @@
-
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import RegisterForm from "@/client/components/auth/register-form"
-import { ThemeToggle } from "@/client/components/common/theme-toggle"
-import { LanguageToggle } from "@/client/components/common/language-select"
 import { PublicLayout } from "@/client/components/public-layout"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card"
 import { useAuth } from "@/client/hooks/use-auth"
 
 export const Route = createFileRoute("/register")({
@@ -20,29 +18,13 @@ function RegisterPage() {
 
   return (
     <PublicLayout>
-      <div className="min-h-[100dvh] flex flex-col bg-background">
-        <header className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4">
-          <Link to="/" className="flex items-center gap-2 py-1">
-            <span className="h-2 w-2 rounded-full bg-accent shrink-0" aria-hidden="true" />
-            <span className="text-[15px] font-semibold tracking-tight">Moneyger</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
-        </header>
-
-        <main className="flex-1 flex items-start sm:items-center justify-center px-4 py-4 sm:p-6 sm:py-8">
-          <div className="w-full max-w-[400px]">
-            <div className="mb-5 sm:mb-6">
-              <h1 className="text-[22px] sm:text-2xl font-semibold tracking-tight leading-tight">
-                {t("register")}
-              </h1>
-              <p className="mt-1.5 text-[13px] sm:text-sm leading-relaxed text-muted-foreground">
-                {t("register_modal_description")}
-              </p>
-            </div>
-
+      <div className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">{t("register")}</CardTitle>
+            <CardDescription>{t("register_modal_description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
             <RegisterForm />
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -54,8 +36,8 @@ function RegisterPage() {
                 {t("login")}
               </Link>
             </p>
-          </div>
-        </main>
+          </CardContent>
+        </Card>
       </div>
     </PublicLayout>
   )

@@ -15,7 +15,7 @@ export default function ProfileSettings({...props}) {
   const {data: userSettings, isLoading, error} = useFetch<User>("/api/user/me", { queryKey: ["user", "me"] });
   const { session } = props;
   const [email, setEmail] = useState(userSettings?.email ?? "");
-  const [username, setUsername] = useState(userSettings?.username ?? "");
+  const [name, setName] = useState(userSettings?.name ?? "");
   const [language, setLanguage] = useState<string | undefined>("en");
 
   const { t } = useTranslation("settings");
@@ -31,10 +31,10 @@ export default function ProfileSettings({...props}) {
   useEffect(() => {
     if (userSettings) {
       setEmail(userSettings?.email ?? "");
-      setUsername(userSettings.username ?? "");
+      setName(userSettings.name ?? "");
     }
   }, [userSettings]);
-  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string, username?: string }, { message: string }>("/api/user", "POST", { invalidates: [["user", "me"]] });
+  const { mutateAsync: saveUserSettingsMutation, isPending} = useMutation<{ email?: string }, { message: string }>("/api/user", "POST", { invalidates: [["user", "me"]] });
   if (!session) {
     return null;
   }
@@ -44,9 +44,9 @@ export default function ProfileSettings({...props}) {
     await saveUserSettingsMutation({
       email,
     });
-    if (username) {
+    if (name !== (userSettings.name ?? "") && name) {
       await updateUser({
-        username,
+        name,
       });
     }
     const currentLocale = document.cookie
@@ -72,12 +72,12 @@ export default function ProfileSettings({...props}) {
         {error && <ErrorAlert error={error} className="mb-4" />}
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="w-full"/>
+            <Label htmlFor="name">{t("name")}</Label>
+            <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("name")} disabled={isLoading} className="w-full"/>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="username">{t("username")}</Label>
-            <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("username")} disabled={isLoading} className="w-full"/>
+            <Label htmlFor="email">{t("email")}</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} className="w-full"/>
           </div>
           <div className="space-y-2">
             <LanguageSelect
