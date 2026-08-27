@@ -15,14 +15,21 @@ const statsRouter = new Hono<AuthVariables>();
 statsRouter.get("/net-worth", authenticated, async (c) => {
   const { user } = await getUserData(c);
 
-  // Return net worth for the last 12 months
+  // Return net worth for the last 12 months (UTC to avoid timezone off-by-one)
   const now = new Date();
-  const points: Array<{ month: string; netWorth: number }> = [];
+  const months: Date[] = [];
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const netWorth = await getNetWorthForMonth(user.id, d.getMonth(), d.getFullYear());
-    points.push({ month: d.toISOString().slice(0, 7), netWorth });
+    months.push(new Date(Date.UTC(now.getFullYear(), now.getMonth() - i, 1)));
   }
+  const currency = user.currency ?? "USD";
+  const points = await Promise.all(months.map(async (d) => {
+    try {
+      const netWorth = await getNetWorthForMonth(user.id, d.getUTCMonth(), d.getUTCFullYear(), currency);
+      return { month: d.toISOString().slice(0, 7), netWorth };
+    } catch {
+      return { month: d.toISOString().slice(0, 7), netWorth: 0 };
+    }
+  }));
 
   return c.json(points);
 });
@@ -54,7 +61,7 @@ statsRouter.get("/spendings", authenticated, zValidator(
       walletId ? eq(transactions.walletId, walletId) : undefined,
       category ? eq(transactions.categoryId, category) : undefined,
     ))
-    .groupBy(categories.name);
+    .groupBy(categories.id, categories.name);
 
   return c.json(spendingData);
 });

@@ -233,9 +233,16 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
     });
   }
 
-  const [oidcConfig, setOidcConfig] = useState<{ enabled: boolean; name: string; providerId: string } | null>(null)
+  const [oidcConfig, setOidcConfig] = useState<{ enabled: boolean; name: string; providerId: string } | null>(() => {
+    if (typeof window !== "undefined") {
+      const w = window as unknown as { __OIDC_CONFIG__?: { enabled: boolean; name: string; providerId: string } }
+      if (w.__OIDC_CONFIG__) return w.__OIDC_CONFIG__
+    }
+    return null
+  })
 
   useEffect(() => {
+    if (oidcConfig) return
     fetch("/api/oidc-config")
       .then((r) => (r.ok ? r.json() : null))
       .then((data: unknown) => {
@@ -243,8 +250,10 @@ export default function LoginProviders({ providers }: { providers: SocialProvide
           setOidcConfig(data as { enabled: boolean; name: string; providerId: string })
         }
       })
-      .catch(() => { /* ignore oidc config fetch failure */ })
-  }, [])
+      .catch(() => {
+        /* ignore */
+      })
+  }, [oidcConfig])
 
   const signInWithOIDC = async (providerId: string) => {
     // genericOAuth registers as social provider; 1.7 also supports signIn.social for OIDC

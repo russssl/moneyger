@@ -33,6 +33,4 @@ export const fullCategoryDigest = pgTable("category_digest", {
   categoryId: varchar("category_id", { length: 255 })
     .notNull()
     .references(() => categories.id, { onDelete: "cascade", onUpdate: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });

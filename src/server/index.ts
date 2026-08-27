@@ -37,7 +37,7 @@ app.use("*", cors({
   origin: process.env.NODE_ENV === "production"
     ? (env.PUBLIC_APP_URL || "http://localhost:3000")
     : (origin) => {
-      if (!origin) return origin;
+      if (!origin) return "http://localhost:3000";
       try {
         const url = new URL(origin);
         if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return origin;
@@ -51,9 +51,14 @@ app.use("*", cors({
   credentials: true,
 }))
 
-// Attack detection
+// Attack detection - per-IP block (not global)
 app.use("*", async (c, next) => {
-  const underAttack = await isUnderAttack()
+  const forwarded = c.req.header("x-forwarded-for")
+  const realIp = c.req.header("x-real-ip")
+  const cfConnectingIp = c.req.header("cf-connecting-ip")
+  const ip = forwarded?.split(",")[0]?.trim() || realIp || cfConnectingIp || "unknown"
+  const identifier = `ip:${ip.replace(/[^a-fA-F0-9.:]/g, "")}`
+  const underAttack = await isUnderAttack(identifier)
   if (underAttack) {
     const path = new URL(c.req.url).pathname
     if (path === "/api/healthcheck") {
@@ -70,9 +75,8 @@ app.use("*", async (c, next) => {
   await next()
 })
 
-// OIDC config for login UI — single generic provider, customizable via OIDC_NAME
-app.get("/api/oidc-config", (c) => {
-  const isHttpsUrl = (url?: string) => {
+function getOidcConfig() {
+  const isHttps = (url?: string) => {
     try {
       return !!url && new URL(url).protocol === "https:"
     } catch {
@@ -80,18 +84,33 @@ app.get("/api/oidc-config", (c) => {
     }
   }
   const isDev = env.NODE_ENV !== "production"
-  const enabled = !!env.OIDC_DISCOVERY_URL && !!env.OIDC_CLIENT_ID && !!env.OIDC_CLIENT_SECRET && (isDev || isHttpsUrl(env.OIDC_DISCOVERY_URL))
-  return c.json({
-    enabled,
-    name: env.OIDC_NAME || "OIDC",
-    providerId: "oidc",
-  })
-})
+  const enabled = !!env.OIDC_DISCOVERY_URL && !!env.OIDC_CLIENT_ID && !!env.OIDC_CLIENT_SECRET && (isDev || isHttps(env.OIDC_DISCOVERY_URL))
+  const name =
+    env.OIDC_NAME && env.OIDC_NAME !== "OIDC"
+      ? env.OIDC_NAME
+      : (() => {
+        const raw = env.OIDC_ISSUER || env.OIDC_DISCOVERY_URL
+        if (raw)
+          try {
+            return new URL(raw).hostname
+          } catch {}
+        return "OIDC"
+      })()
+  return { enabled, name, providerId: "oidc" as const }
+}
+function injectOidcConfig(html: string) {
+  const json = JSON.stringify(getOidcConfig()).replace(/</g, "\\u003c")
+  const script = `<script id="oidc-config">window.__OIDC_CONFIG__=${json}</script>`
+  return html.includes("</head>") ? html.replace("</head>", `${script}</head>`) : script + html
+}
+
+// OIDC config for login UI
+app.get("/api/oidc-config", (c) => c.json(getOidcConfig()))
 
 // Auth config for client UI (email verification requirement)
 app.get("/api/auth-config", (c) => {
   return c.json({
-    requiresEmailConfirmation: Boolean(env.REQUIRES_EMAIL_CONFIRMATION),
+    requiresEmailConfirmation: env.REQUIRES_EMAIL_CONFIRMATION,
   })
 })
 
@@ -161,6 +180,13 @@ app.route("/api/categories", categoriesRouter)
 // Serve static assets in production
 const distDir = join(process.cwd(), "dist")
 const indexHtmlPath = join(distDir, "index.html")
+let cachedIndexHtml: string | null = null
+try {
+  const raw = readFileSync(indexHtmlPath, "utf-8")
+  cachedIndexHtml = injectOidcConfig(raw)
+} catch {
+  // dist not built yet (dev mode) — will be read lazily
+}
 
 app.use("/assets/*", serveStatic({ root: distDir }))
 app.use("/favicon.ico", serveStatic({ root: distDir }))
@@ -176,7 +202,10 @@ app.get("*", async (c) => {
   }
 
   try {
-    const html = readFileSync(indexHtmlPath, "utf-8")
+    if (cachedIndexHtml) return c.html(cachedIndexHtml)
+    const raw = readFileSync(indexHtmlPath, "utf-8")
+    const html = injectOidcConfig(raw)
+    cachedIndexHtml = html
     return c.html(html)
   } catch {
     return c.notFound()

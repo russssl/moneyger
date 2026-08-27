@@ -66,14 +66,16 @@ async function sendEmail({ to, subject, react }: SendEmailOptions) {
         html,
       });
       console.log(`[email] Sent to ${to} subject="${subject}" messageId=${(info as unknown as { messageId?: string })?.messageId ?? "unknown"}`);
-      if (previewUrl) console.log(`[email] Preview URL: ${previewUrl}`);
+      if (previewUrl && env.NODE_ENV !== "production") console.log(`[email] Preview URL: ${previewUrl}`);
       return info;
     } catch (error) {
       console.error("Error sending email via SMTP:", error);
-      if (previewUrl) {
+      if (env.NODE_ENV !== "production" && previewUrl) {
         console.error(`[email] SMTP FAILED — manual verification link for ${to}: ${previewUrl}`);
         console.error(`[email] You can manually verify by visiting the link above or running: UPDATE "user" SET email_verified=true WHERE email='${to}'`);
       }
+      // Invalidate cached transport on failure so next send recreates it
+      smtpTransport = null;
       throw new Error("Failed to send email via SMTP");
     }
   }

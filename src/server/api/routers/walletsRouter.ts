@@ -44,17 +44,22 @@ walletsRouter.get("/full", authenticated, async (c) => {
     // Get savings-only total balance (already converted)
     const { totalBalance: savingsTotalBalance } = await calculateTotalBalance(user.id, user.currency, null, null, true);
     
-    // Calculate amount left to goal with currency conversion
-    let amountLeftToGoal = 0;
-    for (const wallet of savingsWallets) {
-      if (wallet.savingAccountGoal && Number(wallet.savingAccountGoal) > 0) {
-        const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency);
+    // Calculate amount left to goal with currency conversion (parallel fetch)
+    const goalResults = await Promise.all(savingsWallets.map(async (wallet) => {
+      if (!wallet.savingAccountGoal || Number(wallet.savingAccountGoal) <= 0) return 0;
+      if (!wallet.currency) return 0;
+      try {
+        const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency!);
         const goalInMainCurrency = Number(wallet.savingAccountGoal) * exchangeRateData.rate;
         const balanceInMainCurrency = Number(wallet.balance) * exchangeRateData.rate;
-        const remaining = Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
-        amountLeftToGoal += remaining;
+        return Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
+      } catch {
+        const goal = Number(wallet.savingAccountGoal);
+        const bal = Number(wallet.balance);
+        return Math.max(wallet.currency === user.currency ? goal - bal : 0, 0);
       }
-    }
+    }));
+    const amountLeftToGoal = goalResults.reduce((acc, v) => acc + v, 0);
     
     const totalGoal = savingsTotalBalance + amountLeftToGoal;
     const progress = totalGoal > 0 ? Math.min((savingsTotalBalance / totalGoal) * 100, 100) : 0;
@@ -69,13 +74,12 @@ walletsRouter.get("/full", authenticated, async (c) => {
 
   return c.json({
     totalBalance: totalBalance,
-    wallets: wallets.slice(0, 5), // TODO: improve this, add pagination for full page, also leaving for now since db limit is not applicable since we still need all wallets for total balance calculation
+    wallets: wallets.slice(0, 5),
     userMainCurrency: user.currency,
     savingsStats,
   });
 });
 
-// still authenticated so this wont be abused
 walletsRouter.get("/exchange-rate", authenticated, zValidator("query", z.object({
   from: z.string(),
   to: z.string(),
@@ -101,15 +105,16 @@ walletsRouter.get("/:id", authenticated, async (c) => {
   return c.json(res_wallet);
 });
 
+const ALLOWED_CURRENCIES_WALLET = ["USD", "EUR", "GBP", "JPY", "PLN", "CHF", "UAH", "CZK"] as const;
 walletsRouter.post("/", authenticated, zValidator(
   "json",
   z.object({
-    name: z.string(),
-    currency: z.string(),
+    name: z.string().trim().min(1).max(50),
+    currency: z.string().refine((v) => (ALLOWED_CURRENCIES_WALLET as readonly string[]).includes(v), { message: `Currency must be one of: ${ALLOWED_CURRENCIES_WALLET.join(", ")}` }),
     isSavingAccount: z.boolean().optional(),
-    savingAccountGoal: z.number().optional(),
-    balance: z.number().optional(),
-    iconName: z.string().optional(),
+    savingAccountGoal: z.number().min(0).max(1_000_000_000).optional(),
+    balance: z.number().finite().min(-1_000_000_000).max(1_000_000_000).optional(),
+    iconName: z.string().max(50).optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);
@@ -152,11 +157,11 @@ walletsRouter.post("/", authenticated, zValidator(
 walletsRouter.post("/:id", authenticated, zValidator(
   "json",
   z.object({
-    name: z.string(),
-    currency: z.string(),
+    name: z.string().trim().min(1).max(50),
+    currency: z.string().refine((v) => (ALLOWED_CURRENCIES_WALLET as readonly string[]).includes(v), { message: `Currency must be one of: ${ALLOWED_CURRENCIES_WALLET.join(", ")}` }),
     isSavingAccount: z.boolean().optional(),
-    savingAccountGoal: z.number().optional(),
-    iconName: z.string().optional(),
+    savingAccountGoal: z.number().min(0).max(1_000_000_000).optional(),
+    iconName: z.string().max(50).optional(),
   }),
 ), async (c) => {
   const { user } = await getUserData(c);

@@ -16,7 +16,6 @@ const isHttpsUrl = (url?: string) => {
 const isDev = env.NODE_ENV !== "production"
 const oidcConfigs: Parameters<typeof genericOAuth>[0]["config"] = []
 if (env.OIDC_DISCOVERY_URL && env.OIDC_CLIENT_ID && env.OIDC_CLIENT_SECRET) {
-  // In production require https for OIDC; in dev allow http for local Pocket ID / Authentic
   if (!isDev && !isHttpsUrl(env.OIDC_DISCOVERY_URL)) {
     console.warn("[OIDC] OIDC_DISCOVERY_URL must be https in production — OIDC disabled")
   } else {
@@ -35,7 +34,7 @@ if (!isDev && !isHttpsUrl(env.PUBLIC_APP_URL)) {
   console.warn("[auth] PUBLIC_APP_URL should be https in production")
 }
 
-const requiresEmailConfirmation = Boolean(env.REQUIRES_EMAIL_CONFIRMATION)
+const requiresEmailConfirmation = env.REQUIRES_EMAIL_CONFIRMATION
 
 if (requiresEmailConfirmation && !env.SMTP_HOST) {
   console.warn("[auth] REQUIRES_EMAIL_CONFIRMATION is enabled but no email provider is configured (SMTP_HOST). Verification emails will fail — set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, EMAIL_FROM to allow account activation.")
@@ -47,12 +46,12 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   experimental: {
-    joins: true, // fewer DB round-trips on 50+ endpoints (re-run CLI generate/migrate if needed)
+    joins: true,
   },
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 min – reduces DB hits for getSession/useSession
+      maxAge: 5 * 60,
     },
   },
   plugins: [
@@ -102,14 +101,14 @@ export const auth = betterAuth({
         url
       );
     },
-    sendOnSignUp: !!requiresEmailConfirmation,
-    sendOnSignIn: !!requiresEmailConfirmation,
+    sendOnSignUp: requiresEmailConfirmation,
+    sendOnSignIn: requiresEmailConfirmation,
     autoSignInAfterVerification: true,
     expiresIn: env.EMAIL_VERIFICATION_EXPIRES_IN ?? 3600,
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: !!requiresEmailConfirmation,
+    requireEmailVerification: requiresEmailConfirmation,
     sendResetPassword: async ({user, url}) => {
       await sendResetPasswordEmail(
         user.email, 

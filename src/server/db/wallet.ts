@@ -16,7 +16,7 @@ export const wallets = pgTable("wallet", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: varchar("user_id", { length: 255 })
     .notNull()
-    .references(() => user.id),
+    .references(() => user.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 255 }).notNull(),
   balance: numeric("balance").default("0").notNull(),
   isSavingAccount: boolean("is_saving_account").default(false),

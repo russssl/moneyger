@@ -43,29 +43,30 @@ function VerifyEmailPage() {
     const verify = async () => {
       setStatus("verifying")
       try {
-        const url = `/api/auth/verify-email?token=${encodeURIComponent(token)}&callbackURL=${encodeURIComponent(callbackURL)}`
-        const res = await fetch(url, { method: "GET", credentials: "include" })
-        // better-auth may redirect (302) to callbackURL on success; fetch follows redirect
-        // If final response is redirect to callbackURL, we treat as success
+        // Prefer better-auth client helper which handles token exchange and cookies correctly
+        const { verifyEmail } = await import("@/client/hooks/use-session")
+        const res = await verifyEmail({ query: { token, callbackURL } })
         if (cancelled) return
-        if (res.ok) {
-          const contentType = res.headers.get("content-type") || ""
-          if (contentType.includes("application/json")) {
-            const data = await res.json().catch(() => null)
-            if (data?.status || res.status === 200) {
-              setStatus("success")
-              await queryClient.invalidateQueries({ queryKey: ["session"] })
-              return
-            }
-          } else {
-            // Non-JSON but ok (maybe redirected HTML) — treat as success if no error
+        if ((res as unknown as { error?: unknown })?.error) {
+          const msg = (res as unknown as { error: { message?: string } }).error?.message ?? t("verification_failed")
+          setError(msg)
+          setStatus("error")
+          return
+        }
+        setStatus("success")
+        await queryClient.invalidateQueries({ queryKey: ["session"] })
+      } catch (e) {
+        if (cancelled) return
+        // Fallback to direct fetch if client helper fails (e.g. network)
+        try {
+          const url = `/api/auth/verify-email?token=${encodeURIComponent(token)}&callbackURL=${encodeURIComponent(callbackURL)}`
+          const res = await fetch(url, { method: "GET", credentials: "include" })
+          if (cancelled) return
+          if (res.ok) {
             setStatus("success")
             await queryClient.invalidateQueries({ queryKey: ["session"] })
             return
           }
-          setStatus("success")
-          await queryClient.invalidateQueries({ queryKey: ["session"] })
-        } else {
           let message = t("verification_failed")
           try {
             const data = await res.json()
@@ -73,11 +74,11 @@ function VerifyEmailPage() {
           } catch {}
           setError(message)
           setStatus("error")
+          return
+        } catch {
+          setError(e instanceof Error ? e.message : t("unknown_error"))
+          setStatus("error")
         }
-      } catch (e) {
-        if (cancelled) return
-        setError(e instanceof Error ? e.message : t("unknown_error"))
-        setStatus("error")
       }
     }
     void verify()

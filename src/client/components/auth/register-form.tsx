@@ -69,10 +69,8 @@ export default function RegisterForm() {
             }
           },
           onSuccess: async (ctx) => {
-            // When REQUIRES_EMAIL_CONFIRMATION is true, better-auth returns token:null and no session
             const data = ctx.data as unknown as { token?: string | null } | undefined
-            const tokenIsNull = data?.token === null
-            if (tokenIsNull) {
+            if (data?.token === null) {
               setPendingVerification(true)
               return
             }

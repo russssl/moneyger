@@ -51,7 +51,7 @@ export async function recordRateLimitViolation(identifier: string): Promise<void
 }
 
 /**
- * Enable attack mode (app unavailable)
+ * Enable attack mode (per-identifier, not global, to prevent single IP from DoS-ing all users)
  */
 async function enableAttackMode(identifier: string, violationCount: number): Promise<void> {
   try {
@@ -66,16 +66,24 @@ async function enableAttackMode(identifier: string, violationCount: number): Pro
       cooldownUntil,
     };
 
-    // Store attack status with cooldown expiration
+    // Per-identifier block
+    const perIpKey = `${ATTACK_STATUS_KEY}:${identifier}`;
     await client.setEx(
-      ATTACK_STATUS_KEY,
+      perIpKey,
       Math.ceil(ATTACK_COOLDOWN_MS / 1000),
       JSON.stringify(status)
     );
 
+    // Also set global key for monitoring/dashboard visibility, but not used for blocking
+    await client.setEx(
+      `${ATTACK_STATUS_KEY}:global:last`,
+      Math.ceil(ATTACK_COOLDOWN_MS / 1000),
+      JSON.stringify({ ...status, identifier })
+    );
+
     console.warn(
       `🚨 ATTACK DETECTED: ${identifier} triggered ${violationCount} rate limit violations. ` +
-      `Enabling attack mode for ${ATTACK_COOLDOWN_MS / 1000 / 60} minutes.`
+      `Blocking ${identifier} for ${ATTACK_COOLDOWN_MS / 1000 / 60} minutes (per-IP, not global).`
     );
   } catch (error) {
     console.error("Failed to enable attack mode:", error);
@@ -83,26 +91,31 @@ async function enableAttackMode(identifier: string, violationCount: number): Pro
 }
 
 /**
- * Check if the app is currently under attack
+ * Check if the app is currently under attack (per-identifier)
+ * If identifier omitted, checks global fallback (for backward compat, always false unless global key exists)
  */
-export async function isUnderAttack(): Promise<boolean> {
+export async function isUnderAttack(identifier?: string): Promise<boolean> {
   try {
     const client = await redis();
-    const statusJson = await client.get(ATTACK_STATUS_KEY);
-
-    if (!statusJson) {
-      return false;
+    if (identifier) {
+      const perIpKey = `${ATTACK_STATUS_KEY}:${identifier}`;
+      const statusJson = await client.get(perIpKey);
+      if (!statusJson) return false;
+      const status: AttackStatus = JSON.parse(statusJson);
+      if (status.cooldownUntil && Date.now() > status.cooldownUntil) {
+        await client.del(perIpKey);
+        return false;
+      }
+      return status.isUnderAttack;
     }
-
+    // Fallback global check (legacy)
+    const statusJson = await client.get(ATTACK_STATUS_KEY);
+    if (!statusJson) return false;
     const status: AttackStatus = JSON.parse(statusJson);
-
-    // Check if cooldown has passed
     if (status.cooldownUntil && Date.now() > status.cooldownUntil) {
-      // Cooldown expired, clear the status
       await client.del(ATTACK_STATUS_KEY);
       return false;
     }
-
     return status.isUnderAttack;
   } catch (error) {
     // If we can't check, assume not under attack (fail open)

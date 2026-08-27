@@ -22,17 +22,22 @@ savingsRouter.get("/", authenticated, async (c) => {
 
   const { wallets, totalBalance } = await calculateTotalBalance(user.id, user.currency, null, null, true);
 
-  // Calculate amountLeftToGoal with currency conversion
-  let amountLeftToGoal = 0;
-  for (const wallet of wallets) {
-    if (wallet.savingAccountGoal && Number(wallet.savingAccountGoal) > 0) {
-      const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency);
+  // Calculate amountLeftToGoal with currency conversion (parallel)
+  const results = await Promise.all(wallets.map(async (wallet) => {
+    if (!wallet.savingAccountGoal || Number(wallet.savingAccountGoal) <= 0) return 0;
+    if (!wallet.currency) return 0;
+    try {
+      const exchangeRateData = await getCurrentExchangeRate(wallet.currency, user.currency!);
       const goalInMainCurrency = Number(wallet.savingAccountGoal) * exchangeRateData.rate;
       const balanceInMainCurrency = Number(wallet.balance) * exchangeRateData.rate;
-      const remaining = Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
-      amountLeftToGoal += remaining;
+      return Math.max(goalInMainCurrency - balanceInMainCurrency, 0);
+    } catch {
+      const goal = Number(wallet.savingAccountGoal);
+      const bal = Number(wallet.balance);
+      return Math.max(wallet.currency === user.currency ? goal - bal : 0, 0);
     }
-  }
+  }));
+  const amountLeftToGoal = results.reduce((acc, v) => acc + v, 0);
 
   return c.json({
     wallets,

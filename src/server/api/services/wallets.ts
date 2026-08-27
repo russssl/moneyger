@@ -1,19 +1,22 @@
 import db from "@/server/db";
 import { type Transaction, transactions, transactions as transactionsSchema} from "@/server/db/transaction";
-import { and, eq, gte, lte, not } from "drizzle-orm";
+import { and, eq, lte, not } from "drizzle-orm";
 import { env } from "@/env";
 import { redis } from "@/server/api/cache/cache";
 import { type Wallet, wallets } from "@/server/db/wallet";
 import { DateTime } from "luxon";
 
 export async function calculateWalletBalance(walletId: string) {
-  const transactions: Transaction[] = await db.query.transactions.findMany({
+  const txs: Transaction[] = await db.query.transactions.findMany({
     where: eq(transactionsSchema.walletId, walletId),
   });
 
-  const balance = transactions.reduce((acc, transaction) => {
+  const balance = txs.reduce((acc, transaction) => {
     if (!transaction.amount) return acc;
-    return acc + Number(transaction.amount);
+    const amt = Number(transaction.amount);
+    if (transaction.type === "expense") return acc - amt;
+    if (transaction.type === "income" || transaction.type === "adjustment") return acc + amt;
+    return acc;
   }, 0);
 
   return balance;
@@ -252,16 +255,26 @@ type WalletWithTransactions = Wallet & {
   transactions: Transaction[];
 }
 
+function getSignedAmount(t: Transaction): number {
+  const amt = Number(t.amount ?? 0);
+  if (t.type === "expense") return -amt;
+  if (t.type === "income" || t.type === "adjustment") return amt;
+  return 0; // transfer and unknown contribute 0 to net worth (already accounted via wallet balances)
+}
+
 export async function calculateTotalBalance(userId: string, userMainCurrency: string, startDate?: Date | null, endDate?: Date | null, isSavingAccount = false): Promise<WalletsStats> {
   let totalBalance = 0;
+  const isHistorical = !!startDate;
+  // For historical snapshot we need balance as of startDate (past), not window sum
+  const historicalCutoff = startDate ?? null;
+
   const res_wallets: WalletWithTransactions[] = await db.query.wallets.findMany({
     where: and(eq(wallets.userId, userId), isSavingAccount ? eq(wallets.isSavingAccount, true) : undefined),
     with: {
       transactions: {
-        where: and(startDate ? and(
-          lte(transactions.transaction_date, endDate ?? new Date()),
-          gte(transactions.transaction_date, startDate)
-        ) : not(eq(transactions.type, "adjustment"))),
+        where: isHistorical && historicalCutoff
+          ? lte(transactions.transaction_date, historicalCutoff)
+          : not(eq(transactions.type, "adjustment")),
       },
     },
     orderBy: (wallets, { asc }) => [asc(wallets.name)],
@@ -271,22 +284,31 @@ export async function calculateTotalBalance(userId: string, userMainCurrency: st
     throw new Error("User main currency not found");
   }
 
+  // Fetch exchange rates in parallel (cache prevents N API calls)
+  const rateCache = new Map<string, number>();
+  async function getRate(from: string): Promise<number> {
+    if (from === userMainCurrency) return 1;
+    if (rateCache.has(from)) return rateCache.get(from)!;
+    const data = await getCurrentExchangeRate(from, userMainCurrency);
+    rateCache.set(from, data.rate);
+    return data.rate;
+  }
+
   for (const wallet of res_wallets) {
-    // If we're calculating a past balance, we need to sum only transactions up to that point
-    const walletBalance = startDate 
-      ? wallet.transactions.filter(t => t.type != "adjustment").reduce((acc: number, t: Transaction) => acc + Number(t.amount ?? 0), 0)
+    const walletBalance = isHistorical
+      ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + getSignedAmount(t), 0)
       : Number(wallet.balance);
 
-    const exchangeRateData = await getCurrentExchangeRate(wallet.currency, userMainCurrency);
-    totalBalance += walletBalance * exchangeRateData.rate;
+    const rate = await getRate(wallet.currency);
+    totalBalance += walletBalance * rate;
   }
 
   return {
     totalBalance: Number(totalBalance.toFixed(2)),
     wallets: res_wallets.map((wallet) => ({
       ...wallet,
-      balance: String(startDate
-        ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + Number(t.amount ?? 0), 0)
+      balance: String(isHistorical
+        ? wallet.transactions.reduce((acc: number, t: Transaction) => acc + getSignedAmount(t), 0)
         : Number(wallet.balance)),
     }))
   }

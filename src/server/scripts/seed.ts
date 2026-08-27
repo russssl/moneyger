@@ -37,7 +37,7 @@ async function seedDemoUser() {
 
   // 3. Migrate database
   console.log("🛠  Migrating database...");
-  runCommand("bun run db:migrate");
+  runCommand("pnpm run db:migrate");
   console.log("✅ Database migrated.");
 
   let demoUser = await db
